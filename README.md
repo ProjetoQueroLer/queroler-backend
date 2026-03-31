@@ -39,6 +39,24 @@ A gerência e o ciclo de vida do token de autenticação estão concentrados no 
 
 ### Passo a Passo
 
+#### Utilizando docker compose
+
+1. **Iniciar as instancia da aplicação, e, do banco de dados (docker-compose):"**
+    ```bash
+    docker compose up -d --build
+    ```
+2. **Verificar se as instancia estão em execução:**
+    ```bash
+    docker ps 
+    ```
+3. ** Deve retornar ao menos 2 instancias:**
+
+|CONTAINER ID|IMAGE|COMMAND|CREATED|STATUS|PORTS|NAMES|
+|------------|--------------------|----------------------|---------------|-----------|-------------------------------------------|------------| 
+|90bb0deec9c9|queroler-backend-api|"sh -c 'java $JAVA_O…"|49 minutes ago|Up 5 seconds|0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp|api-queroler|
+|fe6a83a4f7fe|postgres:latest|"docker-entrypoint.s…"|49 minutes ago|Up 16 seconds (healthy)|0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp|postgres-queroler|
+
+#### Modo antigo
 1.  **Subir o Banco de Dados (Docker):**
     ```bash
     docker run --name postgres-queroler -e POSTGRES_PASSWORD=suasenha -p 5432:5432 -d postgres
