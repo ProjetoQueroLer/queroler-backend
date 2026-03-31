@@ -2,6 +2,7 @@ package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.autor.AutorRequest;
 import com.usuario.quero_ler.dtos.livro.BuscaDeLivrosRequest;
+import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
 import com.usuario.quero_ler.exceptions.especies.*;
@@ -64,9 +65,19 @@ public class LivroServeceImpl implements LivroServiceI {
     }
 
     @Override
-    public Page<LivroResponse> listar(Pageable pageable) {
+    public Page<LivroCardResponse> listar(Pageable pageable) {
         loginServiceI.validarLogin();
-        Page<LivroResponse> livros = repository.findAll(pageable).map(mapper::toResponse);
+        Page<LivroCardResponse> livros = repository.findAll(pageable).map(mapper::toCardResponse);
+        return livros;
+    }
+
+    @Override
+    public Page<LivroResponse> listarPopulares(){
+        Pageable pageable= LivroFiltro.top5MaisVotados();
+        Page<LivroResponse> livros = repository.findAll(pageable).map(mapper ::toResponse);
+        if(livros.isEmpty()){
+            throw new LivroNaoEncontradoException("Não há livros em top5!");
+        }
         return livros;
     }
 
@@ -110,10 +121,10 @@ public class LivroServeceImpl implements LivroServiceI {
     }
 
     @Override
-    public Page<LivroResponse> buscar(String titulo, String editora,String autor, Pageable pageable){
+    public Page<LivroCardResponse> buscar(String titulo, String editora,String autor, Pageable pageable){
         loginServiceI.validarLogin();
         Specification<Livro> filtro = LivroFiltro.filtro(titulo, editora, autor);
-        Page<LivroResponse> livros = repository.findAll(filtro,pageable).map(mapper ::toResponse);
+        Page<LivroCardResponse> livros = repository.findAll(filtro,pageable).map(mapper ::toCardResponse);
         if(livros.isEmpty()){
             throw new LivroNaoEncontradoException("Nenhum livro encontrado para essa busca!");
         }

@@ -2,6 +2,7 @@ package com.usuario.quero_ler.Controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.livro.BuscaDeLivrosRequest;
+import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
 import com.usuario.quero_ler.service.LivroServiceI;
@@ -33,23 +34,23 @@ public class LivroController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @GetMapping
-    ResponseEntity<Page<LivroResponse>> listar(Pageable pageable){
-        Page<LivroResponse> page = serviceI.listar(pageable);
+    @GetMapping()
+    public ResponseEntity<Page<LivroCardResponse>> buscar(@RequestParam(required = false) String titulo,
+                                                            @RequestParam(required = false) String editora,
+                                                            @RequestParam(required = false) String autor,
+                                                            Pageable pageable){
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.buscar(titulo,editora,autor,pageable));
+    }
+
+    @GetMapping("/populares")
+    ResponseEntity<Page<LivroResponse>> listarPopulares(){
+        Page<LivroResponse> page = serviceI.listarPopulares();
         return ResponseEntity.status(HttpStatus.OK).body(page);
     }
 
     @GetMapping("/buscar/{isbn}")
     public ResponseEntity<LivroResponse> buscar(@PathVariable String isbn){
         return ResponseEntity.status(HttpStatus.OK).body(serviceI.buscarIsbn(isbn));
-    }
-
-    @GetMapping("/buscar/filtro")
-    public ResponseEntity<Page<LivroResponse>> buscarFiltro(@RequestParam(required = false) String titulo,
-                                                            @RequestParam(required = false) String editora,
-                                                            @RequestParam(required = false) String autor,
-                                                            Pageable pageable){
-        return ResponseEntity.status(HttpStatus.OK).body(serviceI.buscar(titulo,editora,autor,pageable));
     }
 
     @GetMapping("/{id}/capa")
