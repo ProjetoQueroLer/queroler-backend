@@ -10,12 +10,16 @@ import com.usuario.quero_ler.fixtures.LoginFixture;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.repository.UserRepository;
+
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
@@ -31,6 +35,9 @@ class LoginServiceImplTest {
 
     @Mock
     private UserRepository repository;
+
+		@Autowired
+			HttpServletResponse response;
 
     @Test
     @DisplayName("Deve criar um login com sucesso")
@@ -57,7 +64,7 @@ class LoginServiceImplTest {
 
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
 
-        service.login(dto);
+        service.login(dto, response);
 
         assertEquals(user, service.getLogado());
     }
@@ -70,7 +77,7 @@ class LoginServiceImplTest {
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.empty());
 
         UsuarioNaoEncontradoException exception = assertThrows(UsuarioNaoEncontradoException.class,
-                () -> service.login(dto)
+                () -> service.login(dto, response)
         );
 
         assertEquals("Usuario não cadastrado.", exception.getMessage());
@@ -85,7 +92,7 @@ class LoginServiceImplTest {
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
 
         UsuarioComPerfilInvalidoException exception = assertThrows(UsuarioComPerfilInvalidoException.class,
-                () -> service.login(dto)
+                () -> service.login(dto, response)
         );
 
         assertEquals("Perfil inválido", exception.getMessage());
@@ -100,7 +107,7 @@ class LoginServiceImplTest {
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
 
         CredenciaisInvalidasException exception = assertThrows(CredenciaisInvalidasException.class,
-                () -> service.login(dto)
+                () -> service.login(dto, response)
         );
 
         assertEquals("Senha inválida.", exception.getMessage());
