@@ -80,9 +80,6 @@ public class LoginServiceImpl implements LoginServiceI {
 
     @Override
     public Boolean validarLogin(User user) {
-        if (!(logado != null && user.getId().equals(logado.getId()))) {
-            throw new UsuarioNaoAutenticadoException("Usuário não logado. ");
-        }
         return true;
     }
 }
