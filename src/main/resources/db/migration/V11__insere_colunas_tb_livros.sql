@@ -1,5 +1,5 @@
-ALTER TABLE livro
+ALTER TABLE tb_livros
     ADD COLUMN data_de_cadastro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
-ALTER TABLE livro
+ALTER TABLE tb_livros
     ADD COLUMN quantidade_de_uso INTEGER DEFAULT 0;
