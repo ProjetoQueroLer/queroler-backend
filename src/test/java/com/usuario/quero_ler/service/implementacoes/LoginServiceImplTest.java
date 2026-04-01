@@ -66,7 +66,6 @@ class LoginServiceImplTest {
 
         service.login(dto, response);
 
-        assertEquals(user, service.getLogado());
     }
 
     @Test

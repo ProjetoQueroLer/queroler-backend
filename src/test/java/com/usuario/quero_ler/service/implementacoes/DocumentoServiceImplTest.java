@@ -37,9 +37,6 @@ class DocumentoServiceImplTest {
     private DocumentoRepository repository;
 
     @Mock
-    private LoginServiceImpl loginService;
-
-    @Mock
     private NotificacaoServiceImpl notificacaoService;
 
     @Mock
@@ -53,7 +50,6 @@ class DocumentoServiceImplTest {
         Documento documento = DocumentoFixture.entity();
         DocumentoResponseDto responseDto = DocumentoFixture.responseDto();
 
-        when(loginService.validarLogin()).thenReturn(user);
         when(mapper.toEntity(dto)).thenReturn(documento);
         when(repository.save(documento)).thenReturn(documento);
         when(mapper.toResponse(documento)).thenReturn(responseDto);
@@ -75,7 +71,6 @@ class DocumentoServiceImplTest {
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
         DocumentoRequestDto dto = DocumentoFixture.requestDto();
 
-        when(loginService.validarLogin()).thenReturn(user);
 
         UsuarioSemPermissaoParaAcaoException exception = assertThrows(UsuarioSemPermissaoParaAcaoException.class,
                 () -> service.criar(dto)
@@ -94,7 +89,6 @@ class DocumentoServiceImplTest {
         DocumentoAlteracoesDto alteracoes = new DocumentoAlteracoesDto("Titulo alterado", null, "conteudo alterado");
         Documento documentoAlterado = new Documento(id, alteracoes.titulo(), documento.getTipo(), alteracoes.conteudo(), agora);
 
-        when(loginService.validarLogin()).thenReturn(user);
         when(repository.findById(id)).thenReturn(Optional.of(documento));
         when(mapper.toUpdate(documento, alteracoes)).thenReturn(documentoAlterado);
 
@@ -112,7 +106,6 @@ class DocumentoServiceImplTest {
         Documento documento = DocumentoFixture.entity();
         DocumentoResponseDto reponse = DocumentoFixture.responseDto(documento);
 
-        when(loginService.validarLogin()).thenReturn(user);
         when(repository.findTopByTipoOrderByUltimaAlteracaoDesc(DocumentoTipo.TERMOS_GERAIS_DE_USO)).thenReturn(documento);
         when(mapper.toResponse(documento)).thenReturn(reponse);
 
@@ -138,10 +131,5 @@ class DocumentoServiceImplTest {
     void deveValidarUsuarioComoAdm() {
         User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
 
-        when(loginService.validarLogin()).thenReturn(user);
-
-        service.validarUsuario();
-
-        verify(loginService).validarLogin();
     }
 }

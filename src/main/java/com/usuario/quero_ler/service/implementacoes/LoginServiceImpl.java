@@ -30,56 +30,44 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class LoginServiceImpl implements LoginServiceI {
-    private User logado;
-    private final UserRepository repository;
+	private final UserRepository repository;
 
-		private final TokenService tokenService;
-		private final PasswordEncoder passwordEncoder;
+	private final TokenService tokenService;
+	private final PasswordEncoder passwordEncoder;
 
-    @Transactional
-    @Override
-    public User criar(UsuarioRequestDto dto, UsuarioProfile profile) {
-        User user = new User();
-        String senha = Senhas.gerar(dto.senha());
-        user.setUser(dto.email());
-				user.setSenha(passwordEncoder.encode(dto.senha()));
-        user.setProfile(profile);
-        user = repository.save(user);
-        return user;
-    }
+	@Transactional
+	@Override
+	public User criar(UsuarioRequestDto dto, UsuarioProfile profile) {
+		User user = new User();
+		String senha = Senhas.gerar(dto.senha());
+		user.setUser(dto.email());
+		user.setSenha(passwordEncoder.encode(dto.senha()));
+		user.setProfile(profile);
+		user = repository.save(user);
+		return user;
+	}
 
-    @Override
-		public void login(LoginRequestDto dto, HttpServletResponse response) {
+	@Override
+	public void login(LoginRequestDto dto, HttpServletResponse response) {
 
-			User user = repository.findByUserIgnoreCase(dto.user())
-					.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não cadastrado"));
-			if (!passwordEncoder.matches(dto.senha(), user.getSenha())) {
-				throw new CredenciaisInvalidasException("E-mail ou senha inválida.");
-			}
+		User user = repository.findByUserIgnoreCase(dto.user())
+				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não cadastrado"));
+		if (!passwordEncoder.matches(dto.senha(), user.getSenha())) {
+			throw new CredenciaisInvalidasException("E-mail ou senha inválida.");
+		}
 
-			String token = tokenService.generateToken(user);
+		String token = tokenService.generateToken(user);
 
-		 ResponseCookie cookie = ResponseCookie.from("jwt", token)
-    .httpOnly(true)
-    .secure(false) // Mude para true em produção
-    .path("/")
-    .maxAge(Duration.ofHours(2))
-    .sameSite("Strict") 
-    .build();
+		ResponseCookie cookie = ResponseCookie.from("jwt", token)
+				.httpOnly(true)
+				.secure(false)
+				.path("/")
+				.maxAge(Duration.ofHours(2))
+				.sameSite("Strict")
+				.build();
 
 		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-		}
-    @Override
-    public User validarLogin() {
-        if (logado == null) {
-            throw new UsuarioNaoAutenticadoException("Usuario não logado!");
-        }
-        return logado;
-    }
+	}
 
-    @Override
-    public Boolean validarLogin(User user) {
-        return true;
-    }
 }

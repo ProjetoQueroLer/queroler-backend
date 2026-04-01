@@ -34,11 +34,9 @@ public class LivroServeceImpl implements LivroServiceI {
     private final LivroRepository repository;
     private final LivroMapper mapper;
     private final AutorServiceI autorServiceI;
-    private final LoginServiceI loginServiceI;
 
     @Override
     public LivroResponse criar(LivroRequest dto,MultipartFile capaDoLivro) {
-        loginServiceI.validarLogin();
 
         Optional<Livro> isbn = repository.findByIsbn(dto.isbn());
         if(isbn.isPresent()){
@@ -66,7 +64,6 @@ public class LivroServeceImpl implements LivroServiceI {
 
     @Override
     public Page<LivroCardResponse> listar(Pageable pageable) {
-        loginServiceI.validarLogin();
         Page<LivroCardResponse> livros = repository.findAll(pageable).map(mapper::toCardResponse);
         return livros;
     }
@@ -83,7 +80,6 @@ public class LivroServeceImpl implements LivroServiceI {
 
     @Override
     public void inserirCapaDoLivro(Long id, MultipartFile capaDoLivro) {
-        loginServiceI.validarLogin();
         validarCapaDoLivro(capaDoLivro);
         Livro livro = repository.findById(id)
                 .orElseThrow(() -> new LivroNaoEncontradoException("Livro não encontrado"));
@@ -99,7 +95,6 @@ public class LivroServeceImpl implements LivroServiceI {
 
     @Override
     public byte[] buscarCapa(Long id){
-        loginServiceI.validarLogin();
         Livro livro = repository.findById(id).orElseThrow(
                 ()-> new LivroNaoEncontradoException("Livro não encontrado")
         );
@@ -113,8 +108,7 @@ public class LivroServeceImpl implements LivroServiceI {
 
     @Override
     public LivroResponse buscarIsbn(String isbn){
-        loginServiceI.validarLogin();
-        Livro livro = livro = repository.findByIsbn(isbn).orElseThrow(
+        Livro livro = repository.findByIsbn(isbn).orElseThrow(
                 ()-> new IsbnNaoEncontradoException("Não há nenhum livro cadastrado com o código ISBN informado")
         );
         return mapper.toResponse(livro);
@@ -122,7 +116,6 @@ public class LivroServeceImpl implements LivroServiceI {
 
     @Override
     public Page<LivroCardResponse> buscar(String titulo, String editora,String autor, Pageable pageable){
-        loginServiceI.validarLogin();
         Specification<Livro> filtro = LivroFiltro.filtro(titulo, editora, autor);
         Page<LivroCardResponse> livros = repository.findAll(filtro,pageable).map(mapper ::toCardResponse);
         if(livros.isEmpty()){

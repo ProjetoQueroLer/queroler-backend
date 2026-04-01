@@ -73,14 +73,12 @@ class UsuarioServiceImplTest {
         Usuario usuarioComDadosCompletos = UserFixture.entidadeCompleta(user);
 
         when(repository.findById(id)).thenReturn(Optional.of(usuarioComDadosBasicos));
-        when(loginService.validarLogin(user)).thenReturn(true);
         when(mapper.complementarCadastro(usuarioComDadosBasicos,dto)).thenReturn(usuarioComDadosCompletos);
         when(repository.save(usuarioComDadosCompletos)).thenReturn(usuarioComDadosCompletos);
 
        service.adicionarDados(id,dto);
 
        verify(repository).findById(id);
-       verify(loginService).validarLogin(user);
     }
 
     @Test
@@ -124,7 +122,6 @@ class UsuarioServiceImplTest {
 
         service.atualizar(id,atualizacoes);
 
-        verify(loginService).validarLogin(user);
         verify(mapper).update(usuario,atualizacoes);
         verify(repository).save(usuarioAtualizado);
 
@@ -147,7 +144,6 @@ class UsuarioServiceImplTest {
 
         service.atualizar(id,atualizacoes);
 
-        verify(loginService).validarLogin(user);
         verify(mapper).update(usuario,atualizacoes);
         verify(repository).save(usuarioAtualizado);
     }
@@ -165,7 +161,6 @@ class UsuarioServiceImplTest {
         service.excluirPerfil(id);
 
         verify(repository).findById(id);
-        verify(loginService).validarLogin(user);
         verify(repository).delete(usuario);
         verifyNoMoreInteractions(repository);
     }
@@ -213,14 +208,10 @@ class UsuarioServiceImplTest {
         UsuarioAlterarSenhaReguest dto = new UsuarioAlterarSenhaReguest("Teste123&","Alterado253$");
 
         when(repository.findById(id)).thenReturn(Optional.of(usuario));
-        when(loginService.validarLogin(usuario.getUser())).thenReturn(true);
-        when(loginService.validarLogin()).thenReturn(user);
 
         service.alterarSenha(id, dto);
 
         verify(userRepository).save(user);
-        verify(loginService).validarLogin(usuario.getUser());
-        verify(loginService).validarLogin();
     }
 
     @Test

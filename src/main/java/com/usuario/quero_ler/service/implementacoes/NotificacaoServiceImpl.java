@@ -25,7 +25,6 @@ import java.util.List;
 @Service
 public class NotificacaoServiceImpl implements NotificacaoServiceI {
     private final NotificacaoRepository repository;
-    private final LoginServiceI login;
     private final UsuarioServiceI usuarioServiceI;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
     private final NotificacaoMapper mapper;
@@ -44,7 +43,6 @@ public class NotificacaoServiceImpl implements NotificacaoServiceI {
     public Page<NotificacaoResponseDto> naoLidas(Long idUsuario, Pageable pageable) {
         apagarNotificacoesComMaisDe30Dias();
         Usuario usuario = usuarioServiceI.getUsuario(idUsuario);
-        login.validarLogin(usuario.getUser());
         List<Notificacao> usuarioNotificacaos = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
         List<NotificacaoResponseDto> notificacoes = new ArrayList<>();
         for (Notificacao notificacao : usuarioNotificacaos) {
@@ -59,7 +57,6 @@ public class NotificacaoServiceImpl implements NotificacaoServiceI {
     public void marcarComoLidas(Long idUsuario) {
         apagarNotificacoesComMaisDe30Dias();
         Usuario usuario = usuarioServiceI.getUsuario(idUsuario);
-        login.validarLogin(usuario.getUser());
         usuarioNotificacaoRepository.marcarComoLidas(idUsuario);
     }
 

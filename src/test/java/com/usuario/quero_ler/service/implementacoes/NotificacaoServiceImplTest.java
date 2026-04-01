@@ -1,5 +1,24 @@
 package com.usuario.quero_ler.service.implementacoes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoRequestDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
 import com.usuario.quero_ler.enuns.UsuarioProfile;
@@ -11,24 +30,6 @@ import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.NotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NotificacaoServiceImplTest {
@@ -41,9 +42,6 @@ class NotificacaoServiceImplTest {
 
     @Mock
     private NotificacaoMapper mapper;
-
-    @Mock
-    private LoginServiceImpl loginService;
 
     @Mock
     private UsuarioNotificacaoRepository usuarioNotificacaoRepository;
@@ -89,7 +87,6 @@ class NotificacaoServiceImplTest {
         List<Notificacao> lista = List.of(notificacao,notificacao2);
 
         when(usuarioService.getUsuario(idUsuario)).thenReturn(usuario);
-        when(loginService.validarLogin(user)).thenReturn(true);
         when(usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario))
                 .thenReturn(lista);
 
@@ -101,7 +98,6 @@ class NotificacaoServiceImplTest {
         assertEquals(notificacao2.getId(), resultado.getContent().get(1).id());
 
         verify(usuarioService).getUsuario(idUsuario);
-        verify(loginService).validarLogin(user);
         verify(usuarioNotificacaoRepository).buscarNotificacoesNaoLidas(idUsuario);
     }
 
@@ -115,13 +111,11 @@ class NotificacaoServiceImplTest {
 
 
             when(usuarioService.getUsuario(idUsuario)).thenReturn(usuario);
-            when(loginService.validarLogin(user)).thenReturn(true);
 
             service.marcarComoLidas(idUsuario);
 
             assertNotNull(usuario.getUser());
             verify(usuarioService).getUsuario(idUsuario);
-            verify(loginService).validarLogin(user);
             verify(usuarioNotificacaoRepository).marcarComoLidas(idUsuario);
         }
 
