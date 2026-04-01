@@ -5,6 +5,9 @@ import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.enuns.UsuarioProfile;
 import com.usuario.quero_ler.fixtures.LoginFixture;
 import com.usuario.quero_ler.service.LoginServiceI;
+
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,8 @@ class LoginControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+		@Autowired
+		HttpServletResponse response;
     @Test
     @DisplayName("Deve realizar um login com sucesso")
     void deveRealizarLoginComSucesso() throws Exception {
@@ -39,6 +44,6 @@ class LoginControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        verify(service).login(request);
+        verify(service).login(request, response);
     }
 }

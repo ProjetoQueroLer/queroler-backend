@@ -54,8 +54,6 @@ public class Usuario {
     @Column(name = "pais", length = 100)
     private String pais;
 
-//    @Lob
-//    @Basic(fetch = FetchType.LAZY)
     @Column(name = "foto", columnDefinition = "BYTEA")
     private byte[] foto;
 

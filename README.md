@@ -1,46 +1,64 @@
-# Api Backend Projeto Quero Ler
+# 📚 Projeto Quero Ler - API Backend
 
-### Tecnologias Utilizadas
+A **API Quero Ler** é uma plataforma inspirada na rede social Skoob, desenvolvida para gerenciar bibliotecas pessoais, monitorar leituras e conectar leitores. O projeto foca em segurança robusta e boas práticas de arquitetura Java.
 
-* [Java 21](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
-* [Spring Framework 3.5.11](https://spring.io/)
-* [H2-database](https://h2database.com/html/main.html)
-* [Postgresql](https://www.postgresql.org/)
-* [Flyway](https://www.red-gate.com/products/flyway/)
-* [lombok](https://projectlombok.org/)
+---
 
-### Dependencias
+## 🛠️ Tecnologias e Ferramentas
 
-* DOCKER
+*   **Linguagem:** Java 21
+*   **Framework:** Spring Boot 3.x
+*   **Banco de Dados:** PostgreSQL (Produção/Dev), H2 (Testes)
+*   **Migrações:** Flyway
+*   **Segurança:** Spring Security + JWT (Cookie HttpOnly)
+*   **Documentação:** Swagger (OpenAPI 3)
+*   **Containers:** Docker
 
-Uma instancia docker do postgress rodando na porta 5432
+---
 
+## 🔐 Segurança e Autenticação
 
-## ✅ Como rodar o projeto
+O projeto utiliza **Spring Security** com uma estratégia **Stateless** via tokens JWT. Um diferencial desta implementação é o uso de **Cookies HttpOnly**, o que aumenta a segurança contra ataques XSS ao impedir que o JavaScript do front-end acesse o token diretamente.
 
+### Modelo de Dados de Usuário
+A estrutura de segurança é dividida em duas entidades para separação de responsabilidades:
 
-```
-./mvn clean build 
-```
+1.  **`User`**: Entidade de infraestrutura que implementa `UserDetails`. Gerencia credenciais e perfis de acesso (`ROLE_USER`, `ROLE_ADMIN`).
+2.  **`Usuario`**: Entidade de domínio que armazena informações cadastrais, perfil social e relacionamentos (livros e notificações).
 
-Depois, rode o seguinte comando:
+### Configuração de Segurança (SecurityConfig)
+A gerência e o ciclo de vida do token de autenticação estão concentrados no backend, removendo a responsabilidade do front-end de armazenar ou validar o token manualmente.
 
-```
-./mvn install
-```
+---
 
-## Como rodar os testes
+## 🚀 Como Rodar o Projeto
 
-```
-./mvn clean test
-```
+### Pré-requisitos
+*   Docker e Docker Compose
+*   Java 21 e Maven (ou Maven Wrapper `./mvnw`)
 
-## 📌 Contratos de Api 📌
+### Passo a Passo
 
-***Em construção***
+1.  **Subir o Banco de Dados (Docker):**
+    ```bash
+    docker run --name postgres-queroler -e POSTGRES_PASSWORD=suasenha -p 5432:5432 -d postgres
+    ```
 
-## ⏭️ Próximos passos
+2.  **Compilar e Instalar as dependências:**
+    ```bash
+    ./mvnw clean install
+    ```
 
+3.  **Executar a Aplicação:**
+    ```bash
+    ./mvnw spring-boot:run
+    ```
 
-***Em construção***
+---
 
+## 🧪 Testes
+
+Para garantir a qualidade e integridade do código, execute a suíte de testes unitários e de integração:
+
+```bash
+./mvnw clean test
