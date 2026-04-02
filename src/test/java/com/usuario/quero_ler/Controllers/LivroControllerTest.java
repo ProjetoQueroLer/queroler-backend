@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.Controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
 import com.usuario.quero_ler.fixtures.LivroFixture;
@@ -97,26 +98,24 @@ class LivroControllerTest {
     @Test
     @DisplayName("Deve retornar todos livros do banco com sucesso")
     void deveRetornarTodosOsLivrosDoBanco() throws Exception {
-        LivroResponse livro = LivroFixture.response();
+        LivroCardResponse livro = LivroFixture.responseCard();
         Pageable pageable = PageRequest.of(0, 20);
 
-        Page<LivroResponse> page = new PageImpl<>(List.of(livro, livro), pageable, 2);
+        Page<LivroCardResponse> page = new PageImpl<>(List.of(livro, livro), pageable, 2);
 
-        when(serviceI.listar(any(Pageable.class))).thenReturn(page);
+        when(serviceI.buscar(isNull(), isNull(), isNull(), any(Pageable.class)))
+                .thenReturn(page);
 
         mockMvc.perform(get("/livros")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].id").value(livro.id()))
                 .andExpect(jsonPath("$.content[0].editora").value(livro.editora()))
                 .andExpect(jsonPath("$.content[0].titulo").value(livro.titulo()))
-                .andExpect(jsonPath("$.content[1].id").value(livro.id()))
                 .andExpect(jsonPath("$.content[1].editora").value(livro.editora()))
                 .andExpect(jsonPath("$.content[1].titulo").value(livro.titulo()))
         ;
 
         verify(serviceI).listar(any(Pageable.class));
-        ;
     }
 
     @Test
@@ -146,8 +145,8 @@ class LivroControllerTest {
     @DisplayName("Deve buscar livros por filtro com sucesso")
     void deveBuscarLivrosPorFiltro() throws Exception {
         Livro livro = LivroFixture.entity();
-        LivroResponse response = LivroFixture.response();
-        Page<LivroResponse> page = new PageImpl<>(List.of(response));
+        LivroCardResponse response = LivroFixture.responseCard();
+        Page<LivroCardResponse> page = new PageImpl<>(List.of(response));
 
         when(serviceI.buscar(eq(livro.getTitulo()), isNull(), isNull(), any(Pageable.class)))
                 .thenReturn(page);

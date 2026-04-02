@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.mappers;
 
 import com.usuario.quero_ler.dtos.autor.AutorResponse;
+import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
 import com.usuario.quero_ler.models.Autor;
@@ -44,6 +45,26 @@ public class LivroMapper{
                 livro.getIdioma(),
                 livro.getSinopse(),
                 "/livros/"+ livro.getId() + "/capa",
+                autorResponses
+        );
+    }
+
+    public LivroCardResponse toCardResponse(Livro livro){
+        List<AutorResponse> autorResponses = new ArrayList<>();
+        for(Autor autor : livro.getAutores()){
+            autorResponses.add(autorMapper.autorResponse(autor));
+        }
+        String urlCapa= "Capa não cadastrada.";
+        if(livro.getCapaDoLivro()!=null){
+            urlCapa = "/livros/"+ livro.getId() + "/capa";
+        }
+
+        return new LivroCardResponse(
+                urlCapa,
+                livro.getTitulo(),
+                livro.getEditora(),
+                livro.getAnoDePublicacao(),
+                livro.getNumeroDePaginas(),
                 autorResponses
         );
     }

@@ -1,5 +1,6 @@
 package com.usuario.quero_ler.service.implementacoes;
 
+import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
 import com.usuario.quero_ler.enuns.UsuarioProfile;
@@ -97,25 +98,27 @@ class LivroServeceImplTest {
     @Test
     @DisplayName("Deve retornar uma lista de livro com sucesso.")
     void deveRetornarUmalistaDeLivros() {
+
+        Livro livro = LivroFixture.entity();
+
         Pageable pageable = PageRequest.of(0, 10);
-        Livro livro01 = LivroFixture.entity();
-        Livro livro02 = LivroFixture.entity();
-        LivroResponse response = LivroFixture.response();
-        List<Livro> livros = List.of(livro01, livro02);
-        Page<Livro> pageLivros = new PageImpl<>(livros, pageable, livros.size());
 
-        when(login.validarLogin()).thenReturn(leitor);
-        when(repository.findAll(pageable)).thenReturn(pageLivros);
-        when(mapper.toResponse(livro01)).thenReturn(response);
+        LivroCardResponse response = LivroFixture.responseCard();
+        Page<Livro> page = new PageImpl<>(List.of(livro));
+        Specification<Livro> filtro = LivroFiltro.filtro(null, null, null);
 
-        Page<LivroResponse> resultado = service.listar(pageable);
+        when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(mapper.toCardResponse(livro)).thenReturn(response);
+        when(login.validarLogin()).thenReturn(null);
+
+        Page<LivroCardResponse> resultado = service.buscar(null, null, null, pageable);
 
         assertNotNull(resultado);
-        assertEquals(2, resultado.getContent().size());
+        assertEquals(1, resultado.getContent().size());
+        assertEquals(livro.getAutores().get(0).getNome(), resultado.getContent().get(0).autores().get(0).nome());
 
-        verify(login).validarLogin();
-        verify(repository).findAll(pageable);
-        verify(mapper).toResponse(livro01);
+        verify(mapper).toCardResponse(livro);
+        verify(repository).findAll(any(Specification.class), eq(pageable));
     }
 
     @Test
@@ -152,21 +155,21 @@ class LivroServeceImplTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        LivroResponse response = LivroFixture.response();
+        LivroCardResponse response = LivroFixture.responseCard();
         Page<Livro> page = new PageImpl<>(List.of(livro));
         Specification<Livro> filtro = LivroFiltro.filtro(null, null, autorNome);
 
         when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-        when(mapper.toResponse(livro)).thenReturn(response);
+        when(mapper.toCardResponse(livro)).thenReturn(response);
         when(login.validarLogin()).thenReturn(null); // não esquece
 
-        Page<LivroResponse> resultado = service.buscar(null, null, autorNome, pageable);
+        Page<LivroCardResponse> resultado = service.buscar(null, null, autorNome, pageable);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.getContent().size());
         assertEquals(autorNome, resultado.getContent().get(0).autores().get(0).nome());
 
-        verify(mapper).toResponse(livro);
+        verify(mapper).toCardResponse(livro);
         verify(repository).findAll(any(Specification.class), eq(pageable));
     }
 
@@ -180,21 +183,21 @@ class LivroServeceImplTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        LivroResponse response = LivroFixture.response();
+        LivroCardResponse response = LivroFixture.responseCard();
         Page<Livro> page = new PageImpl<>(List.of(livro));
         Specification<Livro> filtro = LivroFiltro.filtro(titulo, null, null);
 
         when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-        when(mapper.toResponse(livro)).thenReturn(response);
+        when(mapper.toCardResponse(livro)).thenReturn(response);
         when(login.validarLogin()).thenReturn(null);
 
-        Page<LivroResponse> resultado = service.buscar(titulo, null, null, pageable);
+        Page<LivroCardResponse> resultado = service.buscar(titulo, null, null, pageable);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.getContent().size());
         assertEquals(titulo, resultado.getContent().get(0).titulo());
 
-        verify(mapper).toResponse(livro);
+        verify(mapper).toCardResponse(livro);
         verify(repository).findAll(any(Specification.class), eq(pageable));
 
     }
@@ -208,21 +211,21 @@ class LivroServeceImplTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        LivroResponse response = LivroFixture.response();
+        LivroCardResponse response = LivroFixture.responseCard();
         Page<Livro> page = new PageImpl<>(List.of(livro));
         Specification<Livro> filtro = LivroFiltro.filtro(null, editora, null);
 
         when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
-        when(mapper.toResponse(livro)).thenReturn(response);
+        when(mapper.toCardResponse(livro)).thenReturn(response);
         when(login.validarLogin()).thenReturn(null);
 
-        Page<LivroResponse> resultado = service.buscar(null, editora, null, pageable);
+        Page<LivroCardResponse> resultado = service.buscar(null, editora, null, pageable);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.getContent().size());
         assertEquals(editora, resultado.getContent().get(0).editora());
 
-        verify(mapper).toResponse(livro);
+        verify(mapper).toCardResponse(livro);
         verify(repository).findAll(any(Specification.class), eq(pageable));
 
     }

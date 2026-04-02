@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.fixtures;
 
 import com.usuario.quero_ler.dtos.livro.BuscaDeLivrosRequest;
+import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
 import com.usuario.quero_ler.enuns.LivroIdioma;
@@ -101,6 +102,17 @@ public static Livro entityComCapa(){
                 IDIOMA,
                 SINOPSE,
                 "/livros/"+ ID + "/capa",
+                List.of(AutorFixture.response())
+        );
+    }
+
+    public static LivroCardResponse responseCard(){
+        return new LivroCardResponse(
+                "/livros/"+ ID + "/capa",
+                TITULO,
+                EDITORA,
+                ANODEPUBLICACAO,
+                NUMERODEPAGINAS,
                 List.of(AutorFixture.response())
         );
     }
