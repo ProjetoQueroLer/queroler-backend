@@ -10,6 +10,4 @@ import jakarta.servlet.http.HttpServletResponse;
 public interface LoginServiceI {
     User criar(UsuarioRequestDto dto, UsuarioProfile profile);
     void login(LoginRequestDto dto, HttpServletResponse response);
-    User validarLogin();
-    Boolean validarLogin(User user);
 }

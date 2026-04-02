@@ -43,24 +43,20 @@ public class UsuarioServiceImpl implements UsuarioServiceI {
     @Override
     public void adicionarDados(Long id, UsuarioDadosComplementarRequest dto) {
         Usuario usuario = getUsuario(id);
-        if (login.validarLogin(usuario.getUser())) {
-            usuario = mapper.complementarCadastro(usuario, dto);
-            usuario = repository.save(usuario);
-        }
+        usuario = mapper.complementarCadastro(usuario, dto);
+        usuario = repository.save(usuario);
     }
 
 
     @Override
     public UsuarioDadosResponse getDadosDoUsuario(Long id) {
         Usuario usuario = getUsuario(id);
-        login.validarLogin(usuario.getUser());
         return mapper.toResponseDados(usuario);
     }
 
     @Override
     public void atualizar(Long id, UsuarioAtualizadoLeitorReguest dto) {
         Usuario usuario = getUsuario(id);
-        login.validarLogin(usuario.getUser());
         usuario = mapper.update(usuario, dto);
         usuario = repository.save(usuario);
     }
@@ -68,7 +64,6 @@ public class UsuarioServiceImpl implements UsuarioServiceI {
     @Override
     public void atualizar(Long id, UsuarioAtualizadoAdministradorReguest dto) {
         Usuario usuario = getUsuario(id);
-        login.validarLogin(usuario.getUser());
         usuario = mapper.update(usuario, dto);
         repository.save(usuario);
     }
@@ -76,7 +71,6 @@ public class UsuarioServiceImpl implements UsuarioServiceI {
     @Override
     public void excluirPerfil(Long id) {
         Usuario usuario = getUsuario(id);
-        login.validarLogin(usuario.getUser());
         if (usuario.getUser().getProfile().equals(UsuarioProfile.LEITOR)) {
             List<UsuarioNotificacao> notificacoes = usuarioNotificacaoRepository.findByUsuarioId(id);
             for (UsuarioNotificacao un : notificacoes) {
@@ -92,8 +86,7 @@ public class UsuarioServiceImpl implements UsuarioServiceI {
     public void alterarSenha(Long id, UsuarioAlterarSenhaReguest dto) {
         Senhas.validar(dto.senhaNova());
         Usuario usuario = getUsuario(id);
-        login.validarLogin(usuario.getUser());
-        User user = login.validarLogin();
+        User user = usuario.getUser();
         Senhas.validar(dto.senhaAtual(), user.getSenha());
         String novaSenha = Senhas.gerar(dto.senhaNova());
         user.setSenha(novaSenha);

@@ -55,7 +55,7 @@ public class Livro {
 
     @Setter(AccessLevel.NONE)
     @Column(name = "data_de_cadastro",nullable = false)
-    private LocalDateTime dataDeCadastro;
+    private LocalDateTime dataDeCadastro = LocalDateTime.now();
 
     @Setter(AccessLevel.NONE)
     @Column(name = "quantidade_de_uso")

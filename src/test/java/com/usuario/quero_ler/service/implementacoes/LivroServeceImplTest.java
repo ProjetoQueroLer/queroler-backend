@@ -50,9 +50,6 @@ class LivroServeceImplTest {
     private AutorServiceImpl autorService;
 
     @Mock
-    private LoginServiceImpl login;
-
-    @Mock
     private MultipartFile multipartFile;
 
     private User leitor;
@@ -71,7 +68,6 @@ class LivroServeceImplTest {
         Livro livro = LivroFixture.entity();
         LivroResponse response = LivroFixture.response();
 
-        when(login.validarLogin()).thenReturn(leitor);
         when(mapper.toEntity(dto)).thenReturn(livro);
         when(autorService.criar(dto.autores().get(0))).thenReturn(livro.getAutores().get(0));
 
@@ -109,7 +105,6 @@ class LivroServeceImplTest {
 
         when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
         when(mapper.toCardResponse(livro)).thenReturn(response);
-        when(login.validarLogin()).thenReturn(null);
 
         Page<LivroCardResponse> resultado = service.buscar(null, null, null, pageable);
 
@@ -161,7 +156,6 @@ class LivroServeceImplTest {
 
         when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
         when(mapper.toCardResponse(livro)).thenReturn(response);
-        when(login.validarLogin()).thenReturn(null); // não esquece
 
         Page<LivroCardResponse> resultado = service.buscar(null, null, autorNome, pageable);
 
@@ -189,7 +183,6 @@ class LivroServeceImplTest {
 
         when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
         when(mapper.toCardResponse(livro)).thenReturn(response);
-        when(login.validarLogin()).thenReturn(null);
 
         Page<LivroCardResponse> resultado = service.buscar(titulo, null, null, pageable);
 
@@ -217,7 +210,6 @@ class LivroServeceImplTest {
 
         when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
         when(mapper.toCardResponse(livro)).thenReturn(response);
-        when(login.validarLogin()).thenReturn(null);
 
         Page<LivroCardResponse> resultado = service.buscar(null, editora, null, pageable);
 
