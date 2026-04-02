@@ -39,7 +39,15 @@ A gerência e o ciclo de vida do token de autenticação estão concentrados no 
 
 ### Passo a Passo
 
-#### Utilizando docker compose
+#### Utilizando docker compose 
+
+* ** Antes de subir a aplicação local, é necessário adicionar as variaveis de ambiente no projeto (arquivo .env na raiz do projeto)**
+- Exemplo de configuração (.env)
+```bash
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/db_quero_ler_v2
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=postgres
+```
 
 1. **Iniciar as instancia da aplicação, e, do banco de dados (docker-compose):"**
     ```bash
@@ -56,6 +64,20 @@ A gerência e o ciclo de vida do token de autenticação estão concentrados no 
 |90bb0deec9c9|queroler-backend-api|"sh -c 'java $JAVA_O…"|49 minutes ago|Up 5 seconds|0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp|api-queroler|
 |fe6a83a4f7fe|postgres:latest|"docker-entrypoint.s…"|49 minutes ago|Up 16 seconds (healthy)|0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp|postgres-queroler|
 ---
+
+### Rodar pela IDE/Terminal com instancia docker postgres para ambiente local.
+
+1. Suba a instancia docker do postgres via docker compose.
+
+```bash
+docker compose up -d --build db
+```
+
+2. Rodar o maven do spring-boot com o perfil local. Para quem utiliza ide como intelij, precisa especificar na configuração do runner para usar o profile de execução.
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```
 
 ## 🧪 Testes
 
