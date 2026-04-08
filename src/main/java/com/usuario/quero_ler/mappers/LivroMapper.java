@@ -4,6 +4,8 @@ import com.usuario.quero_ler.dtos.autor.AutorResponse;
 import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
+import com.usuario.quero_ler.dtos.livro.LivroTelaLeituraResponse;
+import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.models.Livro;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +68,18 @@ public class LivroMapper{
                 livro.getAnoDePublicacao(),
                 livro.getNumeroDePaginas(),
                 autorResponses
+        );
+    }
+
+    public LivroTelaLeituraResponse toLivroTelaLeituraResponse(Livro livro, LivroStatus status){
+        String urlCapa= "Capa não cadastrada.";
+        if(livro.getCapaDoLivro()!=null){
+            urlCapa = "/livros/"+ livro.getId() + "/capa";
+        }
+        return new LivroTelaLeituraResponse(
+                livro.getTitulo(),
+                status,
+                urlCapa
         );
     }
 }

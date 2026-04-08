@@ -53,6 +53,10 @@ public class UserFixture {
         return usuario;
     }
 
+    public static Usuario entidadeCompleta(){
+        User user = userEntity(UsuarioProfile.ADMINISTRADOR);
+        return entidadeCompleta(user);
+    }
     public static Usuario entidadeCompleta(User user){
         Usuario usuario = entidadePrincipal(user);
         usuario.setCidade(CIDADE);

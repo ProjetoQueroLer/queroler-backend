@@ -1,10 +1,8 @@
 package com.usuario.quero_ler.fixtures;
 
-import com.usuario.quero_ler.dtos.livro.BuscaDeLivrosRequest;
-import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
-import com.usuario.quero_ler.dtos.livro.LivroRequest;
-import com.usuario.quero_ler.dtos.livro.LivroResponse;
+import com.usuario.quero_ler.dtos.livro.*;
 import com.usuario.quero_ler.enuns.LivroIdioma;
+import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.enuns.TiposDeBusca;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.models.Livro;
@@ -114,6 +112,14 @@ public static Livro entityComCapa(){
                 ANODEPUBLICACAO,
                 NUMERODEPAGINAS,
                 List.of(AutorFixture.response())
+        );
+    }
+
+    public static LivroTelaLeituraResponse responseTelaDeLeitura(LivroStatus status){
+        return new LivroTelaLeituraResponse(
+                TITULO,
+                status,
+                "/livros/"+ ID + "/capa"
         );
     }
 

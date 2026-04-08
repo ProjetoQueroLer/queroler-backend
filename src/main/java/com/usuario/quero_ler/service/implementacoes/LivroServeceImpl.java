@@ -155,4 +155,11 @@ public class LivroServeceImpl implements LivroServiceI {
             throw new CapaForaDePadraoException("Erro ao processar imagem");
         }
     }
+
+    @Override
+    public Livro buscar(Long id) {
+        return repository.findById(id).orElseThrow(
+                ()-> new LivroNaoEncontradoException("Livro não cadastrado.")
+        );
+    }
 }
