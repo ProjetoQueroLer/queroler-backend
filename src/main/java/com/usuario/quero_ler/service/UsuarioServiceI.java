@@ -2,6 +2,7 @@
 package com.usuario.quero_ler.service;
 
 import com.usuario.quero_ler.dtos.usuario.*;
+import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.models.Usuario;
 
 public interface UsuarioServiceI {
@@ -13,4 +14,5 @@ public interface UsuarioServiceI {
     void atualizar(Long id, UsuarioAtualizadoAdministradorReguest dto);
     void alterarSenha(Long id, UsuarioAlterarSenhaReguest dto);
     void excluirPerfil(Long id);
+    void adicionarLivro(Long id, Long idLivro, LivroStatus status);
 }

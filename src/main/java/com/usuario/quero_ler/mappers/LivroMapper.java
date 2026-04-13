@@ -1,10 +1,7 @@
 package com.usuario.quero_ler.mappers;
 
 import com.usuario.quero_ler.dtos.autor.AutorResponse;
-import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
-import com.usuario.quero_ler.dtos.livro.LivroRequest;
-import com.usuario.quero_ler.dtos.livro.LivroResponse;
-import com.usuario.quero_ler.dtos.livro.LivroTelaLeituraResponse;
+import com.usuario.quero_ler.dtos.livro.*;
 import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.models.Livro;
@@ -33,10 +30,6 @@ public class LivroMapper{
     }
 
     public LivroResponse toResponse(Livro livro){
-        List<AutorResponse> autorResponses = new ArrayList<>();
-        for(Autor autor : livro.getAutores()){
-            autorResponses.add(autorMapper.autorResponse(autor));
-        }
         return new LivroResponse(
                 livro.getId(),
                 livro.getTitulo(),
@@ -46,40 +39,57 @@ public class LivroMapper{
                 livro.getNumeroDePaginas(),
                 livro.getIdioma(),
                 livro.getSinopse(),
-                "/livros/"+ livro.getId() + "/capa",
-                autorResponses
+                getUrlFoto(livro),
+                getAutoresResponse(livro)
         );
     }
 
     public LivroCardResponse toCardResponse(Livro livro){
-        List<AutorResponse> autorResponses = new ArrayList<>();
-        for(Autor autor : livro.getAutores()){
-            autorResponses.add(autorMapper.autorResponse(autor));
-        }
-        String urlCapa= "Capa não cadastrada.";
-        if(livro.getCapaDoLivro()!=null){
-            urlCapa = "/livros/"+ livro.getId() + "/capa";
-        }
-
         return new LivroCardResponse(
-                urlCapa,
+                getUrlFoto(livro),
                 livro.getTitulo(),
                 livro.getEditora(),
                 livro.getAnoDePublicacao(),
                 livro.getNumeroDePaginas(),
-                autorResponses
+                getAutoresResponse(livro)
         );
     }
 
     public LivroTelaLeituraResponse toLivroTelaLeituraResponse(Livro livro, LivroStatus status){
+         return new LivroTelaLeituraResponse(
+                livro.getTitulo(),
+                status,
+                getUrlFoto(livro)
+        );
+    }
+
+    public LivroDetalhadoResponse toLivroDetalhadoResponse(Livro livro){
+        return new LivroDetalhadoResponse(
+                getUrlFoto(livro),
+                livro.getTitulo(),
+                livro.getEditora(),
+                livro.getAnoDePublicacao(),
+                livro.getNumeroDePaginas(),
+                livro.getIdioma().name(),
+                livro.getIsbn(),
+                livro.getSinopse(),
+                getAutoresResponse(livro)
+        );
+    }
+
+    protected String getUrlFoto(Livro livro){
         String urlCapa= "Capa não cadastrada.";
         if(livro.getCapaDoLivro()!=null){
             urlCapa = "/livros/"+ livro.getId() + "/capa";
         }
-        return new LivroTelaLeituraResponse(
-                livro.getTitulo(),
-                status,
-                urlCapa
-        );
+        return urlCapa;
+    }
+
+    protected List<AutorResponse> getAutoresResponse(Livro livro){
+        List<AutorResponse> autorResponses = new ArrayList<>();
+        for(Autor autor : livro.getAutores()){
+            autorResponses.add(autorMapper.autorResponse(autor));
+        }
+        return autorResponses;
     }
 }

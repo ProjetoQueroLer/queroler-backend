@@ -33,24 +33,7 @@ public class EstanteDoUsuarioServiceImpl implements EstanteDoUsuarioServiceI {
 
     @Override
     public void adicionar(Long idUsuario, Long idLivro) {
-        Usuario usuario = usuarioServiceI.getUsuario(idUsuario);
-        Livro livro = livroServiceI.buscar(idLivro);
 
-        Optional<UsuarioLivro> usuarioLivro = repository.findByUsuarioIdAndLivroId(idUsuario, idLivro);
-        if (usuarioLivro.isPresent()) {
-            throw new UsuarioJaPossueOLivroException("O usuario já possue o livro na estante.");
-        }
-
-        UsuarioLivroId id = new UsuarioLivroId();
-        id.setUsuarioId(usuario.getId());
-        id.setLivroId(livro.getId());
-
-        UsuarioLivro novoUsuarioLivro = new UsuarioLivro();
-        novoUsuarioLivro.setId(id);
-        novoUsuarioLivro.setUsuario(usuario);
-        novoUsuarioLivro.setLivro(livro);
-        novoUsuarioLivro.setStatus(LivroStatus.LIVROS_QUE_QUERO_LER);
-        repository.save(novoUsuarioLivro);
     }
 
     @Override
@@ -74,11 +57,5 @@ public class EstanteDoUsuarioServiceImpl implements EstanteDoUsuarioServiceI {
 
     @Override
     public void mudarStatus(Long idUsuario, String isbn, LivroStatus status) {
-        Optional<UsuarioLivro> usuarioLivro = repository.findByUsuario_IdAndLivro_Isbn(idUsuario, isbn);
-        if (usuarioLivro.isEmpty()) {
-            throw new LivroNaoEncontradoException("O usuario não possue o livro na estante.");
-        }
-        usuarioLivro.get().setStatus(status);
-        repository.save(usuarioLivro.get());
     }
 }

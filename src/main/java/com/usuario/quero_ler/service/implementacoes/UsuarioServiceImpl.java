@@ -1,16 +1,18 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.usuario.*;
+import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.exceptions.especies.UsuarioJaPossueOLivroException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import com.usuario.quero_ler.mappers.UsuarioMapper;
-import com.usuario.quero_ler.models.User;
-import com.usuario.quero_ler.models.Usuario;
-import com.usuario.quero_ler.models.UsuarioNotificacao;
+import com.usuario.quero_ler.models.*;
 import com.usuario.quero_ler.repository.UserRepository;
+import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
+import com.usuario.quero_ler.service.LivroServiceI;
 import com.usuario.quero_ler.service.LoginServiceI;
 import com.usuario.quero_ler.service.UsuarioServiceI;
 import com.usuario.quero_ler.utils.Senhas;
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -28,6 +31,8 @@ public class UsuarioServiceImpl implements UsuarioServiceI {
     private final UserRepository userRepository;
     private final UsuarioMapper mapper;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
+    private final UsuarioLivroRepository usuarioLivroRepository;
+    private final LivroServiceI livroServiceI;
 
     @Transactional
     @Override
@@ -46,7 +51,6 @@ public class UsuarioServiceImpl implements UsuarioServiceI {
         usuario = mapper.complementarCadastro(usuario, dto);
         usuario = repository.save(usuario);
     }
-
 
     @Override
     public UsuarioDadosResponse getDadosDoUsuario(Long id) {
@@ -92,6 +96,30 @@ public class UsuarioServiceImpl implements UsuarioServiceI {
         user.setSenha(novaSenha);
         user = userRepository.save(user);
     }
+
+    @Override
+    public void adicionarLivro(Long id, Long idLivro, LivroStatus status){
+        Usuario usuario = getUsuario(id);
+
+        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(id, idLivro);
+        if (usuarioLivro.isPresent()) {
+            throw new UsuarioJaPossueOLivroException("O usuario já possue o livro na estante.");
+        }
+
+        Livro livro = livroServiceI.buscar(idLivro);
+
+        UsuarioLivroId usuarioLivroId = new UsuarioLivroId();
+        usuarioLivroId.setUsuarioId(usuario.getId());
+        usuarioLivroId.setLivroId(livro.getId());
+
+        UsuarioLivro novoUsuarioLivro = new UsuarioLivro();
+        novoUsuarioLivro.setId(usuarioLivroId);
+        novoUsuarioLivro.setUsuario(usuario);
+        novoUsuarioLivro.setLivro(livro);
+        novoUsuarioLivro.setStatus(status);
+        usuarioLivroRepository.save(novoUsuarioLivro);
+    }
+
 
     public Usuario getUsuario(Long id) {
         return repository.findById(id).orElseThrow(

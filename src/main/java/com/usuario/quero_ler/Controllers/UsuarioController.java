@@ -1,6 +1,8 @@
 package com.usuario.quero_ler.Controllers;
 
+import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.usuario.*;
+import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.service.UsuarioServiceI;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -52,5 +54,14 @@ public class UsuarioController {
     public ResponseEntity<Void> excluirPerfil(@PathVariable Long id) {
         serviceI.excluirPerfil(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("/{id}/livro")
+    public ResponseEntity<Void> adicionarLivro(@PathVariable Long id,
+                                               @RequestParam Long idLivro,
+                                               @RequestParam LivroStatus status){
+
+        serviceI.adicionarLivro(id, idLivro,status);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

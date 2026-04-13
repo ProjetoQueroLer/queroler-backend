@@ -4,12 +4,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
+import com.usuario.quero_ler.dtos.livro.LivroTelaLeituraResponse;
+import com.usuario.quero_ler.enuns.LivroStatus;
+import com.usuario.quero_ler.exceptions.especies.LivroNaoEncontradoException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioJaPossueOLivroException;
 import com.usuario.quero_ler.fixtures.LivroFixture;
+import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.Livro;
+import com.usuario.quero_ler.models.Usuario;
+import com.usuario.quero_ler.models.UsuarioLivro;
+import com.usuario.quero_ler.models.UsuarioLivroId;
+import com.usuario.quero_ler.repository.UserRepository;
+import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.LivroServiceI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,16 +35,17 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(LivroController.class)
 class LivroControllerTest {
 
@@ -41,6 +54,12 @@ class LivroControllerTest {
 
     @MockitoBean
     private LivroServiceI serviceI;
+
+    @MockitoBean
+    private TokenService tokenService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -210,4 +229,42 @@ class LivroControllerTest {
 
         verify(serviceI).inserirCapaDoLivro(eq(id), any(MultipartFile.class));
     }
+
+//
+//    @Test
+//    @DisplayName("Deve retornar lista paginada de livros que quero ler")
+//    void deveRetornarLivrosQueQueroLer() throws Exception {
+//        Long idUsuario = 1L;
+//
+//        LivroTelaLeituraResponse response = LivroFixture.responseTelaDeLeitura(LivroStatus.LIVROS_QUE_QUERO_LER);
+//
+//        Page<LivroTelaLeituraResponse> page = new PageImpl<>(List.of(response));
+//
+//        when(serviceI.lista(eq(idUsuario), any(Pageable.class))).thenReturn(page);
+//
+//        mockMvc.perform(get("/estante/{id}", idUsuario)
+//                        .param("page", "0")
+//                        .param("size", "10")
+//                        .param("sort", "titulo,asc"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.content").isArray());
+//
+//        verify(serviceI).lista(eq(idUsuario), any(Pageable.class));
+//    }
+
+//    @Test
+//    @DisplayName("Deve mudar o status do livro na estante")
+//    void deveMudarStatusDoLivro() throws Exception {
+//
+//        Long idUsuario = 1L;
+//        String isbn = "123456789";
+//        LivroStatus status = LivroStatus.LIVROS_ABANDONADOS;
+//
+//        mockMvc.perform(put("/estante/{id}/status", idUsuario)
+//                        .param("isbn", isbn)
+//                        .param("status", status.name()))
+//                .andExpect(status().isOk());
+//
+//        verify(serviceI).mudarStatus(idUsuario, isbn, status);
+//    }
 }

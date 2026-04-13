@@ -2,14 +2,18 @@ package com.usuario.quero_ler.Controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.usuario.*;
+import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.enuns.UsuarioProfile;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.models.Usuario;
+import com.usuario.quero_ler.repository.UserRepository;
+import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.UsuarioServiceI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,7 +26,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(UsuarioController.class)
 class UsuarioControllerTest {
 
@@ -31,6 +35,12 @@ class UsuarioControllerTest {
 
     @MockitoBean
     private UsuarioServiceI service;
+
+    @MockitoBean
+    private TokenService tokenService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -74,7 +84,7 @@ class UsuarioControllerTest {
 
         when(service.getDadosDoUsuario(id)).thenReturn(response);
 
-        mockMvc.perform(get("/usuarios/{id}",id))
+        mockMvc.perform(get("/usuarios/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value(response.nome()))
                 .andExpect(jsonPath("$.email").value(response.email()))
@@ -97,50 +107,51 @@ class UsuarioControllerTest {
                         .content(objectMapper.writeValueAsString(complementarRequest)))
                 .andExpect(status().isNoContent());
 
-        verify(service).adicionarDados(id,complementarRequest);
+        verify(service).adicionarDados(id, complementarRequest);
     }
 
     @Test
     @DisplayName("Deve alterar a senha do usuário com sucesso")
     void deveAlterarASenhaDoUsuarioComSucesso() throws Exception {
         Long id = 1L;
-        UsuarioAlterarSenhaReguest request = new UsuarioAlterarSenhaReguest("Teste123&","Senha1232@");
+        UsuarioAlterarSenhaReguest request = new UsuarioAlterarSenhaReguest("Teste123&", "Senha1232@");
 
         mockMvc.perform(put("/usuarios/{id}/alterar-senha", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        verify(service).alterarSenha(id,request);
+        verify(service).alterarSenha(id, request);
     }
-@Test
+
+    @Test
     @DisplayName("Deve atualizar usuário leitor com sucesso")
     void deveAtualizarUsuarioLeitorComSucesso() throws Exception {
         Long id = 1L;
-    UsuarioAtualizadoLeitorReguest request = new UsuarioAtualizadoLeitorReguest("Nome atualizado",
-            null,null,null,null,null,null);
+        UsuarioAtualizadoLeitorReguest request = new UsuarioAtualizadoLeitorReguest("Nome atualizado",
+                null, null, null, null, null, null);
 
         mockMvc.perform(put("/usuarios/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        verify(service).atualizar(id,request);
+        verify(service).atualizar(id, request);
     }
 
     @Test
     @DisplayName("Deve atualizar usuário administrador com sucesso")
     void deveAtualizarUsuarioAdministradorComSucesso() throws Exception {
         Long id = 1L;
-        UsuarioAtualizadoAdministradorReguest request = new UsuarioAtualizadoAdministradorReguest(LocalDate.of(2015,06,03),
-            null,null,null,null);
+        UsuarioAtualizadoAdministradorReguest request = new UsuarioAtualizadoAdministradorReguest(LocalDate.of(2015, 06, 03),
+                null, null, null, null);
 
         mockMvc.perform(put("/usuarios/{id}/administrador", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        verify(service).atualizar(id,request);
+        verify(service).atualizar(id, request);
     }
 
     @Test
@@ -154,4 +165,21 @@ class UsuarioControllerTest {
 
         verify(service).excluirPerfil(id);
     }
+
+    @Test
+    @DisplayName("Deve adicionar um livro na estante do usuario.")
+    void deveAdicionarUmLivroNaEstanteDoUsuario() throws Exception {
+        Long idUsuario = 1L;
+        Long idLivro = 10L;
+        LivroStatus status = LivroStatus.LIVROS_QUE_QUERO_LER;
+
+        mockMvc.perform(post("/usuarios/{id}/livro", idUsuario)
+                        .param("idLivro", idLivro.toString())
+                        .param("status", String.valueOf(status))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        verify(service).adicionarLivro(idUsuario, idLivro, status);
+    }
+
 }
