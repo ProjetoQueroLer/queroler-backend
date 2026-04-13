@@ -123,6 +123,21 @@ public static Livro entityComCapa(){
         );
     }
 
+    public static LivroDetalhadoResponse responseDetalhado(LivroStatus status){
+        return new LivroDetalhadoResponse(
+                "/livros/"+ ID + "/capa",
+                TITULO,
+                EDITORA,
+                ANODEPUBLICACAO,
+                NUMERODEPAGINAS,
+                IDIOMA.name(),
+                ISBN,
+                SINOPSE,
+                List.of(AutorFixture.response())
+
+        );
+    }
+
     private static byte[] carregarImagem() {
         try (InputStream is = LivroFixture.class
                 .getClassLoader()

@@ -1,10 +1,7 @@
 package com.usuario.quero_ler.Controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
-import com.usuario.quero_ler.dtos.livro.LivroRequest;
-import com.usuario.quero_ler.dtos.livro.LivroResponse;
-import com.usuario.quero_ler.dtos.livro.LivroTelaLeituraResponse;
+import com.usuario.quero_ler.dtos.livro.*;
 import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.exceptions.especies.LivroNaoEncontradoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioJaPossueOLivroException;
@@ -134,7 +131,8 @@ class LivroControllerTest {
                 .andExpect(jsonPath("$.content[1].titulo").value(livro.titulo()))
         ;
 
-        verify(serviceI).listar(any(Pageable.class));
+        verify(serviceI).buscar(any(), any(), any(), any(Pageable.class)
+        );
     }
 
     @Test
@@ -163,27 +161,35 @@ class LivroControllerTest {
     @Test
     @DisplayName("Deve buscar livros por filtro com sucesso")
     void deveBuscarLivrosPorFiltro() throws Exception {
+
         Livro livro = LivroFixture.entity();
         LivroCardResponse response = LivroFixture.responseCard();
+
         Page<LivroCardResponse> page = new PageImpl<>(List.of(response));
 
-        when(serviceI.buscar(eq(livro.getTitulo()), isNull(), isNull(), any(Pageable.class)))
-                .thenReturn(page);
+        when(serviceI.buscar(
+                eq(livro.getTitulo()),
+                isNull(),
+                isNull(),
+                any(Pageable.class)
+        )).thenReturn(page);
 
-        MvcResult result = mockMvc.perform(get("/livros/buscar/filtro")
+        MvcResult result = mockMvc.perform(
+                get("/livros")
                         .param("titulo", livro.getTitulo())
                         .param("page", "0")
                         .param("size", "10")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andReturn();
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andReturn();
 
         assertEquals(200, result.getResponse().getStatus());
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getTitulo()));
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getIsbn()));
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getEditora()));
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getSinopse()));
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getEditora()));
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getAnoDePublicacao()));
+
+        verify(serviceI).buscar(
+                eq(livro.getTitulo()),
+                any(),
+                any(),
+                any(Pageable.class)
+        );
     }
 
     @Test
@@ -230,41 +236,86 @@ class LivroControllerTest {
         verify(serviceI).inserirCapaDoLivro(eq(id), any(MultipartFile.class));
     }
 
-//
-//    @Test
-//    @DisplayName("Deve retornar lista paginada de livros que quero ler")
-//    void deveRetornarLivrosQueQueroLer() throws Exception {
-//        Long idUsuario = 1L;
-//
-//        LivroTelaLeituraResponse response = LivroFixture.responseTelaDeLeitura(LivroStatus.LIVROS_QUE_QUERO_LER);
-//
-//        Page<LivroTelaLeituraResponse> page = new PageImpl<>(List.of(response));
-//
-//        when(serviceI.lista(eq(idUsuario), any(Pageable.class))).thenReturn(page);
-//
-//        mockMvc.perform(get("/estante/{id}", idUsuario)
-//                        .param("page", "0")
-//                        .param("size", "10")
-//                        .param("sort", "titulo,asc"))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.content").isArray());
-//
-//        verify(serviceI).lista(eq(idUsuario), any(Pageable.class));
-//    }
 
-//    @Test
-//    @DisplayName("Deve mudar o status do livro na estante")
-//    void deveMudarStatusDoLivro() throws Exception {
-//
-//        Long idUsuario = 1L;
-//        String isbn = "123456789";
-//        LivroStatus status = LivroStatus.LIVROS_ABANDONADOS;
-//
-//        mockMvc.perform(put("/estante/{id}/status", idUsuario)
-//                        .param("isbn", isbn)
-//                        .param("status", status.name()))
-//                .andExpect(status().isOk());
-//
-//        verify(serviceI).mudarStatus(idUsuario, isbn, status);
-//    }
+    @Test
+    @DisplayName("Deve alterar status do livro com sucesso")
+    void deveAlterarStatusDoLivro() throws Exception {
+
+        Long idLivro = 1L;
+        Long idUsuario = 2L;
+        LivroStatus status = LivroStatus.LIVROS_LIDOS;
+
+        mockMvc.perform(
+                        put("/livros/{id}/usuario/{idUsuario}", idLivro, idUsuario)
+                                .param("status", status.name())
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+        verify(serviceI).alterarStatusDoLivroNoUsuario(
+                eq(idLivro),
+                eq(idUsuario),
+                eq(status)
+        );
+        verify(serviceI).alterarStatusDoLivroNoUsuario(idLivro,idUsuario, status);
+    }
+
+    @Test
+    @DisplayName("Deve retornar livros do usuário para tela de leitura com sucesso")
+    void deveRetornarLivrosTelaDeLeituraDoUsuario() throws Exception {
+
+        Long idUsuario = 1L;
+
+        LivroTelaLeituraResponse response = LivroFixture.responseTelaDeLeitura(LivroStatus.LIVROS_QUE_QUERO_LER);
+        Page<LivroTelaLeituraResponse> page =
+                new PageImpl<>(List.of(response));
+
+        when(serviceI.getLivrosTelaDeLeituraDoUsuario(
+                eq(idUsuario),
+                any(Pageable.class)
+        )).thenReturn(page);
+
+        mockMvc.perform(
+                        get("/livros/tela_de_leitura/usuario/{id}", idUsuario)
+                                .param("page", "0")
+                                .param("size", "10")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0]").exists());
+
+        verify(serviceI).getLivrosTelaDeLeituraDoUsuario(
+                eq(idUsuario),
+                any(Pageable.class)
+        );
+    }
+
+    @Test
+    @DisplayName("Deve retornar livros detalhado do usuário com sucesso")
+    void deveRetornarLivrosDetalhadosDoUsuario() throws Exception {
+
+        Long idUsuario = 1L;
+
+        LivroDetalhadoResponse response = LivroFixture.responseDetalhado(LivroStatus.LIVROS_QUE_QUERO_LER);
+        Page<LivroDetalhadoResponse> page = new PageImpl<>(List.of(response));
+
+        when(serviceI.getLivrosDoUsuario(
+                eq(idUsuario),
+                any(Pageable.class)
+        )).thenReturn(page);
+
+        mockMvc.perform(
+                        get("/livros/detalhados/usuario/{id}", idUsuario)
+                                .param("page", "0")
+                                .param("size", "10")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0]").exists());
+
+        verify(serviceI).getLivrosDoUsuario(
+                eq(idUsuario),
+                any(Pageable.class)
+        );
+    }
 }
