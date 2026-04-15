@@ -40,7 +40,9 @@ public class LivroMapper{
                 livro.getIdioma(),
                 livro.getSinopse(),
                 getUrlFoto(livro),
+                livro.getDataDeCadastro(),
                 getAutoresResponse(livro)
+
         );
     }
 
@@ -51,6 +53,7 @@ public class LivroMapper{
                 livro.getEditora(),
                 livro.getAnoDePublicacao(),
                 livro.getNumeroDePaginas(),
+                livro.getDataDeCadastro(),
                 getAutoresResponse(livro)
         );
     }
@@ -59,7 +62,8 @@ public class LivroMapper{
          return new LivroTelaLeituraResponse(
                 livro.getTitulo(),
                 status,
-                getUrlFoto(livro)
+                getUrlFoto(livro),
+                 livro.getDataDeCadastro()
         );
     }
 
@@ -73,6 +77,7 @@ public class LivroMapper{
                 livro.getIdioma().name(),
                 livro.getIsbn(),
                 livro.getSinopse(),
+                livro.getDataDeCadastro(),
                 getAutoresResponse(livro)
         );
     }

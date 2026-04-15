@@ -2,6 +2,7 @@ package com.usuario.quero_ler.dtos.livro;
 
 import com.usuario.quero_ler.dtos.autor.AutorResponse;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record LivroCardResponse (
@@ -10,5 +11,6 @@ public record LivroCardResponse (
         String editora,
         String anoDePublicacao,
         Integer numeroDePaginas,
+        LocalDateTime dataDeCadstro,
         List<AutorResponse> autores
 ){}
