@@ -1,21 +1,23 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.autor.AutorRequest;
-import com.usuario.quero_ler.dtos.livro.BuscaDeLivrosRequest;
-import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
-import com.usuario.quero_ler.dtos.livro.LivroRequest;
-import com.usuario.quero_ler.dtos.livro.LivroResponse;
+import com.usuario.quero_ler.dtos.livro.*;
+import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.exceptions.especies.*;
 import com.usuario.quero_ler.mappers.LivroMapper;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.models.Livro;
+import com.usuario.quero_ler.models.UsuarioLivro;
 import com.usuario.quero_ler.repository.LivroRepository;
+import com.usuario.quero_ler.repository.UsuarioLivroRepository;
+import com.usuario.quero_ler.repository.UsuarioRepository;
 import com.usuario.quero_ler.service.AutorServiceI;
 import com.usuario.quero_ler.service.LivroServiceI;
 import com.usuario.quero_ler.service.LoginServiceI;
 import com.usuario.quero_ler.utils.LivroFiltro;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +37,7 @@ public class LivroServeceImpl implements LivroServiceI {
     private final LivroRepository repository;
     private final LivroMapper mapper;
     private final AutorServiceI autorServiceI;
+    private final UsuarioLivroRepository usuarioLivroRepository;
 
     @Override
     public LivroResponse criar(LivroRequest dto,MultipartFile capaDoLivro) {
@@ -154,5 +158,42 @@ public class LivroServeceImpl implements LivroServiceI {
         } catch (IOException e) {
             throw new CapaForaDePadraoException("Erro ao processar imagem");
         }
+    }
+
+    @Override
+    public Livro buscar(Long id) {
+        return repository.findById(id).orElseThrow(
+                ()-> new LivroNaoEncontradoException("Livro não cadastrado.")
+        );
+    }
+
+    @Override
+    public Page<LivroDetalhadoResponse> getLivrosDoUsuario(Long id, Pageable pageable){
+        Page<LivroDetalhadoResponse> livros = usuarioLivroRepository.findLivrosByUsuarioId(id,pageable)
+                .map(mapper::toLivroDetalhadoResponse);
+        return livros;
+    }
+
+    @Override
+    public Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Long id,Pageable pageable){
+        List<UsuarioLivro> usuarioLivros = usuarioLivroRepository.findAllByUsuarioId(id, pageable).stream().toList();
+        List<LivroTelaLeituraResponse> resposta = new ArrayList<>();
+
+        for (UsuarioLivro usuarioLivro: usuarioLivros){
+            Livro livro = usuarioLivro.getLivro();
+            resposta.add(mapper.toLivroTelaLeituraResponse(livro,usuarioLivro.getStatus()));
+        }
+        Page<LivroTelaLeituraResponse> page = new PageImpl<>(resposta, pageable, resposta.size());
+        return page;
+    }
+
+    @Override
+    public void alterarStatusDoLivroNoUsuario(Long id, Long idUsuario, LivroStatus status){
+        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByLivro_IdAndUsuario_Id(id,idUsuario);
+        if (usuarioLivro.isEmpty()) {
+            throw new LivroNaoEncontradoException("O usuario não possue o livro na estante.");
+        }
+        usuarioLivro.get().setStatus(status);
+        usuarioLivroRepository.save(usuarioLivro.get());
     }
 }

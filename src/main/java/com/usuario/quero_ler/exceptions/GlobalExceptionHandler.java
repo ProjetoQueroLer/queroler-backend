@@ -1,4 +1,5 @@
 package com.usuario.quero_ler.exceptions;
+
 import com.usuario.quero_ler.exceptions.especies.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,16 +67,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-      @ExceptionHandler(UsuarioSemPermissaoParaAcaoException.class)
+    @ExceptionHandler(UsuarioSemPermissaoParaAcaoException.class)
     public ResponseEntity<Object> handlerUsuarioSemPermissaoParaAcaoException(UsuarioSemPermissaoParaAcaoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
-   @ExceptionHandler(UsuarioComPerfilInvalidoException.class)
+
+    @ExceptionHandler(UsuarioJaPossueOLivroException.class)
+    public ResponseEntity<Object> handlerUsuarioJaPossueOLivroException(UsuarioJaPossueOLivroException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(UsuarioComPerfilInvalidoException.class)
     public ResponseEntity<Object> handlerUsuarioComPerfilInvalidoException(UsuarioComPerfilInvalidoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
-   @ExceptionHandler(IsbnJaCadastradoException.class)
+    @ExceptionHandler(IsbnJaCadastradoException.class)
     public ResponseEntity<Object> handlerIsbnJaCadastradoException(IsbnJaCadastradoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
@@ -89,6 +96,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handlerDocumentoNaoPodeSerDeletadoException(DocumentoNaoPodeSerDeletadoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
+
     @ExceptionHandler(CredenciaisInvalidasException.class)
     public ResponseEntity<Object> handlerCredenciaisInvalidasException(CredenciaisInvalidasException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());

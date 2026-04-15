@@ -7,7 +7,6 @@ import com.usuario.quero_ler.models.Notificacao;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.NotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
-import com.usuario.quero_ler.service.LoginServiceI;
 import com.usuario.quero_ler.service.NotificacaoServiceI;
 import com.usuario.quero_ler.service.UsuarioServiceI;
 import jakarta.transaction.Transactional;

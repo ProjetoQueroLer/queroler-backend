@@ -43,6 +43,7 @@ public class SecurityConfig {
             .requestMatchers("/webjars/**").permitAll().requestMatchers("/v3/api-docs").permitAll()
             .requestMatchers("/usuarios").permitAll()
 						.requestMatchers("/logins").permitAll()
+						.requestMatchers("/**").permitAll()
             .anyRequest().authenticated())
         .formLogin(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)

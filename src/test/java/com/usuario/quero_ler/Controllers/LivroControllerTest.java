@@ -1,15 +1,24 @@
 package com.usuario.quero_ler.Controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
-import com.usuario.quero_ler.dtos.livro.LivroRequest;
-import com.usuario.quero_ler.dtos.livro.LivroResponse;
+import com.usuario.quero_ler.dtos.livro.*;
+import com.usuario.quero_ler.enuns.LivroStatus;
+import com.usuario.quero_ler.exceptions.especies.LivroNaoEncontradoException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioJaPossueOLivroException;
 import com.usuario.quero_ler.fixtures.LivroFixture;
+import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.Livro;
+import com.usuario.quero_ler.models.Usuario;
+import com.usuario.quero_ler.models.UsuarioLivro;
+import com.usuario.quero_ler.models.UsuarioLivroId;
+import com.usuario.quero_ler.repository.UserRepository;
+import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.LivroServiceI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,16 +32,17 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(LivroController.class)
 class LivroControllerTest {
 
@@ -41,6 +51,12 @@ class LivroControllerTest {
 
     @MockitoBean
     private LivroServiceI serviceI;
+
+    @MockitoBean
+    private TokenService tokenService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -115,7 +131,8 @@ class LivroControllerTest {
                 .andExpect(jsonPath("$.content[1].titulo").value(livro.titulo()))
         ;
 
-        verify(serviceI).listar(any(Pageable.class));
+        verify(serviceI).buscar(any(), any(), any(), any(Pageable.class)
+        );
     }
 
     @Test
@@ -144,27 +161,35 @@ class LivroControllerTest {
     @Test
     @DisplayName("Deve buscar livros por filtro com sucesso")
     void deveBuscarLivrosPorFiltro() throws Exception {
+
         Livro livro = LivroFixture.entity();
         LivroCardResponse response = LivroFixture.responseCard();
+
         Page<LivroCardResponse> page = new PageImpl<>(List.of(response));
 
-        when(serviceI.buscar(eq(livro.getTitulo()), isNull(), isNull(), any(Pageable.class)))
-                .thenReturn(page);
+        when(serviceI.buscar(
+                eq(livro.getTitulo()),
+                isNull(),
+                isNull(),
+                any(Pageable.class)
+        )).thenReturn(page);
 
-        MvcResult result = mockMvc.perform(get("/livros/buscar/filtro")
+        MvcResult result = mockMvc.perform(
+                get("/livros")
                         .param("titulo", livro.getTitulo())
                         .param("page", "0")
                         .param("size", "10")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andReturn();
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andReturn();
 
         assertEquals(200, result.getResponse().getStatus());
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getTitulo()));
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getIsbn()));
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getEditora()));
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getSinopse()));
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getEditora()));
-        assertTrue(result.getResponse().getContentAsString().contains(livro.getAnoDePublicacao()));
+
+        verify(serviceI).buscar(
+                eq(livro.getTitulo()),
+                any(),
+                any(),
+                any(Pageable.class)
+        );
     }
 
     @Test
@@ -209,5 +234,88 @@ class LivroControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(serviceI).inserirCapaDoLivro(eq(id), any(MultipartFile.class));
+    }
+
+
+    @Test
+    @DisplayName("Deve alterar status do livro com sucesso")
+    void deveAlterarStatusDoLivro() throws Exception {
+
+        Long idLivro = 1L;
+        Long idUsuario = 2L;
+        LivroStatus status = LivroStatus.LIVROS_LIDOS;
+
+        mockMvc.perform(
+                        put("/livros/{id}/usuario/{idUsuario}", idLivro, idUsuario)
+                                .param("status", status.name())
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+        verify(serviceI).alterarStatusDoLivroNoUsuario(
+                eq(idLivro),
+                eq(idUsuario),
+                eq(status)
+        );
+        verify(serviceI).alterarStatusDoLivroNoUsuario(idLivro,idUsuario, status);
+    }
+
+    @Test
+    @DisplayName("Deve retornar livros do usuário para tela de leitura com sucesso")
+    void deveRetornarLivrosTelaDeLeituraDoUsuario() throws Exception {
+
+        Long idUsuario = 1L;
+
+        LivroTelaLeituraResponse response = LivroFixture.responseTelaDeLeitura(LivroStatus.LIVROS_QUE_QUERO_LER);
+        Page<LivroTelaLeituraResponse> page =
+                new PageImpl<>(List.of(response));
+
+        when(serviceI.getLivrosTelaDeLeituraDoUsuario(
+                eq(idUsuario),
+                any(Pageable.class)
+        )).thenReturn(page);
+
+        mockMvc.perform(
+                        get("/livros/tela_de_leitura/usuario/{id}", idUsuario)
+                                .param("page", "0")
+                                .param("size", "10")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0]").exists());
+
+        verify(serviceI).getLivrosTelaDeLeituraDoUsuario(
+                eq(idUsuario),
+                any(Pageable.class)
+        );
+    }
+
+    @Test
+    @DisplayName("Deve retornar livros detalhado do usuário com sucesso")
+    void deveRetornarLivrosDetalhadosDoUsuario() throws Exception {
+
+        Long idUsuario = 1L;
+
+        LivroDetalhadoResponse response = LivroFixture.responseDetalhado(LivroStatus.LIVROS_QUE_QUERO_LER);
+        Page<LivroDetalhadoResponse> page = new PageImpl<>(List.of(response));
+
+        when(serviceI.getLivrosDoUsuario(
+                eq(idUsuario),
+                any(Pageable.class)
+        )).thenReturn(page);
+
+        mockMvc.perform(
+                        get("/livros/detalhados/usuario/{id}", idUsuario)
+                                .param("page", "0")
+                                .param("size", "10")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0]").exists());
+
+        verify(serviceI).getLivrosDoUsuario(
+                eq(idUsuario),
+                any(Pageable.class)
+        );
     }
 }

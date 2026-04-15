@@ -12,9 +12,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioLivro {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+
+    @EmbeddedId
+    private UsuarioLivroId id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -22,9 +22,11 @@ public class UsuarioLivro {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id",  nullable = false)
+    @MapsId("usuarioId")
     private Usuario usuario;
 
     @ManyToOne
     @JoinColumn(name = "livro_id",  nullable = false)
+    @MapsId("livroId")
     private Livro livro;
 }

@@ -1,10 +1,8 @@
 package com.usuario.quero_ler.Controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.usuario.quero_ler.dtos.livro.BuscaDeLivrosRequest;
-import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
-import com.usuario.quero_ler.dtos.livro.LivroRequest;
-import com.usuario.quero_ler.dtos.livro.LivroResponse;
+import com.usuario.quero_ler.dtos.livro.*;
+import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.service.LivroServiceI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -67,5 +65,22 @@ public class LivroController {
 
         serviceI.inserirCapaDoLivro(id, capaDoLivro);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/usuario/{idUsuario}")
+    public ResponseEntity<Void> mudarStatus(@PathVariable Long id,  @PathVariable Long idUsuario,
+                                            @RequestParam LivroStatus status) {
+        serviceI.alterarStatusDoLivroNoUsuario(id,idUsuario, status);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/tela_de_leitura/usuario/{id}")
+    public ResponseEntity<Page<LivroTelaLeituraResponse>> livrosDoUsuarioParaTelaDeLeitura(@PathVariable Long id, Pageable pageable){
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getLivrosTelaDeLeituraDoUsuario(id, pageable));
+    }
+
+    @GetMapping("/detalhados/usuario/{id}")
+    public ResponseEntity<Page<LivroDetalhadoResponse>> getLivrosDetalhadosDoUsuario(@PathVariable Long id, Pageable pageable){
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getLivrosDoUsuario(id,pageable));
     }
 }

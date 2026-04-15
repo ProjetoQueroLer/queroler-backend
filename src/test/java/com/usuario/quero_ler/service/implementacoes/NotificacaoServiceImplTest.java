@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import com.usuario.quero_ler.models.Usuario;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +28,6 @@ import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.mappers.NotificacaoMapper;
 import com.usuario.quero_ler.models.Notificacao;
 import com.usuario.quero_ler.models.User;
-import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.NotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 
