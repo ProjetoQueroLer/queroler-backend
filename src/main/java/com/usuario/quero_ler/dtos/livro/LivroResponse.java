@@ -3,6 +3,7 @@ package com.usuario.quero_ler.dtos.livro;
 import com.usuario.quero_ler.dtos.autor.AutorResponse;
 import com.usuario.quero_ler.enuns.LivroIdioma;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record LivroResponse(
@@ -15,6 +16,7 @@ public record LivroResponse(
         LivroIdioma idioma,
         String sinopse,
         String capaUrl,
+        LocalDateTime dataDeCadstro,
         List<AutorResponse> autores
 
 ) {
