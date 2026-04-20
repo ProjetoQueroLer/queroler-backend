@@ -134,3 +134,31 @@ Ficamos com a seguinte request.
   --form 'imagem=@/home/renanalves/Imagens/imagem.png'
 ```
 Devemos receber um status 200 confirmando que nossa requisição foi processada com sucesso.
+
+## 🤝Contribuir
+
+Clonar o repositorio, e fazer o checkout na branch **develop** para iniciar as contribuições. Seguir as conveções de branchs e commits deste documento.
+
+### Convenção de branch e commits
+
+Para este projeto vamos utilizar algumas convenções para commits e nomenclatura de branchs. Os nomes das branchs devem seguir o seguinte formar.
+
+* **tipo/descrição-curta**
+
+|tipo    |descrição|
+|--------|---------|
+|ci      | Criar/atualizar fluxos automatizados para integração continua| 
+|docs    | Mudanças na documentação| 
+|fix     | Correção de bugs e/ou problemas| 
+|feat    | Adiciona uma nova funcionalidade| 
+|refactor| Correção de código, sem adicionar nova funcionalidade ou resolver bug| 
+
+**Exemplo**: feat/cadastro-usuario
+
+Também precisamos trabalhar com o commit semantico, para seguir um padrão mais organizado de escrever as mensagens de commit.
+
+* **tipo(escopo): mensagem curta**
+
+**Exemplo**: feat(infra): Adicionar o arquivo Dockerfile do applicação 
+
+
