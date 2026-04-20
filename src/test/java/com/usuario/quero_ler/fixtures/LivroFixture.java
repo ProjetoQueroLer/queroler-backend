@@ -26,6 +26,8 @@ public class LivroFixture {
     private static final byte[] CAPADOLIVRO = carregarImagem();
     private static final List<Autor> AUTORES = new ArrayList<>();
     private static final List<UsuarioLivro> USUARIOS = new ArrayList<>();
+    private static final LocalDateTime DATA_DE_CADASTRO = LocalDateTime.now();
+
 
     public static BuscaDeLivrosRequest buscaDeLivrosRequest(TiposDeBusca tiposDeBusca){
         return switch (tiposDeBusca){
@@ -100,6 +102,7 @@ public static Livro entityComCapa(){
                 IDIOMA,
                 SINOPSE,
                 "/livros/"+ ID + "/capa",
+                DATA_DE_CADASTRO,
                 List.of(AutorFixture.response())
         );
     }
@@ -111,6 +114,7 @@ public static Livro entityComCapa(){
                 EDITORA,
                 ANODEPUBLICACAO,
                 NUMERODEPAGINAS,
+                DATA_DE_CADASTRO,
                 List.of(AutorFixture.response())
         );
     }
@@ -119,7 +123,8 @@ public static Livro entityComCapa(){
         return new LivroTelaLeituraResponse(
                 TITULO,
                 status,
-                "/livros/"+ ID + "/capa"
+                "/livros/"+ ID + "/capa",
+                DATA_DE_CADASTRO
         );
     }
 
@@ -133,6 +138,7 @@ public static Livro entityComCapa(){
                 IDIOMA.name(),
                 ISBN,
                 SINOPSE,
+                DATA_DE_CADASTRO,
                 List.of(AutorFixture.response())
 
         );
