@@ -8,9 +8,9 @@ spring:
         format_sql: true
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/db_quero_ler_v2 # ${SPRING_DATASOURCE_URL}
-    username: postgres # ${SPRING_DATASOURCE_USERNAME}
-    password: postgres # ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_quero_ler_v2}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   flyway:
