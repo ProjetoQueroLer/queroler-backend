@@ -5,26 +5,42 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.usuario.quero_ler.models.User;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 @Service
 public class TokenService {
 
-	@Value("${api.security.token.secret:minha-chave-secreta}")
+	@Value("${api.security.token.secret}")
 	private String secret;
+
+	@Value("${api.security.token.issuer:quero_ler}")
+	private String issuer;
+
+	@Value("${api.security.token.expiration-minutes:120}")
+	private long expirationMinutes;
+
+	@PostConstruct
+	void validateConfig() {
+		if (secret == null || secret.isBlank() || secret.length() < 32) {
+			throw new IllegalStateException("api.security.token.secret deve ter ao menos 32 caracteres.");
+		}
+	}
 
 	public String generateToken(User user) {
 		try {
+			Instant now = Instant.now();
 			Algorithm algorithm = Algorithm.HMAC256(secret);
 			return JWT.create()
-					.withIssuer("quero_ler")
+					.withIssuer(issuer)
 					.withSubject(user.getUser())
 					.withClaim("role", user.getProfile().name())
-					.withExpiresAt(genExpirationDate())
+					.withIssuedAt(now)
+					.withJWTId(java.util.UUID.randomUUID().toString())
+					.withExpiresAt(genExpirationDate(now))
 					.sign(algorithm);
 		} catch (JWTCreationException exception) {
 			throw new RuntimeException("Erro ao gerar token", exception);
@@ -35,7 +51,7 @@ public class TokenService {
 		try {
 			Algorithm algorithm = Algorithm.HMAC256(secret);
 			return JWT.require(algorithm)
-					.withIssuer("quero_ler")
+					.withIssuer(issuer)
 					.build()
 					.verify(token)
 					.getSubject();
@@ -44,7 +60,7 @@ public class TokenService {
 		}
 	}
 
-	private Instant genExpirationDate() {
-		return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+	private Instant genExpirationDate(Instant now) {
+		return now.plus(Duration.ofMinutes(expirationMinutes));
 	}
 }

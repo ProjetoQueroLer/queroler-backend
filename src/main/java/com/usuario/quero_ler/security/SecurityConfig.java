@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,15 +36,12 @@ public class SecurityConfig {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
             .requestMatchers("/swagger-ui.html").permitAll()
             .requestMatchers("/swagger-ui/**").permitAll()
             .requestMatchers("/v3/api-docs/**").permitAll()
-            .requestMatchers("/swagger-resources/**").permitAll()
-            .requestMatchers("/webjars/**").permitAll().requestMatchers("/v3/api-docs").permitAll()
-            .requestMatchers("/usuarios").permitAll()
-						.requestMatchers("/logins").permitAll()
-						.requestMatchers("/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
+            .requestMatchers(HttpMethod.POST, "/logins").permitAll()
+            .requestMatchers(HttpMethod.GET, "/documentos/termos-gerais-de-uso").permitAll()
             .anyRequest().authenticated())
         .formLogin(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
@@ -51,7 +49,7 @@ public class SecurityConfig {
           res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
           res.setContentType("application/json");
           res.getWriter().write("{\"error\":\"unauthorized\"}");
-        }))
+        }).accessDeniedHandler(accessDeniedHandler()))
         .addFilterBefore(securityFilter,
             org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
@@ -66,7 +64,7 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://yourfrontenddomain.com"));
+    configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173", "https://yourfrontenddomain.com"));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);
@@ -75,5 +73,14 @@ public class SecurityConfig {
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
+  }
+
+  @Bean
+  public AccessDeniedHandler accessDeniedHandler() {
+    return (req, res, ex) -> {
+      res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      res.setContentType("application/json");
+      res.getWriter().write("{\"error\":\"forbidden\"}");
+    };
   }
 }
