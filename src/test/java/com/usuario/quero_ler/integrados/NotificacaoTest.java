@@ -3,7 +3,6 @@ package com.usuario.quero_ler.integrados;
 import com.usuario.quero_ler.dtos.PageResponse;
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

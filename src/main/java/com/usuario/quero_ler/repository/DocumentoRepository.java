@@ -1,6 +1,6 @@
 package com.usuario.quero_ler.repository;
 
-import com.usuario.quero_ler.enuns.DocumentoTipo;
+import com.usuario.quero_ler.enums.DocumentoTipo;
 import com.usuario.quero_ler.models.Documento;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

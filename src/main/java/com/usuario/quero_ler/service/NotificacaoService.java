@@ -5,7 +5,7 @@ import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface NotificacaoServiceI {
+public interface NotificacaoService {
     NotificacaoResponseDto criar(NotificacaoRequestDto dto);
     Page<NotificacaoResponseDto> naoLidas(Long id,Pageable pageable);
     void marcarComoLidas(Long idUsuario);

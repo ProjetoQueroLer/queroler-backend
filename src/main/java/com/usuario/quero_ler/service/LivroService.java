@@ -1,16 +1,13 @@
 package com.usuario.quero_ler.service;
 
 import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enuns.LivroStatus;
+import com.usuario.quero_ler.enums.LivroStatus;
 import com.usuario.quero_ler.models.Livro;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Optional;
-
-public interface LivroServiceI {
+public interface LivroService {
     LivroResponse criar(LivroRequest dto, MultipartFile capaDoLivro);
     Page<LivroCardResponse> listar(Pageable pageable);
     Page<LivroResponse> listarPopulares();

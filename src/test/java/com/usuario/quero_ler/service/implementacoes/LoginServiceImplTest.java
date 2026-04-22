@@ -2,7 +2,7 @@ package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CredenciaisInvalidasException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioComPerfilInvalidoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;

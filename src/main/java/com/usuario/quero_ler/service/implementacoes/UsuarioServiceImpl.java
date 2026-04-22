@@ -1,8 +1,8 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enuns.LivroStatus;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.UsuarioJaPossueOLivroException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
@@ -12,9 +12,9 @@ import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
-import com.usuario.quero_ler.service.LivroServiceI;
-import com.usuario.quero_ler.service.LoginServiceI;
-import com.usuario.quero_ler.service.UsuarioServiceI;
+import com.usuario.quero_ler.service.LivroService;
+import com.usuario.quero_ler.service.LoginService;
+import com.usuario.quero_ler.service.UsuarioService;
 import com.usuario.quero_ler.utils.Senhas;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +25,14 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public class UsuarioServiceImpl implements UsuarioServiceI {
-    private final LoginServiceI login;
+public class UsuarioServiceImpl implements UsuarioService {
+    private final LoginService login;
     private final UsuarioRepository repository;
     private final UserRepository userRepository;
     private final UsuarioMapper mapper;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
     private final UsuarioLivroRepository usuarioLivroRepository;
-    private final LivroServiceI livroServiceI;
+    private final LivroService livroService;
 
     @Transactional
     @Override
@@ -59,14 +59,14 @@ public class UsuarioServiceImpl implements UsuarioServiceI {
     }
 
     @Override
-    public void atualizar(Long id, UsuarioAtualizadoLeitorReguest dto) {
+    public void atualizar(Long id, UsuárioAtualizadoLeitorRequest dto) {
         Usuario usuario = getUsuario(id);
         usuario = mapper.update(usuario, dto);
         usuario = repository.save(usuario);
     }
 
     @Override
-    public void atualizar(Long id, UsuarioAtualizadoAdministradorReguest dto) {
+    public void atualizar(Long id, UsuarioAtualizadoAdministradorRequest dto) {
         Usuario usuario = getUsuario(id);
         usuario = mapper.update(usuario, dto);
         repository.save(usuario);
@@ -87,7 +87,7 @@ public class UsuarioServiceImpl implements UsuarioServiceI {
     }
 
     @Override
-    public void alterarSenha(Long id, UsuarioAlterarSenhaReguest dto) {
+    public void alterarSenha(Long id, UsuarioAlterarSenhaRequest dto) {
         Senhas.validar(dto.senhaNova());
         Usuario usuario = getUsuario(id);
         User user = usuario.getUser();
@@ -106,7 +106,7 @@ public class UsuarioServiceImpl implements UsuarioServiceI {
             throw new UsuarioJaPossueOLivroException("O usuario já possue o livro na estante.");
         }
 
-        Livro livro = livroServiceI.buscar(idLivro);
+        Livro livro = livroService.buscar(idLivro);
 
         UsuarioLivroId usuarioLivroId = new UsuarioLivroId();
         usuarioLivroId.setUsuarioId(usuario.getId());
