@@ -1,7 +1,7 @@
-package com.usuario.quero_ler.Controllers;
+package com.usuario.quero_ler.controllers;
 
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
-import com.usuario.quero_ler.service.LoginServiceI;
+import com.usuario.quero_ler.service.LoginService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/logins")
 public class LoginController {
-    private final LoginServiceI serviceI;
+    private final LoginService serviceI;
 
     @PostMapping
     public ResponseEntity<Void> login(@RequestBody @Valid LoginRequestDto autenticacaoDto, HttpServletResponse response) {

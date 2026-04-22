@@ -2,13 +2,12 @@ package com.usuario.quero_ler.mappers;
 
 import com.usuario.quero_ler.dtos.autor.AutorResponse;
 import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enuns.LivroStatus;
+import com.usuario.quero_ler.enums.LivroStatus;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.models.Livro;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 

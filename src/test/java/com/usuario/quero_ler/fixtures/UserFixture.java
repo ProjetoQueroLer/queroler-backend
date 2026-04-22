@@ -1,7 +1,7 @@
 package com.usuario.quero_ler.fixtures;
 
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.models.Usuario;
 import org.mindrot.jbcrypt.BCrypt;
@@ -80,7 +80,7 @@ public class UserFixture {
         );
     }
 
-    public static Usuario atualizar(Usuario usuario, UsuarioAtualizadoAdministradorReguest atualizacoes){
+    public static Usuario atualizar(Usuario usuario, UsuarioAtualizadoAdministradorRequest atualizacoes){
         usuario.setDataDeNascimento(atualizacoes.dataDeNascimento() != null ? atualizacoes.dataDeNascimento() : usuario.getDataDeNascimento());
         usuario.setCidade(atualizacoes !=null ? atualizacoes.cidade() : usuario.getCidade());
         usuario.setEstado(atualizacoes.estado() != null ? atualizacoes.estado() : usuario.getEstado());
@@ -89,7 +89,7 @@ public class UserFixture {
         return usuario;
     }
 
-    public static Usuario atualizar(Usuario usuario, UsuarioAtualizadoLeitorReguest atualizacoes){
+    public static Usuario atualizar(Usuario usuario, UsuárioAtualizadoLeitorRequest atualizacoes){
         usuario.setNome(atualizacoes.nome()!= null ? atualizacoes.nome() : usuario.getNome());
         usuario.setEmail(atualizacoes.email()!= null ? atualizacoes.email() : usuario.getEmail());
         usuario.setDataDeNascimento(atualizacoes.dataDeNascimento() != null ? atualizacoes.dataDeNascimento() : usuario.getDataDeNascimento());

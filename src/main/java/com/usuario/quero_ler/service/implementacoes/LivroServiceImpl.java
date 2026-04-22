@@ -2,7 +2,7 @@ package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.autor.AutorRequest;
 import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enuns.LivroStatus;
+import com.usuario.quero_ler.enums.LivroStatus;
 import com.usuario.quero_ler.exceptions.especies.*;
 import com.usuario.quero_ler.mappers.LivroMapper;
 import com.usuario.quero_ler.models.Autor;
@@ -10,10 +10,8 @@ import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.UsuarioLivro;
 import com.usuario.quero_ler.repository.LivroRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
-import com.usuario.quero_ler.repository.UsuarioRepository;
-import com.usuario.quero_ler.service.AutorServiceI;
-import com.usuario.quero_ler.service.LivroServiceI;
-import com.usuario.quero_ler.service.LoginServiceI;
+import com.usuario.quero_ler.service.AutorService;
+import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.utils.LivroFiltro;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,11 +30,11 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public class LivroServeceImpl implements LivroServiceI {
+public class LivroServiceImpl implements LivroService {
 
     private final LivroRepository repository;
     private final LivroMapper mapper;
-    private final AutorServiceI autorServiceI;
+    private final AutorService AutorService;
     private final UsuarioLivroRepository usuarioLivroRepository;
 
     @Override
@@ -49,7 +47,7 @@ public class LivroServeceImpl implements LivroServiceI {
 
         Livro livro = mapper.toEntity(dto);
         for (AutorRequest autorRequest : dto.autores()){
-            Autor autor = autorServiceI.criar(autorRequest);
+            Autor autor = AutorService.criar(autorRequest);
             livro.adicionarAutor(autor);
         }
         if (capaDoLivro != null && !capaDoLivro.isEmpty()){

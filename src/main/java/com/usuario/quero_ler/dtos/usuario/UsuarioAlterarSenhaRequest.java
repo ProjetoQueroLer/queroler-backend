@@ -1,6 +1,6 @@
 package com.usuario.quero_ler.dtos.usuario;
 
-public record UsuarioAlterarSenhaReguest(
+public record UsuarioAlterarSenhaRequest(
         String senhaAtual,
         String senhaNova
 ) {}

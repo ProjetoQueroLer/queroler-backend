@@ -1,4 +1,4 @@
-package com.usuario.quero_ler.enuns;
+package com.usuario.quero_ler.enums;
 
 public enum TiposDeBusca {
     TITULO("Titulo"),

@@ -3,13 +3,9 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
-import com.usuario.quero_ler.dtos.livro.LivroTelaLeituraResponse;
-import com.usuario.quero_ler.enuns.LivroStatus;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CapaForaDePadraoException;
 import com.usuario.quero_ler.exceptions.especies.IsbnNaoEncontradoException;
-import com.usuario.quero_ler.exceptions.especies.LivroNaoEncontradoException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioJaPossueOLivroException;
 import com.usuario.quero_ler.fixtures.LivroFixture;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.mappers.LivroMapper;
@@ -20,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -39,10 +34,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class LivroServeceImplTest {
+class LivroServiceImplTest {
 
     @InjectMocks
-    private LivroServeceImpl service;
+    private LivroServiceImpl service;
 
     @Mock
     private LivroRepository repository;

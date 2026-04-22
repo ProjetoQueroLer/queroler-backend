@@ -1,6 +1,6 @@
 package com.usuario.quero_ler.dtos.usuario;
 
-import com.usuario.quero_ler.enuns.DocumentoTipo;
+import com.usuario.quero_ler.enums.DocumentoTipo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

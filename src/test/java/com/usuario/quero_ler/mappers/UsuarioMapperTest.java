@@ -1,9 +1,9 @@
 package com.usuario.quero_ler.mappers;
 
-import com.usuario.quero_ler.dtos.usuario.UsuarioAtualizadoLeitorReguest;
+import com.usuario.quero_ler.dtos.usuario.UsuárioAtualizadoLeitorRequest;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioResponseDto;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.models.Usuario;
@@ -58,7 +58,7 @@ class UsuarioMapperTest {
     void toUpdate() {
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
         Usuario usuario = UserFixture.entidadeCompleta(user);
-        UsuarioAtualizadoLeitorReguest atualizacoes = new UsuarioAtualizadoLeitorReguest(
+        UsuárioAtualizadoLeitorRequest atualizacoes = new UsuárioAtualizadoLeitorRequest(
                 "nome atualizado","email atualizado", null,"cabralha",
                 "Bahia",null,null);
 
