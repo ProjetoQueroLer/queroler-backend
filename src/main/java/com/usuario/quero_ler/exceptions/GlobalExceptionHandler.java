@@ -42,6 +42,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    @ExceptionHandler(ArquivoNaoEncontradoException.class)
+    public ResponseEntity<Object> handlerArquivoNaoEncontrado(ArquivoNaoEncontradoException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ImagemNaoCarregaException.class)
+    public ResponseEntity<Object> handlerImagemNaoCarregaException(ImagemNaoCarregaException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
     @ExceptionHandler(LivroNaoEncontradoException.class)
     public ResponseEntity<Object> handlerLivroNaoEncontradoException(LivroNaoEncontradoException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
@@ -64,6 +74,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailJaCadastradoException.class)
     public ResponseEntity<Object> handlerEmailJaCadastradoException(EmailJaCadastradoException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(GerarTokenException.class)
+    public ResponseEntity<Object> handlerGerarTokenException(GerarTokenException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(LerImagemException.class)
+    public ResponseEntity<Object> handlerLerImagemException(LerImagemException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 

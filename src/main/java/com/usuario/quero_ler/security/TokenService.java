@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.usuario.quero_ler.exceptions.especies.GerarTokenException;
 import com.usuario.quero_ler.models.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class TokenService {
 					.withExpiresAt(genExpirationDate())
 					.sign(algorithm);
 		} catch (JWTCreationException exception) {
-			throw new RuntimeException("Erro ao gerar token", exception);
+			throw new GerarTokenException("Erro ao gerar token", exception);
 		}
 	}
 

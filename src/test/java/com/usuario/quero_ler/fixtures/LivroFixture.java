@@ -4,6 +4,8 @@ import com.usuario.quero_ler.dtos.livro.*;
 import com.usuario.quero_ler.enuns.LivroIdioma;
 import com.usuario.quero_ler.enuns.LivroStatus;
 import com.usuario.quero_ler.enuns.TiposDeBusca;
+import com.usuario.quero_ler.exceptions.especies.ArquivoNaoEncontradoException;
+import com.usuario.quero_ler.exceptions.especies.ImagemNaoCarregaException;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.UsuarioLivro;
@@ -150,13 +152,13 @@ public static Livro entityComCapa(){
                 .getResourceAsStream("capa.jpg")) {
 
             if (is == null) {
-                throw new RuntimeException("Arquivo capa.jpg não encontrado");
+                throw new ArquivoNaoEncontradoException("Arquivo capa.jpg não encontrado");
             }
 
             return is.readAllBytes();
 
         } catch (IOException e) {
-            throw new RuntimeException("Erro ao carregar imagem", e);
+            throw new ImagemNaoCarregaException("Erro ao carregar imagem", e);
         }
     }
 }
