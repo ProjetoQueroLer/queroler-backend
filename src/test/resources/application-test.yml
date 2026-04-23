@@ -7,3 +7,10 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+api:
+  security:
+    token:
+      secret: quero-ler-secret-para-teste-local-com-32
+      issuer: quero_ler
+      expiration-minutes: 120
