@@ -89,7 +89,7 @@ public class UserFixture {
         return usuario;
     }
 
-    public static Usuario atualizar(Usuario usuario, UsuárioAtualizadoLeitorRequest atualizacoes){
+    public static Usuario atualizar(Usuario usuario, UsuarioAtualizadoLeitorRequest atualizacoes){
         usuario.setNome(atualizacoes.nome()!= null ? atualizacoes.nome() : usuario.getNome());
         usuario.setEmail(atualizacoes.email()!= null ? atualizacoes.email() : usuario.getEmail());
         usuario.setDataDeNascimento(atualizacoes.dataDeNascimento() != null ? atualizacoes.dataDeNascimento() : usuario.getDataDeNascimento());

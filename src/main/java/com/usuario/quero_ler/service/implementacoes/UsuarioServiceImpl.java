@@ -59,7 +59,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void atualizar(Long id, UsuárioAtualizadoLeitorRequest dto) {
+    public void atualizar(Long id, UsuarioAtualizadoLeitorRequest dto) {
         Usuario usuario = getUsuario(id);
         usuario = mapper.update(usuario, dto);
         usuario = repository.save(usuario);

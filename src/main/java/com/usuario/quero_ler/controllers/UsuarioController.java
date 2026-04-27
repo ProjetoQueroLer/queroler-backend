@@ -38,7 +38,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuárioAtualizadoLeitorRequest dto) {
+    public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoLeitorRequest dto) {
         serviceI.atualizar(id, dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

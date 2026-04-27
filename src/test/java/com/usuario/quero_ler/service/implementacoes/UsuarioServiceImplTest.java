@@ -109,7 +109,7 @@ class UsuarioServiceImplTest {
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
         Usuario usuario = UserFixture.entidadeCompleta(user);
         Long id = usuario.getId();
-        UsuárioAtualizadoLeitorRequest atualizacoes = new UsuárioAtualizadoLeitorRequest(
+        UsuarioAtualizadoLeitorRequest atualizacoes = new UsuarioAtualizadoLeitorRequest(
                 "Nome atualizado","emailAtual@gmail.com", LocalDate.of(1978,9,12),
                 null,"cidade atualizada",null,null
         );

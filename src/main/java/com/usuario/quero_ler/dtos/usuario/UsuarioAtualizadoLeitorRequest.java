@@ -2,7 +2,7 @@ package com.usuario.quero_ler.dtos.usuario;
 
 import java.time.LocalDate;
 
-public record UsuárioAtualizadoLeitorRequest(
+public record UsuarioAtualizadoLeitorRequest(
         String nome,
         String email,
         LocalDate dataDeNascimento,

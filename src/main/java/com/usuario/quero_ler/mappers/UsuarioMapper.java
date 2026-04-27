@@ -24,7 +24,7 @@ public class UsuarioMapper {
         return usuario;
     }
 
-    public Usuario update(Usuario usuario, UsuárioAtualizadoLeitorRequest dto) {
+    public Usuario update(Usuario usuario, UsuarioAtualizadoLeitorRequest dto) {
         usuario.setNome(dto.nome() != null ? dto.nome() :   usuario.getNome());
         usuario.setEmail(dto.email() != null ? dto.email() : usuario.getEmail());
         usuario.setDataDeNascimento(dto.dataDeNascimento() != null ? dto.dataDeNascimento(): usuario.getDataDeNascimento());

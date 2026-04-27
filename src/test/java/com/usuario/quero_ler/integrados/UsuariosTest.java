@@ -133,7 +133,7 @@ public class UsuariosTest {
     @Test
     @DisplayName("Deve alterar de um usuario Leitor com sucesso!")
     public void deveAlterarUmUsuarioLeitorComSucesso() {
-        UsuárioAtualizadoLeitorRequest dto = new UsuárioAtualizadoLeitorRequest("Nome Alterado", "emailAlterado@gmail.com", null,
+        UsuarioAtualizadoLeitorRequest dto = new UsuarioAtualizadoLeitorRequest("Nome Alterado", "emailAlterado@gmail.com", null,
                 "Cidade alterada", "Estado Alterado", "Pais alterado", null);
 
         Long id = 2L;

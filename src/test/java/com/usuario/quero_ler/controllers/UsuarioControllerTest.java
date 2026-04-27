@@ -128,7 +128,7 @@ class UsuarioControllerTest {
     @DisplayName("Deve atualizar usuário leitor com sucesso")
     void deveAtualizarUsuarioLeitorComSucesso() throws Exception {
         Long id = 1L;
-        UsuárioAtualizadoLeitorRequest request = new UsuárioAtualizadoLeitorRequest("Nome atualizado",
+        UsuarioAtualizadoLeitorRequest request = new UsuarioAtualizadoLeitorRequest("Nome atualizado",
                 null, null, null, null, null, null);
 
         mockMvc.perform(put("/usuarios/{id}", id)
