@@ -4,6 +4,8 @@ import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CredenciaisInvalidasException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioComPerfilInvalidoException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioNaoAutenticadoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.repository.UserRepository;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +34,9 @@ public class LoginServiceImpl implements LoginService {
 
 	private final TokenService tokenService;
 	private final PasswordEncoder passwordEncoder;
+
+	@Value("${api.security.token.expiration-minutes:120}")
+	private long tokenExpirationMinutes;
 
 	@Transactional
 	@Override
@@ -59,8 +65,8 @@ public class LoginServiceImpl implements LoginService {
 				.httpOnly(true)
 				.secure(false)
 				.path("/")
-				.maxAge(Duration.ofHours(2))
-				.sameSite("Strict")
+				.maxAge(Duration.ofMinutes(tokenExpirationMinutes))
+				.sameSite("Lax")
 				.build();
 
 		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
