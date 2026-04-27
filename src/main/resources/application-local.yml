@@ -6,12 +6,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_quero_ler_v2}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/db_quero_ler_v2
+    username: postgres
+    password: postgres
 
   flyway:
     enabled: true
@@ -23,6 +21,6 @@ spring:
 api:
   security:
     token:
-      secret: ${API_SECURITY_TOKEN_SECRET}
+      secret: ${API_SECURITY_TOKEN_SECRET:quero-ler-secret-local-com-32-char!}
       issuer: quero_ler
       expiration-minutes: 120

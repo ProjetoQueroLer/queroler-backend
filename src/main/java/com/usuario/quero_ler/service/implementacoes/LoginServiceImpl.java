@@ -4,8 +4,6 @@ import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
 import com.usuario.quero_ler.enuns.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CredenciaisInvalidasException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioComPerfilInvalidoException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioNaoAutenticadoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.repository.UserRepository;
@@ -20,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 
-import org.springframework.boot.web.servlet.server.Session.Cookie;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,11 +33,13 @@ public class LoginServiceImpl implements LoginServiceI {
 	private final TokenService tokenService;
 	private final PasswordEncoder passwordEncoder;
 
+	@Value("${api.security.token.expiration-minutes:120}")
+	private long tokenExpirationMinutes;
+
 	@Transactional
 	@Override
 	public User criar(UsuarioRequestDto dto, UsuarioProfile profile) {
 		User user = new User();
-		String senha = Senhas.gerar(dto.senha());
 		user.setUser(dto.email());
 		user.setSenha(passwordEncoder.encode(dto.senha()));
 		user.setProfile(profile);
@@ -62,8 +62,8 @@ public class LoginServiceImpl implements LoginServiceI {
 				.httpOnly(true)
 				.secure(false)
 				.path("/")
-				.maxAge(Duration.ofHours(2))
-				.sameSite("Strict")
+				.maxAge(Duration.ofMinutes(tokenExpirationMinutes))
+				.sameSite("Lax")
 				.build();
 
 		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
