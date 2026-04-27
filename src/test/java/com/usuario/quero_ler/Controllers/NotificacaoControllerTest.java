@@ -5,6 +5,7 @@ import com.usuario.quero_ler.dtos.documento.DocumentoAlteracoesDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoRequestDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
 import com.usuario.quero_ler.fixtures.NotificacaoFixture;
+import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.NotificacaoServiceI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ class NotificacaoControllerTest {
 
     @MockitoBean
     private NotificacaoServiceI service;
+
+    @MockitoBean
+    private TokenService tokenService;
 
     @Autowired
     private ObjectMapper objectMapper;

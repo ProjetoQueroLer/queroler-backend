@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,21 +35,26 @@ public class UsuariosTest {
     @Autowired
     private UsuarioRepository repository;
 
+    private HttpHeaders authHeaders;
+
     private void logar(Long id) {
         Usuario usuario = repository.findById(id).get();
         LoginRequestDto autenticacaoDto = new LoginRequestDto(usuario.getUser().getUser(), "Teste123&");
-        template.postForEntity("/logins", autenticacaoDto, Void.class);
+        ResponseEntity<Void> loginResponse = template.postForEntity("/logins", autenticacaoDto, Void.class);
+        authHeaders = new HttpHeaders();
+        authHeaders.add(HttpHeaders.COOKIE, loginResponse.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
     }
 
     @Test
     @DisplayName("Deve criar um usuario com sucesso!")
     public void deveCriarUmUsuarioComSucesso() {
         UsuarioRequestDto dto = UserFixture.requestDto();
+        logar(1L);
 
         ResponseEntity<UsuarioResponseDto> resposta = template.exchange(
                 "/usuarios",
                 HttpMethod.POST,
-                new HttpEntity<>(dto),
+            new HttpEntity<>(dto, authHeaders),
                 UsuarioResponseDto.class
         );
 
@@ -71,7 +77,7 @@ public class UsuariosTest {
         ResponseEntity<UsuarioDadosResponse> resposta = template.exchange(
                 "/usuarios/{id}",
                 HttpMethod.GET,
-                null,
+            new HttpEntity<>(authHeaders),
                 UsuarioDadosResponse.class,
                 id
         );
@@ -97,7 +103,7 @@ public class UsuariosTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/usuarios/{id}/dados-adicionais",
                 HttpMethod.PUT,
-                new HttpEntity<>(dto),
+            new HttpEntity<>(dto, authHeaders),
                 Void.class,
                 id
         );
@@ -122,7 +128,7 @@ public class UsuariosTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/usuarios/{id}/alterar-senha",
                 HttpMethod.PUT,
-                new HttpEntity<>(dto),
+            new HttpEntity<>(dto, authHeaders),
                 Void.class,
                 id
         );
@@ -141,7 +147,7 @@ public class UsuariosTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/usuarios/{id}",
                 HttpMethod.PUT,
-                new HttpEntity<>(dto),
+            new HttpEntity<>(dto, authHeaders),
                 Void.class,
                 id
         );
@@ -168,7 +174,7 @@ public class UsuariosTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/usuarios/{id}/administrador",
                 HttpMethod.PUT,
-                new HttpEntity<>(dto),
+            new HttpEntity<>(dto, authHeaders),
                 Void.class,
                 id
         );
@@ -191,7 +197,7 @@ public class UsuariosTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/usuarios/{id}",
                 HttpMethod.DELETE,
-                null,
+            new HttpEntity<>(authHeaders),
                 Void.class,
                 id
         );

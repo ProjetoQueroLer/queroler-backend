@@ -5,6 +5,7 @@ import com.usuario.quero_ler.dtos.documento.DocumentoAlteracoesDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoRequestDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoResponseDto;
 import com.usuario.quero_ler.fixtures.DocumentoFixture;
+import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.DocumentoServiceI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,9 @@ class DocumentoControllerTest {
 
     @MockitoBean
     private DocumentoServiceI service;
+
+    @MockitoBean
+    private TokenService tokenService;
 
     @Autowired
     private ObjectMapper objectMapper;

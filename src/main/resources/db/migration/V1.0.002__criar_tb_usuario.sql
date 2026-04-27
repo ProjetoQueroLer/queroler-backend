@@ -1,4 +1,4 @@
-CREATE TABLE tb_usuario (
+CREATE TABLE IF NOT EXISTS tb_usuario (
                             id BIGSERIAL PRIMARY KEY,
                             nome VARCHAR(80) NOT NULL,
                             email VARCHAR(150) NOT NULL UNIQUE,

@@ -16,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,8 +34,6 @@ class LoginControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-		@Autowired
-		HttpServletResponse response;
     @Test
     @DisplayName("Deve realizar um login com sucesso")
     void deveRealizarLoginComSucesso() throws Exception {
@@ -44,6 +44,6 @@ class LoginControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        verify(service).login(request, response);
+              verify(service).login(eq(request), any(HttpServletResponse.class));
     }
 }

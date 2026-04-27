@@ -1,4 +1,4 @@
-CREATE TABLE tb_usuario_notificacao
+CREATE TABLE IF NOT EXISTS tb_usuario_notificacao
 (
     id             BIGSERIAL PRIMARY KEY,
     usuario_id     BIGINT NOT NULL,

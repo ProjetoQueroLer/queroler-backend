@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,10 +42,14 @@ public class DocumentoTest {
     @Autowired
     private DocumentoRepository repository;
 
+    private HttpHeaders authHeaders;
+
     @BeforeEach
     void setUp() {
         LoginRequestDto autenticacaoDto = LoginFixture.requestDto();
-        template.postForEntity("/logins", autenticacaoDto, Void.class);
+        ResponseEntity<Void> loginResponse = template.postForEntity("/logins", autenticacaoDto, Void.class);
+        authHeaders = new HttpHeaders();
+        authHeaders.add(HttpHeaders.COOKIE, loginResponse.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
     }
 
     @Test
@@ -55,7 +60,7 @@ public class DocumentoTest {
         ResponseEntity<DocumentoResponseDto> resposta = template.exchange(
                 "/documentos",
                 HttpMethod.POST,
-                new HttpEntity<>(dto),
+            new HttpEntity<>(dto, authHeaders),
                 DocumentoResponseDto.class
         );
 
@@ -76,7 +81,7 @@ public class DocumentoTest {
         ResponseEntity<DocumentoResponseDto> resposta = template.exchange(
                 "/documentos/termos-gerais-de-uso",
                 HttpMethod.GET,
-                null,
+            new HttpEntity<>(authHeaders),
                 DocumentoResponseDto.class);
 
         assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -94,7 +99,7 @@ public class DocumentoTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/documentos/{id}",
                 HttpMethod.PUT,
-                new HttpEntity<>(dto),
+            new HttpEntity<>(dto, authHeaders),
                 Void.class,
                 id
         );
