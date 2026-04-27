@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(GerarTokenException.class)
     public ResponseEntity<Object> handlerGerarTokenException(GerarTokenException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 
     @ExceptionHandler(LerImagemException.class)
