@@ -33,3 +33,9 @@ VALUES
 INSERT INTO tb_documento (id, titulo, tipo_documento, conteudo, ultima_alteracao)
 VALUES
     (1, 'Termos Gerais de Uso', 'TERMOS_GERAIS_DE_USO', 'Texto de teste para os termos de uso...', CURRENT_TIMESTAMP);
+
+SELECT setval(pg_get_serial_sequence('tb_user', 'id'), COALESCE((SELECT MAX(id) FROM tb_user), 1), true);
+SELECT setval(pg_get_serial_sequence('tb_usuario', 'id'), COALESCE((SELECT MAX(id) FROM tb_usuario), 1), true);
+SELECT setval(pg_get_serial_sequence('tb_notificacao', 'id'), COALESCE((SELECT MAX(id) FROM tb_notificacao), 1), true);
+SELECT setval(pg_get_serial_sequence('tb_usuario_notificacao', 'id'), COALESCE((SELECT MAX(id) FROM tb_usuario_notificacao), 1), true);
+SELECT setval(pg_get_serial_sequence('tb_documento', 'id'), COALESCE((SELECT MAX(id) FROM tb_documento), 1), true);

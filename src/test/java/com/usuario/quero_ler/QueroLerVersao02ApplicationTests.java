@@ -1,12 +1,11 @@
 package com.usuario.quero_ler;
 
+import com.usuario.quero_ler.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("test")
 @SpringBootTest
-class QueroLerVersao02ApplicationTests {
+class QueroLerVersao02ApplicationTests extends AbstractIntegrationTest {
 
 	@Test
 	void contextLoads() {

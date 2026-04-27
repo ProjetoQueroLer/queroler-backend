@@ -10,6 +10,7 @@ import com.usuario.quero_ler.fixtures.DocumentoFixture;
 import com.usuario.quero_ler.fixtures.LoginFixture;
 import com.usuario.quero_ler.models.Documento;
 import com.usuario.quero_ler.repository.DocumentoRepository;
+import com.usuario.quero_ler.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = {"/gerar_banco.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = {"/limpar_banco.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-public class DocumentoTest {
+public class DocumentoTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;
 
@@ -46,7 +47,7 @@ public class DocumentoTest {
 
     @BeforeEach
     void setUp() {
-        LoginRequestDto autenticacaoDto = LoginFixture.requestDto();
+        LoginRequestDto autenticacaoDto = new LoginRequestDto("leitor", "Teste123&");
         ResponseEntity<Void> loginResponse = template.postForEntity("/logins", autenticacaoDto, Void.class);
         authHeaders = new HttpHeaders();
         authHeaders.add(HttpHeaders.COOKIE, loginResponse.getHeaders().getFirst(HttpHeaders.SET_COOKIE));

@@ -6,6 +6,7 @@ import com.usuario.quero_ler.enuns.UsuarioProfile;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.UsuarioRepository;
+import com.usuario.quero_ler.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = {"/gerar_banco.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = {"/limpar_banco.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-public class UsuariosTest {
+public class UsuariosTest extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate template;
