@@ -1,4 +1,4 @@
-CREATE TABLE tb_usuario_livro (
+CREATE TABLE IF NOT EXISTS tb_usuario_livro (
                                   usuario_id BIGINT NOT NULL,
                                   livro_id BIGINT NOT NULL,
                                   status VARCHAR(50) NOT NULL,

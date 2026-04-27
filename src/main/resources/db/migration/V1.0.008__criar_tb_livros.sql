@@ -1,4 +1,4 @@
-CREATE TABLE tb_livros (
+CREATE TABLE IF NOT EXISTS tb_livros (
                            id BIGSERIAL PRIMARY KEY,
                            titulo VARCHAR(255) NOT NULL,
                            isbn VARCHAR(13) NOT NULL UNIQUE,

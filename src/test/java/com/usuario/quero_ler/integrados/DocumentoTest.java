@@ -10,6 +10,7 @@ import com.usuario.quero_ler.fixtures.DocumentoFixture;
 import com.usuario.quero_ler.fixtures.LoginFixture;
 import com.usuario.quero_ler.models.Documento;
 import com.usuario.quero_ler.repository.DocumentoRepository;
+import com.usuario.quero_ler.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,17 +36,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = {"/gerar_banco.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = {"/limpar_banco.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-public class DocumentoTest {
+public class DocumentoTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;
 
     @Autowired
     private DocumentoRepository repository;
 
+    private HttpHeaders authHeaders;
+
     @BeforeEach
     void setUp() {
-        LoginRequestDto autenticacaoDto = LoginFixture.requestDto();
-        template.postForEntity("/logins", autenticacaoDto, Void.class);
+        LoginRequestDto autenticacaoDto = new LoginRequestDto("leitor", "Teste123&");
+        ResponseEntity<Void> loginResponse = template.postForEntity("/logins", autenticacaoDto, Void.class);
+        authHeaders = new HttpHeaders();
+        authHeaders.add(HttpHeaders.COOKIE, loginResponse.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
     }
 
     @Test
@@ -55,7 +61,7 @@ public class DocumentoTest {
         ResponseEntity<DocumentoResponseDto> resposta = template.exchange(
                 "/documentos",
                 HttpMethod.POST,
-                new HttpEntity<>(dto),
+            new HttpEntity<>(dto, authHeaders),
                 DocumentoResponseDto.class
         );
 
@@ -76,7 +82,7 @@ public class DocumentoTest {
         ResponseEntity<DocumentoResponseDto> resposta = template.exchange(
                 "/documentos/termos-gerais-de-uso",
                 HttpMethod.GET,
-                null,
+            new HttpEntity<>(authHeaders),
                 DocumentoResponseDto.class);
 
         assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -94,7 +100,7 @@ public class DocumentoTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/documentos/{id}",
                 HttpMethod.PUT,
-                new HttpEntity<>(dto),
+            new HttpEntity<>(dto, authHeaders),
                 Void.class,
                 id
         );
