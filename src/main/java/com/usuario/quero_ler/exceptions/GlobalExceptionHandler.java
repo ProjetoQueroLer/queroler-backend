@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ImagemNaoCarregaException.class)
     public ResponseEntity<Object> handlerImagemNaoCarregaException(ImagemNaoCarregaException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 
     @ExceptionHandler(LivroNaoEncontradoException.class)
@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(LerImagemException.class)
     public ResponseEntity<Object> handlerLerImagemException(LerImagemException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 
     @ExceptionHandler(UsuarioSemPermissaoParaAcaoException.class)
