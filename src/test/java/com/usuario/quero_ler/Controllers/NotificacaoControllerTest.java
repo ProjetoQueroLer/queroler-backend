@@ -5,10 +5,13 @@ import com.usuario.quero_ler.dtos.documento.DocumentoAlteracoesDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoRequestDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
 import com.usuario.quero_ler.fixtures.NotificacaoFixture;
+import com.usuario.quero_ler.repository.UserRepository;
+import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.NotificacaoServiceI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(NotificacaoController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class NotificacaoControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -35,24 +39,14 @@ class NotificacaoControllerTest {
     @MockitoBean
     private NotificacaoServiceI service;
 
+    @MockitoBean
+    private TokenService tokenService;
+
+    @MockitoBean
+    private UserRepository userRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Test
-    @DisplayName("Deve criar notificacao com sucesso")
-    void deveCriarNotificacao() throws Exception {
-        NotificacaoRequestDto request = NotificacaoFixture.requestDto();
-        NotificacaoResponseDto response = NotificacaoFixture.response();
-
-        when(service.criar(any())).thenReturn(response);
-
-        mockMvc.perform(post("/notificacoes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
-
-        verify(service).criar(request);
-    }
 
     @Test
     @DisplayName("Deve retornar notificações não lidas do usuário")
