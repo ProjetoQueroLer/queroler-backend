@@ -8,5 +8,5 @@ import java.time.LocalDateTime;
 
 @Repository
 public interface NotificacaoRepository extends JpaRepository<Notificacao,Long> {
-    void deleteByDataDeCriacaoBefore(LocalDateTime dataDeCorte);
+    int deleteByDataDeCriacaoBefore(LocalDateTime dataDeCorte);
 }

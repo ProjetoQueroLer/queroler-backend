@@ -40,7 +40,7 @@ public interface UsuarioNotificacaoRepository extends JpaRepository<UsuarioNotif
             """)
     void marcarComoLidas(@Param("usuarioId") Long usuarioId);
 
-    void deleteByNotificacaoDataDeCriacaoBefore(LocalDateTime data);
+    int deleteByNotificacaoDataDeCriacaoBefore(LocalDateTime data);
 
     List<UsuarioNotificacao> findByUsuarioId(Long usuarioId);
 }

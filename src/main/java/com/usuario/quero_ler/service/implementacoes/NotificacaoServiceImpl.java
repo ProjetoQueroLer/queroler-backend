@@ -16,7 +16,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,29 +39,31 @@ public class NotificacaoServiceImpl implements NotificacaoServiceI {
     @Transactional
     @Override
     public Page<NotificacaoResponseDto> naoLidas(Long idUsuario, Pageable pageable) {
-        apagarNotificacoesComMaisDe30Dias();
+
         Usuario usuario = usuarioServiceI.getUsuario(idUsuario);
-        List<Notificacao> usuarioNotificacaos = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
+
+        List<Notificacao> usuarioNotificacaos =
+                usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
+
         List<NotificacaoResponseDto> notificacoes = new ArrayList<>();
+
         for (Notificacao notificacao : usuarioNotificacaos) {
-            notificacoes.add(new NotificacaoResponseDto(notificacao.getId(), notificacao.getNotificacao(), notificacao.getDataDeCriacao()));
+            notificacoes.add(
+                    new NotificacaoResponseDto(
+                            notificacao.getId(),
+                            notificacao.getNotificacao(),
+                            notificacao.getDataDeCriacao()
+                    )
+            );
         }
-        Page<NotificacaoResponseDto> page = new PageImpl<>(notificacoes, pageable, notificacoes.size());
-        return page;
+
+        return new PageImpl<>(notificacoes, pageable, notificacoes.size());
     }
 
     @Transactional
     @Override
     public void marcarComoLidas(Long idUsuario) {
-        apagarNotificacoesComMaisDe30Dias();
-        Usuario usuario = usuarioServiceI.getUsuario(idUsuario);
+        usuarioServiceI.getUsuario(idUsuario);
         usuarioNotificacaoRepository.marcarComoLidas(idUsuario);
-    }
-
-    @Transactional
-    public void apagarNotificacoesComMaisDe30Dias() {
-        LocalDateTime dataDeCorte = LocalDateTime.now().minusDays(30);
-        usuarioNotificacaoRepository.deleteByNotificacaoDataDeCriacaoBefore(dataDeCorte);
-        repository.deleteByDataDeCriacaoBefore(dataDeCorte);
     }
 }
