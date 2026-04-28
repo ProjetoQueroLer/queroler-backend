@@ -89,7 +89,7 @@ public class LivroServiceImpl implements LivroService {
         try {
             livro.setCapaDoLivro(capaDoLivro.getBytes());
         } catch (IOException e) {
-            throw new RuntimeException("Erro ao ler imagem", e);
+            throw new LerImagemException("Erro ao ler imagem", e);
         }
 
         repository.save(livro);
