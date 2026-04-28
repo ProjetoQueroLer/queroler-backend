@@ -7,8 +7,8 @@ import com.usuario.quero_ler.models.Notificacao;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.NotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
-import com.usuario.quero_ler.service.NotificacaoServiceI;
-import com.usuario.quero_ler.service.UsuarioServiceI;
+import com.usuario.quero_ler.service.NotificacaoService;
+import com.usuario.quero_ler.service.UsuarioService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,9 +22,9 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class NotificacaoServiceImpl implements NotificacaoServiceI {
+public class NotificacaoServiceImpl implements NotificacaoService {
     private final NotificacaoRepository repository;
-    private final UsuarioServiceI usuarioServiceI;
+    private final UsuarioService usuarioService;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
     private final NotificacaoMapper mapper;
 
@@ -41,7 +41,7 @@ public class NotificacaoServiceImpl implements NotificacaoServiceI {
     @Override
     public Page<NotificacaoResponseDto> naoLidas(Long idUsuario, Pageable pageable) {
         apagarNotificacoesComMaisDe30Dias();
-        Usuario usuario = usuarioServiceI.getUsuario(idUsuario);
+        Usuario usuario = usuarioService.getUsuario(idUsuario);
         List<Notificacao> usuarioNotificacaos = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
         List<NotificacaoResponseDto> notificacoes = new ArrayList<>();
         for (Notificacao notificacao : usuarioNotificacaos) {
@@ -55,7 +55,7 @@ public class NotificacaoServiceImpl implements NotificacaoServiceI {
     @Override
     public void marcarComoLidas(Long idUsuario) {
         apagarNotificacoesComMaisDe30Dias();
-        Usuario usuario = usuarioServiceI.getUsuario(idUsuario);
+        Usuario usuario = usuarioService.getUsuario(idUsuario);
         usuarioNotificacaoRepository.marcarComoLidas(idUsuario);
     }
 

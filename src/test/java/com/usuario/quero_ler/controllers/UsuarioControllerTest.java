@@ -1,15 +1,15 @@
-package com.usuario.quero_ler.Controllers;
+package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enuns.LivroStatus;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
-import com.usuario.quero_ler.service.UsuarioServiceI;
+import com.usuario.quero_ler.service.UsuarioService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ class UsuarioControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private UsuarioServiceI service;
+    private UsuarioService service;
 
     @MockitoBean
     private TokenService tokenService;
@@ -114,7 +114,7 @@ class UsuarioControllerTest {
     @DisplayName("Deve alterar a senha do usuário com sucesso")
     void deveAlterarASenhaDoUsuarioComSucesso() throws Exception {
         Long id = 1L;
-        UsuarioAlterarSenhaReguest request = new UsuarioAlterarSenhaReguest("Teste123&", "Senha1232@");
+        UsuarioAlterarSenhaRequest request = new UsuarioAlterarSenhaRequest("Teste123&", "Senha1232@");
 
         mockMvc.perform(put("/usuarios/{id}/alterar-senha", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -128,7 +128,7 @@ class UsuarioControllerTest {
     @DisplayName("Deve atualizar usuário leitor com sucesso")
     void deveAtualizarUsuarioLeitorComSucesso() throws Exception {
         Long id = 1L;
-        UsuarioAtualizadoLeitorReguest request = new UsuarioAtualizadoLeitorReguest("Nome atualizado",
+        UsuarioAtualizadoLeitorRequest request = new UsuarioAtualizadoLeitorRequest("Nome atualizado",
                 null, null, null, null, null, null);
 
         mockMvc.perform(put("/usuarios/{id}", id)
@@ -143,7 +143,7 @@ class UsuarioControllerTest {
     @DisplayName("Deve atualizar usuário administrador com sucesso")
     void deveAtualizarUsuarioAdministradorComSucesso() throws Exception {
         Long id = 1L;
-        UsuarioAtualizadoAdministradorReguest request = new UsuarioAtualizadoAdministradorReguest(LocalDate.of(2015, 06, 03),
+        UsuarioAtualizadoAdministradorRequest request = new UsuarioAtualizadoAdministradorRequest(LocalDate.of(2015, 06, 03),
                 null, null, null, null);
 
         mockMvc.perform(put("/usuarios/{id}/administrador", id)

@@ -1,22 +1,15 @@
-package com.usuario.quero_ler.Controllers;
+package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enuns.LivroStatus;
-import com.usuario.quero_ler.exceptions.especies.LivroNaoEncontradoException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioJaPossueOLivroException;
+import com.usuario.quero_ler.enums.LivroStatus;
 import com.usuario.quero_ler.fixtures.LivroFixture;
-import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.Livro;
-import com.usuario.quero_ler.models.Usuario;
-import com.usuario.quero_ler.models.UsuarioLivro;
-import com.usuario.quero_ler.models.UsuarioLivroId;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
-import com.usuario.quero_ler.service.LivroServiceI;
+import com.usuario.quero_ler.service.LivroService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,7 +25,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,7 +42,7 @@ class LivroControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private LivroServiceI serviceI;
+    private LivroService serviceI;
 
     @MockitoBean
     private TokenService tokenService;

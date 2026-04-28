@@ -1,6 +1,6 @@
 package com.usuario.quero_ler.dtos.livro;
 
-import com.usuario.quero_ler.enuns.LivroStatus;
+import com.usuario.quero_ler.enums.LivroStatus;
 
 import java.time.LocalDateTime;
 

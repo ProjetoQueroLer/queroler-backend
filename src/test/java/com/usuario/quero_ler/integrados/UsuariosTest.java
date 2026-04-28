@@ -2,7 +2,7 @@ package com.usuario.quero_ler.integrados;
 
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.UsuarioRepository;
@@ -123,7 +123,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Deve alterar a sennha de um usuario com sucesso!")
     public void deveAlterarASenhaDeUmUsuarioComSucesso() {
-        UsuarioAlterarSenhaReguest dto = new UsuarioAlterarSenhaReguest("Teste123&", "NovaSenha456$");
+        UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&", "NovaSenha456$");
         Long id = 2L;
         logar(id);
         ResponseEntity<Void> resposta = template.exchange(
@@ -140,7 +140,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Deve alterar de um usuario Leitor com sucesso!")
     public void deveAlterarUmUsuarioLeitorComSucesso() {
-        UsuarioAtualizadoLeitorReguest dto = new UsuarioAtualizadoLeitorReguest("Nome Alterado", "emailAlterado@gmail.com", null,
+        UsuarioAtualizadoLeitorRequest dto = new UsuarioAtualizadoLeitorRequest("Nome Alterado", "emailAlterado@gmail.com", null,
                 "Cidade alterada", "Estado Alterado", "Pais alterado", null);
 
         Long id = 2L;
@@ -167,7 +167,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Deve alterar de um usuario administrador com sucesso!")
     public void deveAlterarUmUsuarioAdministradorComSucesso() {
-        UsuarioAtualizadoAdministradorReguest dto = new UsuarioAtualizadoAdministradorReguest(null,
+        UsuarioAtualizadoAdministradorRequest dto = new UsuarioAtualizadoAdministradorRequest(null,
                 "Cidade alterada", "Estado Alterado", "Pais alterado", null);
 
         Long id = 1L;

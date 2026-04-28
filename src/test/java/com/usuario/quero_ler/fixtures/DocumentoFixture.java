@@ -2,7 +2,7 @@ package com.usuario.quero_ler.fixtures;
 
 import com.usuario.quero_ler.dtos.documento.DocumentoRequestDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoResponseDto;
-import com.usuario.quero_ler.enuns.DocumentoTipo;
+import com.usuario.quero_ler.enums.DocumentoTipo;
 import com.usuario.quero_ler.models.Documento;
 
 import java.time.LocalDateTime;

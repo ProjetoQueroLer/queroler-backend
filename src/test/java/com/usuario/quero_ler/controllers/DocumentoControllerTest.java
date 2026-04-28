@@ -1,13 +1,13 @@
-package com.usuario.quero_ler.Controllers;
+package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.documento.DocumentoAlteracoesDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoRequestDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoResponseDto;
 import com.usuario.quero_ler.fixtures.DocumentoFixture;
+import com.usuario.quero_ler.service.DocumentoService;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
-import com.usuario.quero_ler.service.DocumentoServiceI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ class DocumentoControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private DocumentoServiceI service;
+    private DocumentoService service;
 
     @MockitoBean
     private TokenService tokenService;

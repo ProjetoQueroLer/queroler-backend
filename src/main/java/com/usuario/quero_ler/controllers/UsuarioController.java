@@ -1,9 +1,8 @@
-package com.usuario.quero_ler.Controllers;
+package com.usuario.quero_ler.controllers;
 
-import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enuns.LivroStatus;
-import com.usuario.quero_ler.service.UsuarioServiceI;
+import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
-    private final UsuarioServiceI serviceI;
+    private final UsuarioService serviceI;
 
     @PostMapping
     public ResponseEntity<UsuarioResponseDto> criar(@RequestBody @Valid UsuarioRequestDto dto) {
@@ -33,19 +32,19 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}/alterar-senha")
-    public ResponseEntity<Void> alterarSenha(@PathVariable Long id, @RequestBody @Valid UsuarioAlterarSenhaReguest dto) {
+    public ResponseEntity<Void> alterarSenha(@PathVariable Long id, @RequestBody @Valid UsuarioAlterarSenhaRequest dto) {
         serviceI.alterarSenha(id, dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoLeitorReguest dto) {
+    public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoLeitorRequest dto) {
         serviceI.atualizar(id, dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping("/{id}/administrador")
-    public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoAdministradorReguest dto) {
+    public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoAdministradorRequest dto) {
         serviceI.atualizar(id, dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

@@ -1,13 +1,11 @@
-package com.usuario.quero_ler.Controllers;
+package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.usuario.quero_ler.dtos.documento.DocumentoAlteracoesDto;
-import com.usuario.quero_ler.dtos.notificacao.NotificacaoRequestDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
 import com.usuario.quero_ler.fixtures.NotificacaoFixture;
+import com.usuario.quero_ler.service.NotificacaoService;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
-import com.usuario.quero_ler.service.NotificacaoServiceI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -37,7 +33,7 @@ class NotificacaoControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private NotificacaoServiceI service;
+    private NotificacaoService service;
 
     @MockitoBean
     private TokenService tokenService;

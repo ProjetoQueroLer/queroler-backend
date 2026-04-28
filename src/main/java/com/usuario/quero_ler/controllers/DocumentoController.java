@@ -1,9 +1,9 @@
-package com.usuario.quero_ler.Controllers;
+package com.usuario.quero_ler.controllers;
 
 import com.usuario.quero_ler.dtos.documento.DocumentoAlteracoesDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoRequestDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoResponseDto;
-import com.usuario.quero_ler.service.DocumentoServiceI;
+import com.usuario.quero_ler.service.DocumentoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/documentos")
 public class DocumentoController {
-    private final DocumentoServiceI serviceI;
+    private final DocumentoService serviceI;
 
     @PostMapping
     public ResponseEntity<DocumentoResponseDto> criar(@RequestBody @Valid DocumentoRequestDto dto){

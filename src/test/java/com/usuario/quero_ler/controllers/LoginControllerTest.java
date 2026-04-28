@@ -1,12 +1,11 @@
-package com.usuario.quero_ler.Controllers;
+package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
 import com.usuario.quero_ler.fixtures.LoginFixture;
+import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
-import com.usuario.quero_ler.service.LoginServiceI;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -33,7 +32,7 @@ class LoginControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private LoginServiceI service;
+    private LoginService service;
 
     @MockitoBean
     private TokenService tokenService;

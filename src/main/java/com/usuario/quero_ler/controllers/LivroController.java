@@ -1,9 +1,9 @@
-package com.usuario.quero_ler.Controllers;
+package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enuns.LivroStatus;
-import com.usuario.quero_ler.service.LivroServiceI;
+import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.service.LivroService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,13 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/livros")
 public class LivroController {
-    private final LivroServiceI serviceI;
+    private final LivroService serviceI;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> cadastrar(

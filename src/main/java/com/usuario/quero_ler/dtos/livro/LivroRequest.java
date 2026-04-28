@@ -1,7 +1,7 @@
 package com.usuario.quero_ler.dtos.livro;
 
 import com.usuario.quero_ler.dtos.autor.AutorRequest;
-import com.usuario.quero_ler.enuns.LivroIdioma;
+import com.usuario.quero_ler.enums.LivroIdioma;
 import jakarta.validation.constraints.*;
 
 import java.util.List;

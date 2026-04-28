@@ -22,7 +22,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoRequestDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.fixtures.NotificacaoFixture;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.mappers.NotificacaoMapper;

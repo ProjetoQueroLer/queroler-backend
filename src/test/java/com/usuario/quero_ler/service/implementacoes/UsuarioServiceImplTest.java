@@ -1,7 +1,7 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import com.usuario.quero_ler.fixtures.UserFixture;
@@ -12,8 +12,8 @@ import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
-import com.usuario.quero_ler.service.LivroServiceI;
-import com.usuario.quero_ler.service.LoginServiceI;
+import com.usuario.quero_ler.service.LivroService;
+import com.usuario.quero_ler.service.LoginService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +38,7 @@ class UsuarioServiceImplTest {
     private UsuarioRepository repository;
 
     @Mock
-    private LoginServiceI loginService;
+    private LoginService loginService;
 
     @Mock
     private UsuarioMapper mapper;
@@ -53,7 +53,7 @@ class UsuarioServiceImplTest {
     private UsuarioLivroRepository usuarioLivroRepository;
 
     @Mock
-    private LivroServiceI livroServiceI;
+    private LivroService livroServiceI;
 
     @Test
     @DisplayName("Deve criar um usuário com sucesso.")
@@ -123,7 +123,7 @@ class UsuarioServiceImplTest {
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
         Usuario usuario = UserFixture.entidadeCompleta(user);
         Long id = usuario.getId();
-        UsuarioAtualizadoLeitorReguest atualizacoes = new UsuarioAtualizadoLeitorReguest(
+        UsuarioAtualizadoLeitorRequest atualizacoes = new UsuarioAtualizadoLeitorRequest(
                 "Nome atualizado","emailAtual@gmail.com", LocalDate.of(1978,9,12),
                 null,"cidade atualizada",null,null
         );
@@ -147,7 +147,7 @@ class UsuarioServiceImplTest {
         User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
         Usuario usuario = UserFixture.entidadeCompleta(user);
         Long id = usuario.getId();
-        UsuarioAtualizadoAdministradorReguest atualizacoes = new UsuarioAtualizadoAdministradorReguest(
+        UsuarioAtualizadoAdministradorRequest atualizacoes = new UsuarioAtualizadoAdministradorRequest(
                  LocalDate.of(1978,9,12),null,"cidade atualizada",null,null
         );
         Usuario usuarioAtualizado = UserFixture.atualizar(usuario,atualizacoes);
@@ -220,7 +220,7 @@ class UsuarioServiceImplTest {
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
         Usuario usuario = UserFixture.entidadeCompleta(user);
         Long id = usuario.getId();
-        UsuarioAlterarSenhaReguest dto = new UsuarioAlterarSenhaReguest("Teste123&","Alterado253$");
+        UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&","Alterado253$");
 
         when(repository.findById(id)).thenReturn(Optional.of(usuario));
 
