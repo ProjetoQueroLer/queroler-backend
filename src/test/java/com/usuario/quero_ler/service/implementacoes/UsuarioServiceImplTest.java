@@ -9,7 +9,11 @@ import com.usuario.quero_ler.mappers.UsuarioMapper;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.UserRepository;
+import com.usuario.quero_ler.repository.UsuarioLivroRepository;
+import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
+import com.usuario.quero_ler.service.LivroService;
+import com.usuario.quero_ler.service.LoginService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,13 +38,22 @@ class UsuarioServiceImplTest {
     private UsuarioRepository repository;
 
     @Mock
-    private LoginServiceImpl loginService;
+    private LoginService loginService;
 
     @Mock
     private UsuarioMapper mapper;
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private UsuarioNotificacaoRepository usuarioNotificacaoRepository;
+
+    @Mock
+    private UsuarioLivroRepository usuarioLivroRepository;
+
+    @Mock
+    private LivroService livroServiceI;
 
     @Test
     @DisplayName("Deve criar um usuário com sucesso.")
@@ -157,6 +171,7 @@ class UsuarioServiceImplTest {
         Long id = usuario.getId();
 
         when(repository.findById(id)).thenReturn(Optional.of(usuario));
+        when(usuarioNotificacaoRepository.findByUsuarioId(id)).thenReturn(List.of());
 
         service.excluirPerfil(id);
 

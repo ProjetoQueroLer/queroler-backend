@@ -6,9 +6,12 @@ import com.usuario.quero_ler.dtos.documento.DocumentoRequestDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoResponseDto;
 import com.usuario.quero_ler.fixtures.DocumentoFixture;
 import com.usuario.quero_ler.service.DocumentoService;
+import com.usuario.quero_ler.repository.UserRepository;
+import com.usuario.quero_ler.security.TokenService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @WebMvcTest(DocumentoController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class DocumentoControllerTest {
 
     @Autowired
@@ -32,6 +36,12 @@ class DocumentoControllerTest {
 
     @MockitoBean
     private DocumentoService service;
+
+    @MockitoBean
+    private TokenService tokenService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @Autowired
     private ObjectMapper objectMapper;

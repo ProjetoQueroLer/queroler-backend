@@ -5,13 +5,10 @@ import com.usuario.quero_ler.dtos.documento.DocumentoRequestDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoResponseDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoRequestDto;
 import com.usuario.quero_ler.enums.DocumentoTipo;
-import com.usuario.quero_ler.enums.UsuarioProfile;
-import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
+import com.usuario.quero_ler.exceptions.especies.DocumentoNaoEncontradoException;
 import com.usuario.quero_ler.fixtures.DocumentoFixture;
-import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.mappers.DocumentoMapper;
 import com.usuario.quero_ler.models.Documento;
-import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.repository.DocumentoRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,7 +42,6 @@ class DocumentoServiceImplTest {
     @Test
     @DisplayName("Deve criar um documento com sucesso.")
     void deveCriarUmNovoDocumentoComSucesso() {
-        User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
         DocumentoRequestDto dto = DocumentoFixture.requestDto();
         Documento documento = DocumentoFixture.entity();
         DocumentoResponseDto responseDto = DocumentoFixture.responseDto();
@@ -62,27 +58,24 @@ class DocumentoServiceImplTest {
         assertEquals(dto.conteudo(), resposta.conteudo());
 
         verify(repository).save(documento);
-        verify(notificacaoService).criar(new NotificacaoRequestDto("Documento criado"));
+        verify(notificacaoService).criar(new NotificacaoRequestDto(documento.getTipo().name()));
     }
 
     @Test
-    @DisplayName("Deve lançar excessão auando um usuario sem perfil de administrador tentar criar um documento.")
-    void deveLancarExcessaoQuandoUmUsuarioSemPerfilDeAdministradorTentaCriarUmNovoDocumento() {
-        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
-        DocumentoRequestDto dto = DocumentoFixture.requestDto();
+    @DisplayName("Deve lançar exceção quando tentar alterar documento inexistente.")
+    void deveLancarExcecaoQuandoDocumentoNaoExistirNoAlterar() {
+        DocumentoAlteracoesDto alteracoes = new DocumentoAlteracoesDto("Titulo alterado", null, "conteudo alterado");
 
+        when(repository.findById(999L)).thenReturn(Optional.empty());
 
-        UsuarioSemPermissaoParaAcaoException exception = assertThrows(UsuarioSemPermissaoParaAcaoException.class,
-                () -> service.criar(dto)
+        assertThrows(DocumentoNaoEncontradoException.class,
+                () -> service.alterar(999L, alteracoes)
         );
-
-        assertEquals("Apenas administradores podem executar esta ação.", exception.getMessage());
     }
 
     @Test
     @DisplayName("Deve alterar um documento com sucesso;")
     void deveAlterarUmDocumentoComSucesso() {
-        User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
         Documento documento = DocumentoFixture.entity();
         LocalDateTime agora = LocalDateTime.now();
         Long id = documento.getId();
@@ -96,13 +89,12 @@ class DocumentoServiceImplTest {
 
         assertEquals(alteracoes.titulo(), documentoAlterado.getTitulo());
         verify(repository).save(documentoAlterado);
-        verify(notificacaoService).criar(new NotificacaoRequestDto("documento alterado"));
+        verify(notificacaoService).criar(new NotificacaoRequestDto(documentoAlterado.getTipo().name()));
     }
 
     @Test
     @DisplayName("Deve retornar o Termos Gerais de uso")
     void deveRetornarOTermosGeraisDeUso() {
-        User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
         Documento documento = DocumentoFixture.entity();
         DocumentoResponseDto reponse = DocumentoFixture.responseDto(documento);
 
@@ -129,7 +121,6 @@ class DocumentoServiceImplTest {
     @Test
     @DisplayName("Deve validar usuário logado como administrador.")
     void deveValidarUsuarioComoAdm() {
-        User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
-
+        // método sem efeito: removido o comportamento de validação de perfil no serviço
     }
 }

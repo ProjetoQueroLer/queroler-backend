@@ -3,6 +3,7 @@ package com.usuario.quero_ler.integrados;
 import com.usuario.quero_ler.dtos.PageResponse;
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
+import com.usuario.quero_ler.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,14 +28,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = {"/gerar_banco.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = {"/limpar_banco.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-public class NotificacaoTest {
+public class NotificacaoTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;
+
+    private HttpHeaders authHeaders;
 
     @BeforeEach
     void setUp() {
         LoginRequestDto autenticacaoDto = new LoginRequestDto("leitor", "Teste123&");
-        template.postForEntity("/logins", autenticacaoDto, Void.class);
+        ResponseEntity<Void> loginResponse = template.postForEntity("/logins", autenticacaoDto, Void.class);
+        authHeaders = new HttpHeaders();
+        authHeaders.add(HttpHeaders.COOKIE, loginResponse.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
     }
 
     @Test
@@ -44,7 +51,7 @@ public class NotificacaoTest {
         ResponseEntity<PageResponse<NotificacaoResponseDto>> resposta = template.exchange(
                 "/notificacoes/{id}/usuario",
                 HttpMethod.GET,
-                null,
+            new HttpEntity<>(authHeaders),
                 new ParameterizedTypeReference<PageResponse<NotificacaoResponseDto>>() {
                 }, id
         );
@@ -61,7 +68,7 @@ public class NotificacaoTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/notificacoes/{id}",
                 HttpMethod.PUT,
-                null, Void.class
+            new HttpEntity<>(authHeaders), Void.class
                 , id
         );
         assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);

@@ -44,6 +44,7 @@ A gerência e o ciclo de vida do token de autenticação estão concentrados no 
 * ** Antes de subir a aplicação local, é necessário adicionar as variaveis de ambiente no projeto (arquivo .env na raiz do projeto)**
 - Exemplo de configuração (.env)
 ```bash
+POSTGRES_DB=db_quero_ler_v2
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/db_quero_ler_v2
 SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=postgres
