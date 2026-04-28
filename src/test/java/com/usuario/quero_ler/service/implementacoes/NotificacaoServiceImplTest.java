@@ -51,6 +51,7 @@ class NotificacaoServiceImplTest {
     @Test
     @DisplayName("Deve criar uma notificação para todos os usuários do sistema")
     void criar() {
+
         NotificacaoRequestDto dto = NotificacaoFixture.requestDto();
         Notificacao notificacao = NotificacaoFixture.entity();
         NotificacaoResponseDto responseDto = NotificacaoFixture.response();
@@ -63,9 +64,11 @@ class NotificacaoServiceImplTest {
 
         assertNotNull(resposta.id());
         assertEquals(dto.notificacao(), resposta.notificacao());
-        assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), resposta.dataDeCriacao().truncatedTo(ChronoUnit.MINUTES));
 
-        verify(usuarioNotificacaoRepository).enviarParaTodosUsuarios(notificacao.getId());
+        assertEquals(responseDto.dataDeCriacao(), resposta.dataDeCriacao());
+
+        verify(usuarioNotificacaoRepository)
+                .enviarParaTodosUsuarios(notificacao.getId());
     }
 
     @Test

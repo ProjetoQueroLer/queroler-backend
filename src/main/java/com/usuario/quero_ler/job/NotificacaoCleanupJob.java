@@ -2,11 +2,11 @@ package com.usuario.quero_ler.job;
 
 import com.usuario.quero_ler.repository.NotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -23,9 +23,9 @@ public class NotificacaoCleanupJob {
     public void executarLimpeza() {
         LocalDateTime dataLimite = LocalDateTime.now().minusDays(30);
 
-        int usuariosRemovidos = usuarioNotificacaoRepository.deleteByNotificacaoDataDeCriacaoBefore(dataLimite);
+        long usuariosRemovidos = usuarioNotificacaoRepository.deleteByNotificacaoDataDeCriacaoBefore(dataLimite);
 
-        int registrosRemovidos = notificacaoRepository.deleteByDataDeCriacaoBefore(dataLimite);
+        long registrosRemovidos = notificacaoRepository.deleteByDataDeCriacaoBefore(dataLimite);
 
         log.info("Data limite: {}", dataLimite);
         log.info("usuario_notificacao removidos: {}", usuariosRemovidos);

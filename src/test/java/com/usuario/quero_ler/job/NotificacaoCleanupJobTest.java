@@ -30,10 +30,10 @@ class NotificacaoCleanupJobTest {
     void deveDeletarNotificacoesAntigas() {
 
         when(usuarioNotificacaoRepository.deleteByNotificacaoDataDeCriacaoBefore(any()))
-                .thenReturn(5);
+                .thenReturn(5L);
 
         when(notificacaoRepository.deleteByDataDeCriacaoBefore(any()))
-                .thenReturn(3);
+                .thenReturn(3L);
 
         job.executarLimpeza();
 

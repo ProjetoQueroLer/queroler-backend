@@ -39,22 +39,12 @@ public class NotificacaoServiceImpl implements NotificacaoServiceI {
     @Transactional
     @Override
     public Page<NotificacaoResponseDto> naoLidas(Long idUsuario, Pageable pageable) {
-
-        Usuario usuario = usuarioServiceI.getUsuario(idUsuario);
-
-        List<Notificacao> usuarioNotificacaos =
-                usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
+        List<Notificacao> usuarioNotificacaos = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
 
         List<NotificacaoResponseDto> notificacoes = new ArrayList<>();
 
         for (Notificacao notificacao : usuarioNotificacaos) {
-            notificacoes.add(
-                    new NotificacaoResponseDto(
-                            notificacao.getId(),
-                            notificacao.getNotificacao(),
-                            notificacao.getDataDeCriacao()
-                    )
-            );
+            notificacoes.add(new NotificacaoResponseDto(notificacao.getId(), notificacao.getNotificacao(), notificacao.getDataDeCriacao()));
         }
 
         return new PageImpl<>(notificacoes, pageable, notificacoes.size());
