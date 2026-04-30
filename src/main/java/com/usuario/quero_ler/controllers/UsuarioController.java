@@ -13,45 +13,45 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
-    private final UsuarioService serviceI;
+    private final UsuarioService service;
 
     @PostMapping
     public ResponseEntity<UsuarioResponseDto> criar(@RequestBody @Valid UsuarioRequestDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(serviceI.criar(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioDadosResponse> dadosDoUsuario(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getDadosDoUsuario(id));
+        return ResponseEntity.status(HttpStatus.OK).body(service.getDadosDoUsuario(id));
     }
 
     @PutMapping("/{id}/dados-adicionais")
     public ResponseEntity<Void> inserirDadosAdicionais(@PathVariable Long id, @RequestBody @Valid UsuarioDadosComplementarRequest dto) {
-        serviceI.adicionarDados(id, dto);
+        service.adicionarDados(id, dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping("/{id}/alterar-senha")
     public ResponseEntity<Void> alterarSenha(@PathVariable Long id, @RequestBody @Valid UsuarioAlterarSenhaRequest dto) {
-        serviceI.alterarSenha(id, dto);
+        service.alterarSenha(id, dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoLeitorRequest dto) {
-        serviceI.atualizar(id, dto);
+        service.atualizar(id, dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping("/{id}/administrador")
     public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoAdministradorRequest dto) {
-        serviceI.atualizar(id, dto);
+        service.atualizar(id, dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluirPerfil(@PathVariable Long id) {
-        serviceI.excluirPerfil(id);
+        service.excluirPerfil(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -60,7 +60,7 @@ public class UsuarioController {
                                                @RequestParam Long idLivro,
                                                @RequestParam LivroStatus status){
 
-        serviceI.adicionarLivro(id, idLivro,status);
+        service.adicionarLivro(id, idLivro,status);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

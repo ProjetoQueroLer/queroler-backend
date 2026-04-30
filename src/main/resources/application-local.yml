@@ -24,3 +24,11 @@ api:
       secret: ${API_SECURITY_TOKEN_SECRET:quero-ler-secret-local-com-32-char!}
       issuer: quero_ler
       expiration-minutes: 120
+
+app:
+  notificacao:
+    cleanup:
+      enabled: false
+      cron: "0 */5 * * * *" # a cada 5 minutos (pra teste)
+      zone: "America/Sao_Paulo"
+      retention-days: 1

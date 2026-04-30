@@ -2,6 +2,8 @@ package com.usuario.quero_ler.repository;
 
 import com.usuario.quero_ler.models.Notificacao;
 import com.usuario.quero_ler.models.UsuarioNotificacao;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,7 +30,7 @@ public interface UsuarioNotificacaoRepository extends JpaRepository<UsuarioNotif
                 WHERE un.usuario.id = :usuarioId
                 AND (un.visualizada = false OR un.visualizada IS NULL)
             """)
-    List<Notificacao> buscarNotificacoesNaoLidas(@Param("usuarioId") Long usuarioId);
+    Page<Notificacao> buscarNotificacoesNaoLidas(@Param("usuarioId") Long usuarioId, Pageable pageable);
 
     @Modifying
     @Query("""
@@ -40,7 +42,7 @@ public interface UsuarioNotificacaoRepository extends JpaRepository<UsuarioNotif
             """)
     void marcarComoLidas(@Param("usuarioId") Long usuarioId);
 
-    void deleteByNotificacaoDataDeCriacaoBefore(LocalDateTime data);
+    long deleteByNotificacaoDataDeCriacaoBefore(LocalDateTime data);
 
     List<UsuarioNotificacao> findByUsuarioId(Long usuarioId);
 }
