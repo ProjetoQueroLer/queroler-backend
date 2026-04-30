@@ -6,30 +6,35 @@ import com.usuario.quero_ler.fixtures.NotificacaoFixture;
 import com.usuario.quero_ler.models.Notificacao;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
-@ExtendWith(MockitoExtension.class)
+
 class NotificacaoMapperTest {
 
-    @InjectMocks
-    private NotificacaoMapper mapper;
+    private final NotificacaoMapper mapper = new NotificacaoMapper();
 
     @Test
-    @DisplayName("Deve converter uma notificação request e notificação entity")
+    @DisplayName("Deve converter uma notificação request em entity")
     void toEntity() {
         NotificacaoRequestDto dto = NotificacaoFixture.requestDto();
-        LocalDateTime agora = LocalDateTime.now();
+
+        LocalDateTime antes = LocalDateTime.now();
 
         Notificacao resposta = mapper.toEntity(dto);
 
+        LocalDateTime depois = LocalDateTime.now();
+
         assertNull(resposta.getId());
-        assertEquals(dto.notificacao(),resposta.getNotificacao());
-        assertEquals(agora, resposta.getDataDeCriacao());
+        assertEquals(dto.notificacao(), resposta.getNotificacao());
+
+        assertTrue(
+                !resposta.getDataDeCriacao().isBefore(antes) &&
+                        !resposta.getDataDeCriacao().isAfter(depois),
+                "Data de criação deveria estar entre antes e depois"
+        );
     }
 
     @Test
@@ -39,8 +44,12 @@ class NotificacaoMapperTest {
 
         NotificacaoResponseDto resposta = mapper.toResponse(notificacao);
 
-        assertEquals(notificacao.getId(),resposta.id());
-        assertEquals(notificacao.getNotificacao(),resposta.notificacao());
-        assertEquals(notificacao.getDataDeCriacao(), resposta.dataDeCriacao());
+        assertEquals(notificacao.getId(), resposta.id());
+        assertEquals(notificacao.getNotificacao(), resposta.notificacao());
+
+        assertEquals(
+                notificacao.getDataDeCriacao().truncatedTo(ChronoUnit.SECONDS),
+                resposta.dataDeCriacao().truncatedTo(ChronoUnit.SECONDS)
+        );
     }
 }

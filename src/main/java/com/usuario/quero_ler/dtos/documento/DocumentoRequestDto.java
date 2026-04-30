@@ -1,6 +1,6 @@
 package com.usuario.quero_ler.dtos.documento;
 
-import com.usuario.quero_ler.enuns.DocumentoTipo;
+import com.usuario.quero_ler.enums.DocumentoTipo;
 
 public record DocumentoRequestDto(
         String titulo,

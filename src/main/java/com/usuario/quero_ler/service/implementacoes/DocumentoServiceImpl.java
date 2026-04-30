@@ -4,26 +4,22 @@ import com.usuario.quero_ler.dtos.documento.DocumentoAlteracoesDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoRequestDto;
 import com.usuario.quero_ler.dtos.documento.DocumentoResponseDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoRequestDto;
-import com.usuario.quero_ler.enuns.DocumentoTipo;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.DocumentoTipo;
 import com.usuario.quero_ler.exceptions.especies.DocumentoNaoEncontradoException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import com.usuario.quero_ler.mappers.DocumentoMapper;
 import com.usuario.quero_ler.models.Documento;
-import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.repository.DocumentoRepository;
-import com.usuario.quero_ler.service.DocumentoServiceI;
-import com.usuario.quero_ler.service.LoginServiceI;
-import com.usuario.quero_ler.service.NotificacaoServiceI;
+import com.usuario.quero_ler.service.DocumentoService;
+import com.usuario.quero_ler.service.NotificacaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class DocumentoServiceImpl implements DocumentoServiceI {
+public class DocumentoServiceImpl implements DocumentoService {
     private final DocumentoRepository repository;
     private final DocumentoMapper mapper;
-    private final NotificacaoServiceI notificacaoServiceI;
+    private final NotificacaoService notificacaoService;
 
     @Override
     public DocumentoResponseDto criar(DocumentoRequestDto dto) {
@@ -50,7 +46,7 @@ public class DocumentoServiceImpl implements DocumentoServiceI {
     }
 
     protected void gerarNonificacao(String texto) {
-        notificacaoServiceI.criar(new NotificacaoRequestDto(texto));
+        notificacaoService.criar(new NotificacaoRequestDto(texto));
     }
 
 }

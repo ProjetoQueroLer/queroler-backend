@@ -26,3 +26,11 @@ api:
       secret: ${API_SECURITY_TOKEN_SECRET}
       issuer: quero_ler
       expiration-minutes: 120
+
+app:
+  notificacao:
+    cleanup:
+      enabled: true
+      cron: "0 0 2 * * *"
+      zone: "America/Sao_Paulo"
+      retention-days: 30

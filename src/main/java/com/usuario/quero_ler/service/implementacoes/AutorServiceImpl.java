@@ -4,12 +4,12 @@ import com.usuario.quero_ler.dtos.autor.AutorRequest;
 import com.usuario.quero_ler.mappers.AutorMapper;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.repository.AutorRepository;
-import com.usuario.quero_ler.service.AutorServiceI;
+import com.usuario.quero_ler.service.AutorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
-public class AutorServiceImpl implements AutorServiceI {
+public class AutorServiceImpl implements AutorService {
     private final AutorRepository repository;
     private final AutorMapper mapper;
 

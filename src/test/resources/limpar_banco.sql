@@ -1,5 +1,9 @@
+DELETE FROM tb_usuario_livro;
+DELETE FROM tb_livro_autor;
 DELETE FROM tb_usuario_notificacao;
 DELETE FROM tb_notificacao;
-DELETE FROM tb_usuario;
 DELETE FROM tb_documento;
+DELETE FROM tb_usuario;
+DELETE FROM tb_livros;
+DELETE FROM tb_autores;
 DELETE FROM tb_user;

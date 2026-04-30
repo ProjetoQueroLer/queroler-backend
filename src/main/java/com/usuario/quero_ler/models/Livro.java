@@ -1,11 +1,9 @@
 package com.usuario.quero_ler.models;
 
-import com.usuario.quero_ler.enuns.LivroIdioma;
+import com.usuario.quero_ler.enums.LivroIdioma;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
 
-import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

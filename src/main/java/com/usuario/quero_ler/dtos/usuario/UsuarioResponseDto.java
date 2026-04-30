@@ -1,6 +1,6 @@
 package com.usuario.quero_ler.dtos.usuario;
 
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 
 import java.time.LocalDate;
 

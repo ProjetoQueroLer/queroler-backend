@@ -1,6 +1,6 @@
 package com.usuario.quero_ler.models;
 
-import com.usuario.quero_ler.enuns.DocumentoTipo;
+import com.usuario.quero_ler.enums.DocumentoTipo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;

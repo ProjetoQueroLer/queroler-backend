@@ -4,26 +4,25 @@ import com.usuario.quero_ler.dtos.notificacao.NotificacaoRequestDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
 import com.usuario.quero_ler.mappers.NotificacaoMapper;
 import com.usuario.quero_ler.models.Notificacao;
-import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.NotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
-import com.usuario.quero_ler.service.NotificacaoServiceI;
-import com.usuario.quero_ler.service.UsuarioServiceI;
-import jakarta.transaction.Transactional;
+import com.usuario.quero_ler.service.NotificacaoService;
+import com.usuario.quero_ler.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class NotificacaoServiceImpl implements NotificacaoServiceI {
+public class NotificacaoServiceImpl implements NotificacaoService {
+
     private final NotificacaoRepository repository;
-    private final UsuarioServiceI usuarioServiceI;
+    private final UsuarioService usuarioService;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
     private final NotificacaoMapper mapper;
 
@@ -32,20 +31,19 @@ public class NotificacaoServiceImpl implements NotificacaoServiceI {
     public NotificacaoResponseDto criar(NotificacaoRequestDto dto) {
         Notificacao notificacao = mapper.toEntity(dto);
         notificacao = repository.save(notificacao);
+
         usuarioNotificacaoRepository.enviarParaTodosUsuarios(notificacao.getId());
+
         return mapper.toResponse(notificacao);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Page<NotificacaoResponseDto> naoLidas(Long idUsuario, Pageable pageable) {
-        List<Notificacao> usuarioNotificacaos = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
 
-        List<NotificacaoResponseDto> notificacoes = new ArrayList<>();
+        usuarioService.getUsuario(idUsuario);
 
-        for (Notificacao notificacao : usuarioNotificacaos) {
-            notificacoes.add(new NotificacaoResponseDto(notificacao.getId(), notificacao.getNotificacao(), notificacao.getDataDeCriacao()));
-        }
+        List<NotificacaoResponseDto> notificacoes = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario).stream().map(mapper::toResponse).toList();
 
         return new PageImpl<>(notificacoes, pageable, notificacoes.size());
     }
@@ -53,7 +51,9 @@ public class NotificacaoServiceImpl implements NotificacaoServiceI {
     @Transactional
     @Override
     public void marcarComoLidas(Long idUsuario) {
-        usuarioServiceI.getUsuario(idUsuario);
+
+        usuarioService.getUsuario(idUsuario);
+
         usuarioNotificacaoRepository.marcarComoLidas(idUsuario);
     }
 }

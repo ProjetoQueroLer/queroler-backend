@@ -1,6 +1,6 @@
 package com.usuario.quero_ler.models;
 
-import com.usuario.quero_ler.enuns.LivroStatus;
+import com.usuario.quero_ler.enums.LivroStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

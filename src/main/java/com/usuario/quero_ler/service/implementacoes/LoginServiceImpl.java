@@ -2,13 +2,15 @@ package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
-import com.usuario.quero_ler.enuns.UsuarioProfile;
+import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CredenciaisInvalidasException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioComPerfilInvalidoException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioNaoAutenticadoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
-import com.usuario.quero_ler.service.LoginServiceI;
+import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.utils.Senhas;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,7 +29,7 @@ import org.springframework.stereotype.Service;
 @Getter
 @RequiredArgsConstructor
 @Service
-public class LoginServiceImpl implements LoginServiceI {
+public class LoginServiceImpl implements LoginService {
 	private final UserRepository repository;
 
 	private final TokenService tokenService;
@@ -40,6 +42,7 @@ public class LoginServiceImpl implements LoginServiceI {
 	@Override
 	public User criar(UsuarioRequestDto dto, UsuarioProfile profile) {
 		User user = new User();
+		String senha = Senhas.gerar(dto.senha());
 		user.setUser(dto.email());
 		user.setSenha(passwordEncoder.encode(dto.senha()));
 		user.setProfile(profile);
