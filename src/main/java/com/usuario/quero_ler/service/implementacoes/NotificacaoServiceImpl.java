@@ -10,12 +10,9 @@ import com.usuario.quero_ler.service.NotificacaoService;
 import com.usuario.quero_ler.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -40,12 +37,11 @@ public class NotificacaoServiceImpl implements NotificacaoService {
     @Transactional(readOnly = true)
     @Override
     public Page<NotificacaoResponseDto> naoLidas(Long idUsuario, Pageable pageable) {
-
         usuarioService.getUsuario(idUsuario);
 
-        List<NotificacaoResponseDto> notificacoes = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario).stream().map(mapper::toResponse).toList();
+        Page<Notificacao> page = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario, pageable);
 
-        return new PageImpl<>(notificacoes, pageable, notificacoes.size());
+        return page.map(mapper::toResponse);
     }
 
     @Transactional

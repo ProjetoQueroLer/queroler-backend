@@ -13,9 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoRequestDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
@@ -70,7 +68,7 @@ class NotificacaoServiceImplTest {
     }
 
     @Test
-    @DisplayName("Deve retornar notificações não lidas do usuário")
+    @DisplayName("Deve retornar notificações não lidas do usuário com paginação")
     void deveRetornarNotificacoesNaoLidas() {
 
         Long idUsuario = 1L;
@@ -84,11 +82,12 @@ class NotificacaoServiceImplTest {
 
         List<Notificacao> lista = List.of(notificacao1, notificacao2);
 
+        Page<Notificacao> page = new PageImpl<>(lista, pageable, lista.size());
+
         when(usuarioService.getUsuario(idUsuario)).thenReturn(usuario);
 
-        when(usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario))
-                .thenReturn(lista);
-
+        when(usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario, pageable))
+                .thenReturn(page);
 
         when(mapper.toResponse(notificacao1))
                 .thenReturn(new NotificacaoResponseDto(
@@ -111,9 +110,9 @@ class NotificacaoServiceImplTest {
         assertEquals(notificacao2.getId(), resultado.getContent().get(1).id());
 
         verify(usuarioService).getUsuario(idUsuario);
-        verify(usuarioNotificacaoRepository).buscarNotificacoesNaoLidas(idUsuario);
+        verify(usuarioNotificacaoRepository)
+                .buscarNotificacoesNaoLidas(idUsuario, pageable);
 
-        // 🔹 garante que cleanup NÃO ocorre no service
         verify(repository, never()).deleteByDataDeCriacaoBefore(any());
         verify(usuarioNotificacaoRepository, never())
                 .deleteByNotificacaoDataDeCriacaoBefore(any());

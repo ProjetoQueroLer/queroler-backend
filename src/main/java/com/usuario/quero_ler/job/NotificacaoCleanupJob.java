@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Slf4j
 @Component
@@ -34,7 +35,10 @@ public class NotificacaoCleanupJob {
             return;
         }
 
-        LocalDateTime agora = LocalDateTime.now(clock);
+        ZoneId zoneId = ZoneId.of(properties.getZone());
+        Clock zonedClock = clock.withZone(zoneId);
+
+        LocalDateTime agora = LocalDateTime.now(zonedClock);
         LocalDateTime dataLimite = agora.minusDays(properties.getRetentionDays());
 
         long usuariosRemovidos =

@@ -6,13 +6,12 @@ import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.*;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @DisplayName("Job de limpeza de notificações")
@@ -32,25 +31,35 @@ class NotificacaoCleanupJobTest {
         properties = new NotificacaoCleanupProperties();
         properties.setEnabled(true);
         properties.setRetentionDays(30);
+        properties.setZone("America/Sao_Paulo");
 
-        clock = Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneId.of("America/Sao_Paulo"));
+        clock = Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneId.of("UTC"));
 
         job = new NotificacaoCleanupJob(notificacaoRepository, usuarioNotificacaoRepository, properties, clock);
     }
 
     @Test
-    @DisplayName("Deve deletar notificações antigas em ambas as tabelas")
-    void deveDeletarNotificacoesAntigas() {
+    @DisplayName("Deve deletar notificações antigas em ambas as tabelas com data correta")
+    void deveDeletarNotificacoesAntigasComDataCorreta() {
 
         when(usuarioNotificacaoRepository.deleteByNotificacaoDataDeCriacaoBefore(any())).thenReturn(5L);
-
         when(notificacaoRepository.deleteByDataDeCriacaoBefore(any())).thenReturn(3L);
 
         job.executarLimpeza();
 
-        verify(usuarioNotificacaoRepository, times(1)).deleteByNotificacaoDataDeCriacaoBefore(any());
+        ArgumentCaptor<LocalDateTime> captor = ArgumentCaptor.forClass(LocalDateTime.class);
 
-        verify(notificacaoRepository, times(1)).deleteByDataDeCriacaoBefore(any());
+        verify(usuarioNotificacaoRepository).deleteByNotificacaoDataDeCriacaoBefore(captor.capture());
+
+        LocalDateTime dataCapturada = captor.getValue();
+
+        ZoneId zone = ZoneId.of(properties.getZone());
+
+        LocalDateTime esperado = LocalDateTime.ofInstant(clock.instant(), zone).minusDays(properties.getRetentionDays());
+
+        assertEquals(esperado, dataCapturada);
+
+        verify(notificacaoRepository).deleteByDataDeCriacaoBefore(esperado);
     }
 
     @Test
