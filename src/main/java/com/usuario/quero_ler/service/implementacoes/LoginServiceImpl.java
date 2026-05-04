@@ -52,7 +52,7 @@ public class LoginServiceImpl implements LoginService {
 
 	@Override
 	public void login(LoginRequestDto dto, HttpServletResponse response) {
-
+		Senhas.validar(dto.senha());
 		User user = repository.findByUserIgnoreCase(dto.user())
 				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não cadastrado"));
 		if (!passwordEncoder.matches(dto.senha(), user.getSenha())) {
