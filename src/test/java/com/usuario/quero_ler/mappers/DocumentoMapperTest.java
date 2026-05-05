@@ -11,10 +11,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @ExtendWith(MockitoExtension.class)
 class DocumentoMapperTest {
 
@@ -25,16 +26,17 @@ class DocumentoMapperTest {
     @DisplayName("Deve Converter o documento em entidade.")
     void toEntity() {
         DocumentoRequestDto dto = DocumentoFixture.requestDto();
+        LocalDateTime base = LocalDateTime.now();
 
         Documento resposta = mapper.toEntity(dto);
 
         assertNull(resposta.getId());
-        assertEquals(dto.titulo(),resposta.getTitulo());
-        assertEquals(dto.tipo(),resposta.getTipo());
-        assertEquals(dto.conteudo(),resposta.getConteudo());
+        assertEquals(dto.titulo(), resposta.getTitulo());
+        assertEquals(dto.tipo(), resposta.getTipo());
+        assertEquals(dto.conteudo(), resposta.getConteudo());
 
-        assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES),
-                resposta.getUltimaAlteracao().truncatedTo(ChronoUnit.MINUTES));
+        assertNotNull(resposta.getUltimaAlteracao());
+        assertTrue(Duration.between(base, resposta.getUltimaAlteracao()).abs().toSeconds() <= 2);
     }
 
     @Test
@@ -44,29 +46,29 @@ class DocumentoMapperTest {
 
         DocumentoResponseDto resposta = mapper.toResponse(documento);
 
-        assertEquals(documento.getId(),resposta.id());
-        assertEquals(documento.getTitulo(),resposta.titulo());
-        assertEquals(documento.getTipo(),resposta.tipo());
-        assertEquals(documento.getConteudo(),resposta.conteudo());
+        assertEquals(documento.getId(), resposta.id());
+        assertEquals(documento.getTitulo(), resposta.titulo());
+        assertEquals(documento.getTipo(), resposta.tipo());
+        assertEquals(documento.getConteudo(), resposta.conteudo());
 
-        assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES),
-                resposta.ultimaAlteracao().truncatedTo(ChronoUnit.MINUTES));
+        assertEquals(documento.getUltimaAlteracao(), resposta.ultimaAlteracao());
     }
 
     @Test
     @DisplayName("Deve fazer a atualização do documento")
     void toUpdate() {
         Documento documento = DocumentoFixture.entity();
-        DocumentoAlteracoesDto dto = new DocumentoAlteracoesDto("Titulo Alterado", null,"conteudo alterado");
+        DocumentoAlteracoesDto dto = new DocumentoAlteracoesDto("Titulo Alterado", null, "conteudo alterado");
+        LocalDateTime base = LocalDateTime.now();
 
-        Documento resposta = mapper.toUpdate(documento,dto);
+        Documento resposta = mapper.toUpdate(documento, dto);
 
-        assertEquals(documento.getId(),resposta.getId());
-        assertEquals(dto.titulo(),resposta.getTitulo());
-        assertEquals(documento.getTipo(),resposta.getTipo());
-        assertEquals(dto.conteudo(),resposta.getConteudo());
+        assertEquals(documento.getId(), resposta.getId());
+        assertEquals(dto.titulo(), resposta.getTitulo());
+        assertEquals(documento.getTipo(), resposta.getTipo());
+        assertEquals(dto.conteudo(), resposta.getConteudo());
 
-        assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES),
-                resposta.getUltimaAlteracao().truncatedTo(ChronoUnit.MINUTES));
+        assertNotNull(resposta.getUltimaAlteracao());
+        assertTrue(Duration.between(base, resposta.getUltimaAlteracao()).abs().toSeconds() <= 2);
     }
 }

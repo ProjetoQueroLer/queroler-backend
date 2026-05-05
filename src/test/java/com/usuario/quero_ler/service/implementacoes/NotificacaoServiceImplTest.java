@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,7 +55,8 @@ class NotificacaoServiceImplTest {
     void criar() {
         NotificacaoRequestDto dto = NotificacaoFixture.requestDto();
         Notificacao notificacao = NotificacaoFixture.entity();
-        NotificacaoResponseDto responseDto = NotificacaoFixture.response();
+        LocalDateTime agora = LocalDateTime.now();
+        NotificacaoResponseDto responseDto = new NotificacaoResponseDto(1L, dto.notificacao(), agora);
 
         when(mapper.toEntity(dto)).thenReturn(notificacao);
         when(repository.save(notificacao)).thenReturn(notificacao);
@@ -63,8 +65,8 @@ class NotificacaoServiceImplTest {
         NotificacaoResponseDto resposta = service.criar(dto);
 
         assertNotNull(resposta.id());
-        assertEquals(dto.notificacao(),resposta.notificacao());
-        assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES),
+        assertEquals(dto.notificacao(), resposta.notificacao());
+        assertEquals(agora.truncatedTo(ChronoUnit.MINUTES),
                 resposta.dataDeCriacao().truncatedTo(ChronoUnit.MINUTES));
 
         verify(usuarioNotificacaoRepository).enviarParaTodosUsuarios(notificacao.getId());
@@ -84,14 +86,13 @@ class NotificacaoServiceImplTest {
         Notificacao notificacao = NotificacaoFixture.entity();
         Notificacao notificacao2 = NotificacaoFixture.entity();
 
-        List<Notificacao> lista = List.of(notificacao,notificacao2);
+        List<Notificacao> lista = List.of(notificacao, notificacao2);
 
         when(usuarioService.getUsuario(idUsuario)).thenReturn(usuario);
         when(usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario))
                 .thenReturn(lista);
 
-        Page<NotificacaoResponseDto> resultado =
-                service.naoLidas(idUsuario, pageable);
+        Page<NotificacaoResponseDto> resultado = service.naoLidas(idUsuario, pageable);
 
         assertEquals(2, resultado.getTotalElements());
         assertEquals(notificacao.getId(), resultado.getContent().get(0).id());
@@ -106,26 +107,32 @@ class NotificacaoServiceImplTest {
     void deveMarcarNotificacoesDoUsuarioComoLidas() {
         Long idUsuario = 1L;
 
-            User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
-            Usuario usuario = UserFixture.entidadeCompleta(user);
+        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
+        Usuario usuario = UserFixture.entidadeCompleta(user);
 
+        when(usuarioService.getUsuario(idUsuario)).thenReturn(usuario);
 
-            when(usuarioService.getUsuario(idUsuario)).thenReturn(usuario);
+        service.marcarComoLidas(idUsuario);
 
-            service.marcarComoLidas(idUsuario);
-
-            assertNotNull(usuario.getUser());
-            verify(usuarioService).getUsuario(idUsuario);
-            verify(usuarioNotificacaoRepository).marcarComoLidas(idUsuario);
-        }
+        assertNotNull(usuario.getUser());
+        verify(usuarioService).getUsuario(idUsuario);
+        verify(usuarioNotificacaoRepository).marcarComoLidas(idUsuario);
+    }
 
     @Test
     @DisplayName("Deve apagar as notificações cridas a mais de 30 dias")
     void apagarNotificacoesComMaisDe30Dias() {
-        LocalDateTime dataRecorte = LocalDateTime.now().minusDays(30);
+        LocalDateTime before = LocalDateTime.now();
         service.apagarNotificacoesComMaisDe30Dias();
 
-        verify(usuarioNotificacaoRepository).deleteByNotificacaoDataDeCriacaoBefore(dataRecorte);
+        ArgumentCaptor<LocalDateTime> captor = ArgumentCaptor.forClass(LocalDateTime.class);
+
+        verify(usuarioNotificacaoRepository).deleteByNotificacaoDataDeCriacaoBefore(captor.capture());
+        LocalDateTime dataRecorte = captor.getValue();
+
         verify(repository).deleteByDataDeCriacaoBefore(dataRecorte);
+
+        LocalDateTime expected = before.minusDays(30);
+        assertEquals(expected.truncatedTo(ChronoUnit.SECONDS), dataRecorte.truncatedTo(ChronoUnit.SECONDS));
     }
 }

@@ -2,6 +2,7 @@ package com.usuario.quero_ler.models;
 
 import java.util.Collection;
 import java.util.List;
+import java.time.LocalDateTime;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -47,21 +48,33 @@ public class User implements UserDetails {
     @Column(name = "perfil", nullable = false)
     private UsuarioProfile profile;
 
+    @Builder.Default
+    @Column(name = "excluido", nullable = false)
+    private Boolean excluido = false;
+
+    @Column(name = "data_exclusao")
+    private LocalDateTime dataExclusao;
+
     @OneToOne(mappedBy = "user")
     private Usuario usuario;
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-    return List.of(new SimpleGrantedAuthority("ROLE_" + this.profile.name()));
-	}
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.profile.name()));
+    }
 
-	@Override
-	public String getPassword() {
-		return this.senha;
-	}
+    @Override
+    public String getPassword() {
+        return this.senha;
+    }
 
-	@Override
-	public String getUsername() {
-		return this.user;
-	}
+    @Override
+    public String getUsername() {
+        return this.user;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.excluido == null || !this.excluido;
+    }
 }

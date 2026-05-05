@@ -53,7 +53,7 @@ public class LoginServiceImpl implements LoginService {
 	@Override
 	public void login(LoginRequestDto dto, HttpServletResponse response) {
 
-		User user = repository.findByUserIgnoreCase(dto.user())
+		User user = repository.findByUserIgnoreCaseAndExcluidoFalse(dto.user())
 				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não cadastrado"));
 		if (!passwordEncoder.matches(dto.senha(), user.getSenha())) {
 			throw new CredenciaisInvalidasException("E-mail ou senha inválida.");

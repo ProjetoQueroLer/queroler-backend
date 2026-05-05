@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -56,6 +57,13 @@ public class Usuario {
 
     @Column(name = "foto", columnDefinition = "BYTEA")
     private byte[] foto;
+
+    @Builder.Default
+    @Column(name = "excluido", nullable = false)
+    private Boolean excluido = false;
+
+    @Column(name = "data_exclusao")
+    private LocalDateTime dataExclusao;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")

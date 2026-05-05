@@ -6,7 +6,6 @@ import com.usuario.quero_ler.dtos.documento.DocumentoResponseDto;
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.enums.DocumentoTipo;
 import com.usuario.quero_ler.fixtures.DocumentoFixture;
-import com.usuario.quero_ler.fixtures.LoginFixture;
 import com.usuario.quero_ler.models.Documento;
 import com.usuario.quero_ler.repository.DocumentoRepository;
 import com.usuario.quero_ler.support.AbstractIntegrationTest;
@@ -35,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = {"/gerar_banco.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = {"/limpar_banco.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-public class DocumentoTest extends AbstractIntegrationTest {
+class DocumentoTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;
 
@@ -54,7 +53,7 @@ public class DocumentoTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Deve criar um documento com sucesso!")
-    public void deveCadastrarUmDocumentoComSucesso() {
+    void deveCadastrarUmDocumentoComSucesso() {
         DocumentoRequestDto dto = DocumentoFixture.requestDto();
         LocalDateTime agora = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
         ResponseEntity<DocumentoResponseDto> resposta = template.exchange(
@@ -75,7 +74,7 @@ public class DocumentoTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Deve retornar um documento Termo Gerais de Uso com sucesso!")
-    public void deveRetornarTermoGeraisDeUsoComSucesso(){
+    void deveRetornarTermoGeraisDeUsoComSucesso(){
         LocalDateTime agora = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
 
         ResponseEntity<DocumentoResponseDto> resposta = template.exchange(
@@ -91,7 +90,7 @@ public class DocumentoTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Deve alterar um documento com sucesso!")
-    public void deveAlterarUmDocumentoComSucesso(){
+    void deveAlterarUmDocumentoComSucesso(){
         Long id = 1L;
         DocumentoAlteracoesDto dto = new DocumentoAlteracoesDto("titulo alterado",null,"conteudo alterado");
         LocalDateTime agora = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);

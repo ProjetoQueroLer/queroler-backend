@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.exceptions;
 
 import com.usuario.quero_ler.exceptions.especies.*;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,6 +12,32 @@ import java.util.Arrays;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String detail = null;
+        if (ex.getMostSpecificCause() != null) {
+            detail = ex.getMostSpecificCause().getMessage();
+        }
+
+        if (detail != null) {
+            String lower = detail.toLowerCase();
+
+            if (lower.contains("uq_tb_usuario_email_active") || lower.contains("tb_usuario_email_key")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("E-mail já cadastrado.");
+            }
+
+            if (lower.contains("uq_tb_usuario_cpf_active") || lower.contains("tb_usuario_cpf_key")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("CPF já cadastrado.");
+            }
+
+            if (lower.contains("uq_tb_user_login_active") || lower.contains("tb_user_login_key")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("E-mail já cadastrado.");
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Violação de integridade de dados.");
+    }
 
     @ExceptionHandler(EmailNaoCadastradoException.class)
     public ResponseEntity<Object> handlerEmailNaoCadastradoException(EmailNaoCadastradoException ex) {
