@@ -18,6 +18,7 @@ public interface UsuarioNotificacaoRepository extends JpaRepository<UsuarioNotif
                 INSERT INTO tb_usuario_notificacao (usuario_id, notificacao_id, visualizada)
                 SELECT u.id, :notificacaoId, false
                 FROM tb_usuario u
+                WHERE NOT u.excluido
             """, nativeQuery = true)
     void enviarParaTodosUsuarios(Long notificacaoId);
 

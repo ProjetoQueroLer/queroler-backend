@@ -194,8 +194,8 @@ class UsuarioServiceImplTest {
     @Test
     @DisplayName("Deve permitir ADMIN excluir perfil de LEITOR.")
     void devePermitirAdminExcluirPerfilDeLeitor() {
-        User admin = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
-        User leitor = UserFixture.userEntity(UsuarioProfile.LEITOR);
+        User admin = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR, 10L);
+        User leitor = UserFixture.userEntity(UsuarioProfile.LEITOR, 20L);
         Usuario usuarioLeitor = UserFixture.entidadeCompleta(leitor);
         Long id = usuarioLeitor.getId();
 
@@ -215,8 +215,8 @@ class UsuarioServiceImplTest {
     @Test
     @DisplayName("Deve negar LEITOR tentando excluir perfil de ADMIN.")
     void deveNegarLeitorExcluirPerfilDeAdmin() {
-        User leitor = UserFixture.userEntity(UsuarioProfile.LEITOR);
-        User admin = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
+        User leitor = UserFixture.userEntity(UsuarioProfile.LEITOR, 10L);
+        User admin = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR, 20L);
         Usuario usuarioAdmin = UserFixture.entidadeCompleta(admin);
         Long id = usuarioAdmin.getId();
 

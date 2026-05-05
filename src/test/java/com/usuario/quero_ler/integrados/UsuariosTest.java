@@ -20,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -28,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = { "/gerar_banco.sql" }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = { "/limpar_banco.sql" }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-public class UsuariosTest extends AbstractIntegrationTest {
+class UsuariosTest extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate template;
@@ -48,7 +50,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Deve criar um usuario com sucesso!")
-    public void deveCriarUmUsuarioComSucesso() {
+    void deveCriarUmUsuarioComSucesso() {
         UsuarioRequestDto dto = UserFixture.requestDto();
         logar(1L);
 
@@ -71,7 +73,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Deve retornar dados de um usuario com sucesso!")
-    public void deveRetornarDadosUmUsuarioComSucesso() {
+    void deveRetornarDadosUmUsuarioComSucesso() {
         Long id = 2L;
         logar(id);
         ResponseEntity<UsuarioDadosResponse> resposta = template.exchange(
@@ -95,7 +97,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Deve adicionar informações a um usuario com sucesso!")
-    public void deveAdcionarInformacoesAUmUsuarioComSucesso() {
+    void deveAdcionarInformacoesAUmUsuarioComSucesso() {
         UsuarioDadosComplementarRequest dto = UserFixture.requestDadosComplementares();
         Long id = 2L;
         logar(id);
@@ -118,7 +120,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Deve alterar a sennha de um usuario com sucesso!")
-    public void deveAlterarASenhaDeUmUsuarioComSucesso() {
+    void deveAlterarASenhaDeUmUsuarioComSucesso() {
         UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&", "NovaSenha456$");
         Long id = 2L;
         logar(id);
@@ -134,7 +136,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Deve alterar de um usuario Leitor com sucesso!")
-    public void deveAlterarUmUsuarioLeitorComSucesso() {
+    void deveAlterarUmUsuarioLeitorComSucesso() {
         UsuarioAtualizadoLeitorRequest dto = new UsuarioAtualizadoLeitorRequest("Nome Alterado",
                 "emailAlterado@gmail.com", null,
                 "Cidade alterada", "Estado Alterado", "Pais alterado", null);
@@ -161,7 +163,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Deve alterar de um usuario administrador com sucesso!")
-    public void deveAlterarUmUsuarioAdministradorComSucesso() {
+    void deveAlterarUmUsuarioAdministradorComSucesso() {
         UsuarioAtualizadoAdministradorRequest dto = new UsuarioAtualizadoAdministradorRequest(null,
                 "Cidade alterada", "Estado Alterado", "Pais alterado", null);
 
@@ -186,7 +188,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Deve excluir um usuario leitor com sucesso!")
-    public void deveExcluirUmUsuarioLeitorComSucesso() {
+    void deveExcluirUmUsuarioLeitorComSucesso() {
         Long id = 2L;
         logar(id);
         ResponseEntity<Void> resposta = template.exchange(
@@ -219,7 +221,7 @@ public class UsuariosTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Administrador deve conseguir excluir outro usuário (soft-delete)")
-    public void adminDeveExcluirOutroUsuarioComSucesso() {
+    void adminDeveExcluirOutroUsuarioComSucesso() {
         Long idAdmin = 1L;
         Long idLeitor = 2L;
 
@@ -238,5 +240,74 @@ public class UsuariosTest extends AbstractIntegrationTest {
         assertThat(usuarioDoBanco.getDataExclusao()).isNotNull();
         assertThat(usuarioDoBanco.getUser().getExcluido()).isTrue();
         assertThat(usuarioDoBanco.getUser().getDataExclusao()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Deve permitir recadastro com mesmo e-mail/CPF após soft-delete")
+    void devePermitirRecadastroAposSoftDelete() {
+        logar(1L);
+
+        String email = "reusar@email.com";
+        String cpf = "22233344455";
+
+        UsuarioRequestDto dto = new UsuarioRequestDto(
+                "Usuário Reuso",
+                email,
+                email,
+                "Teste123&",
+                "Teste123&",
+                cpf,
+                LocalDate.of(1990, 1, 1),
+                true);
+
+        ResponseEntity<UsuarioResponseDto> primeiraCriacao = template.exchange(
+                "/usuarios",
+                HttpMethod.POST,
+                new HttpEntity<>(dto, authHeaders),
+                UsuarioResponseDto.class);
+        assertThat(primeiraCriacao.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        Long idCriado = primeiraCriacao.getBody().id();
+
+        ResponseEntity<Void> deleteResponse = template.exchange(
+                "/usuarios/{id}",
+                HttpMethod.DELETE,
+                new HttpEntity<>(authHeaders),
+                Void.class,
+                idCriado);
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<UsuarioResponseDto> segundaCriacao = template.exchange(
+                "/usuarios",
+                HttpMethod.POST,
+                new HttpEntity<>(dto, authHeaders),
+                UsuarioResponseDto.class);
+        assertThat(segundaCriacao.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertNotNull(segundaCriacao.getBody().id());
+    }
+
+    @Test
+    @DisplayName("Deve retornar erro controlado ao tentar cadastrar CPF já ativo")
+    void deveRetornarErroControladoAoCadastrarCpfJaAtivo() {
+        logar(1L);
+
+        UsuarioRequestDto dto = new UsuarioRequestDto(
+                "CPF duplicado",
+                "cpf-duplicado@email.com",
+                "cpf-duplicado@email.com",
+                "Teste123&",
+                "Teste123&",
+                "64343764052",
+                LocalDate.of(1990, 1, 1),
+                true);
+
+        ResponseEntity<String> resposta = template.exchange(
+                "/usuarios",
+                HttpMethod.POST,
+                new HttpEntity<>(dto, authHeaders),
+                String.class);
+
+        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(resposta.getBody()).isEqualTo("CPF já cadastrado.");
     }
 }

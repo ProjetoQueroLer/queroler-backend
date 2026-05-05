@@ -7,9 +7,11 @@ import com.usuario.quero_ler.models.Usuario;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.LocalDate;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class UserFixture {
     private static final Long ID = 1L;
+    private static final AtomicLong USER_ID_SEQ = new AtomicLong(10L);
     private static final String NOME = "Nome SobreNome";
     private static final String EMAIL = "nome@gmail.com";
     private static final String CONFIRMAR_EMAIL = "nome@gmail.com";
@@ -35,10 +37,18 @@ public class UserFixture {
     }
 
     public static User userEntity(UsuarioProfile profile) {
+        return userEntity(profile, USER_ID_SEQ.getAndIncrement(), EMAIL);
+    }
+
+    public static User userEntity(UsuarioProfile profile, Long id) {
+        return userEntity(profile, id, EMAIL);
+    }
+
+    public static User userEntity(UsuarioProfile profile, Long id, String email) {
         String senhaHash = BCrypt.hashpw(SENHA, BCrypt.gensalt());
         User user = new User();
-        user.setId(2L);
-        user.setUser(EMAIL);
+        user.setId(id);
+        user.setUser(email);
         user.setSenha(senhaHash);
         user.setProfile(profile);
         user.setExcluido(false);

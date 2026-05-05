@@ -3,6 +3,7 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
+import com.usuario.quero_ler.enums.LivroStatus;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CapaForaDePadraoException;
 import com.usuario.quero_ler.exceptions.especies.IsbnNaoEncontradoException;
@@ -11,7 +12,10 @@ import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.mappers.LivroMapper;
 import com.usuario.quero_ler.models.*;
 import com.usuario.quero_ler.repository.LivroRepository;
+import com.usuario.quero_ler.repository.UsuarioLivroRepository;
+import com.usuario.quero_ler.repository.UsuarioRepository;
 import com.usuario.quero_ler.utils.LivroFiltro;
+import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,6 +55,12 @@ class LivroServiceImplTest {
     @Mock
     private MultipartFile multipartFile;
 
+    @Mock
+    private UsuarioLivroRepository usuarioLivroRepository;
+
+    @Mock
+    private UsuarioRepository usuarioRepository;
+
     private User leitor;
     private User admin;
 
@@ -88,7 +98,6 @@ class LivroServiceImplTest {
         verify(mapper).toEntity(dto);
         verify(repository).save(livro);
     }
-
 
     @Test
     @DisplayName("Deve retornar uma lista de livro com sucesso.")
@@ -166,7 +175,6 @@ class LivroServiceImplTest {
         verify(repository).findAll(any(Specification.class), eq(pageable));
     }
 
-
     @Test
     @DisplayName("Deve buscar um livro por TITULO com sucesso.")
     void deveBuscarPorTitulo() {
@@ -233,8 +241,7 @@ class LivroServiceImplTest {
                 "file",
                 "capa.jpg",
                 "image/jpeg",
-                imagem
-        );
+                imagem);
 
         when(repository.findById(id)).thenReturn(Optional.of(livro));
 
@@ -256,6 +263,31 @@ class LivroServiceImplTest {
 
         assertArrayEquals(livro.getCapaDoLivro(), resposta);
         verify(repository).findById(id);
+    }
+
+    @Test
+    @DisplayName("Não deve permitir listar estante de usuário excluído")
+    void naoDevePermitirListarEstanteDeUsuarioExcluido() {
+        Long idUsuario = 99L;
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(usuarioRepository.findByIdAndExcluidoFalse(idUsuario)).thenReturn(Optional.empty());
+
+        assertThrows(UsuarioNaoEncontradoException.class, () -> service.getLivrosDoUsuario(idUsuario, pageable));
+        verify(usuarioLivroRepository, never()).findLivrosByUsuarioId(anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("Não deve permitir alterar status de livro para usuário excluído")
+    void naoDevePermitirAlterarStatusParaUsuarioExcluido() {
+        Long idUsuario = 99L;
+        Long idLivro = 10L;
+
+        when(usuarioRepository.findByIdAndExcluidoFalse(idUsuario)).thenReturn(Optional.empty());
+
+        assertThrows(UsuarioNaoEncontradoException.class,
+                () -> service.alterarStatusDoLivroNoUsuario(idLivro, idUsuario, LivroStatus.LIVROS_QUE_ESTOU_LENDO));
+        verify(usuarioLivroRepository, never()).findByLivro_IdAndUsuario_Id(anyLong(), anyLong());
     }
 
     @Test
@@ -292,8 +324,7 @@ class LivroServiceImplTest {
         when(repository.findByIsbn(isbn)).thenReturn(Optional.empty());
 
         IsbnNaoEncontradoException exception = assertThrows(IsbnNaoEncontradoException.class,
-                () -> service.buscarIsbn(isbn)
-        );
+                () -> service.buscarIsbn(isbn));
 
         assertEquals("Não há nenhum livro cadastrado com o código ISBN informado",
                 exception.getMessage());
@@ -309,8 +340,7 @@ class LivroServiceImplTest {
                 "file",
                 "capa.jpg",
                 "image/jpeg",
-                imagem
-        );
+                imagem);
 
         assertDoesNotThrow(() -> service.validarCapaDoLivro(file));
     }
@@ -332,12 +362,10 @@ class LivroServiceImplTest {
                 "file",
                 "capa.jpg",
                 "image/jpeg",
-                imagem
-        );
+                imagem);
 
         CapaForaDePadraoException exception = assertThrows(CapaForaDePadraoException.class,
-                () -> service.validarCapaDoLivro(file)
-        );
+                () -> service.validarCapaDoLivro(file));
 
         assertEquals("Imagem excede o tamanho máximo de 10MB", exception.getMessage());
     }
@@ -349,8 +377,7 @@ class LivroServiceImplTest {
                 "file",
                 "capa.txt",
                 "text/plain",
-                "qualquer coisa".getBytes()
-        );
+                "qualquer coisa".getBytes());
 
         CapaForaDePadraoException exception = assertThrows(CapaForaDePadraoException.class,
                 () -> service.validarCapaDoLivro(file));
@@ -365,8 +392,7 @@ class LivroServiceImplTest {
                 "file",
                 "capa.jpg",
                 "image/jpeg",
-                "isso nao é imagem".getBytes()
-        );
+                "isso nao é imagem".getBytes());
 
         CapaForaDePadraoException exception = assertThrows(CapaForaDePadraoException.class,
                 () -> service.validarCapaDoLivro(file));
@@ -374,140 +400,160 @@ class LivroServiceImplTest {
 
     }
 
-//
-//    @Test
-//    @DisplayName("Deve adicionar um livro a estante de um usuário")
-//    void deveAdicionarLivroNaEstanteDoUsuario() {
-//        Usuario usuario = UserFixture.entidadeCompleta();
-//        Long idUsuario = usuario.getId();
-//        Livro livro = LivroFixture.entity();
-//        Long idDoLivro = livro.getId();
-//        UsuarioLivroId usuarioLivroId = new UsuarioLivroId();
-//        usuarioLivroId.setLivroId(idDoLivro);
-//        usuarioLivroId.setUsuarioId(usuario.getId());
-//        UsuarioLivro usuarioLivro = new UsuarioLivro(usuarioLivroId, LivroStatus.LIVROS_QUE_QUERO_LER, usuario, livro);
-//
-//        when(service.buscar(idDoLivro)).thenReturn(livro);
-//        when(usuarioServiceI.getUsuario(idUsuario)).thenReturn(usuario);
-//        when(repository.findByUsuarioIdAndLivroId(idUsuario, idDoLivro)).thenReturn(Optional.empty());
-//
-//        service.adicionar(idUsuario, idDoLivro);
-//        ArgumentCaptor<UsuarioLivro> captor = ArgumentCaptor.forClass(UsuarioLivro.class);
-//        verify(repository).save(captor.capture());
-//
-//        UsuarioLivro salvo = captor.getValue();
-//
-//        assertEquals(idUsuario, salvo.getUsuario().getId());
-//        assertEquals(idDoLivro, salvo.getLivro().getId());
-//        assertEquals(LivroStatus.LIVROS_QUE_QUERO_LER, salvo.getStatus());
-//
-//        verify(repository).findByUsuarioIdAndLivroId(idUsuario, idDoLivro);
-//        verify(usuarioServiceI).getUsuario(idUsuario);
-//        verify(livroServiceI).buscar(idDoLivro);
-//    }
-//
-//    @Test
-//    @DisplayName("Deve lançar excessão ao tentar adicionar um livro já existente na estante de um usuário")
-//    void deveLancarExcessaoAoTentarAdicionarLivroNaEstanteDoUsuario() {
-//        Usuario usuario = UserFixture.entidadeCompleta();
-//        Long idUsuario = usuario.getId();
-//        Livro livro = LivroFixture.entity();
-//        Long idDoLivro = livro.getId();
-//        UsuarioLivroId usuarioLivroId = new UsuarioLivroId();
-//        usuarioLivroId.setLivroId(idDoLivro);
-//        usuarioLivroId.setUsuarioId(usuario.getId());
-//        UsuarioLivro usuarioLivro = new UsuarioLivro(usuarioLivroId, LivroStatus.LIVROS_QUE_QUERO_LER, usuario, livro);
-//
-//        when(livroServiceI.buscar(idDoLivro)).thenReturn(livro);
-//        when(usuarioServiceI.getUsuario(idUsuario)).thenReturn(usuario);
-//        when(repository.findByUsuarioIdAndLivroId(idUsuario, idDoLivro)).thenReturn(Optional.of(usuarioLivro));
-//
-//        UsuarioJaPossueOLivroException exception = assertThrows(UsuarioJaPossueOLivroException.class,
-//                () -> service.adicionar(idUsuario, idDoLivro));
-//
-//        assertEquals("O usuario já possue o livro na estante.", exception.getMessage());
-//
-//    }
-//
-//    @Test
-//    @DisplayName("Deve retornar uma lista com todos os livros da estante do usuário")
-//    void deveRetornarListaDeLivroDaEstanteDoUsuario() {
-//        Long idUsuario = 1L;
-//        Pageable pageable = PageRequest.of(0, 10);
-//
-//        Livro livro1 = LivroFixture.entity();
-//        Livro livro2 = LivroFixture.entity();
-//
-//        UsuarioLivro ul1 = new UsuarioLivro();
-//        ul1.setLivro(livro1);
-//        ul1.setStatus(LivroStatus.LIVROS_QUE_QUERO_LER);
-//
-//        UsuarioLivro ul2 = new UsuarioLivro();
-//        ul2.setLivro(livro2);
-//        ul2.setStatus(LivroStatus.LIVROS_QUE_ESTOU_LENDO);
-//
-//        List<UsuarioLivro> lista = List.of(ul1, ul2);
-//        Page<UsuarioLivro> pageMock = new PageImpl<>(lista, pageable, lista.size());
-//
-//        LivroTelaLeituraResponse response1 = LivroFixture.responseTelaDeLeitura(LivroStatus.LIVROS_QUE_QUERO_LER);
-//        LivroTelaLeituraResponse response2 = LivroFixture.responseTelaDeLeitura(LivroStatus.LIVROS_QUE_ESTOU_LENDO);
-//
-//        when(repository.findAllByUsuarioId(idUsuario, pageable)).thenReturn(pageMock);
-//        when(livroMapper.toLivroTelaLeituraResponse(livro1, LivroStatus.LIVROS_QUE_QUERO_LER)).thenReturn(response1);
-//        when(livroMapper.toLivroTelaLeituraResponse(livro2, LivroStatus.LIVROS_QUE_ESTOU_LENDO)).thenReturn(response2);
-//
-//        Page<LivroTelaLeituraResponse> resultado = service.lista(idUsuario, pageable);
-//
-//        assertEquals(2, resultado.getContent().size());
-//        assertEquals(2, resultado.getTotalElements());
-//        assertEquals(response1, resultado.getContent().get(0));
-//        assertEquals(response2, resultado.getContent().get(1));
-//
-//        verify(repository).findAllByUsuarioId(idUsuario, pageable);
-//        verify(livroMapper).toLivroTelaLeituraResponse(livro1, LivroStatus.LIVROS_QUE_QUERO_LER);
-//        verify(livroMapper).toLivroTelaLeituraResponse(livro2, LivroStatus.LIVROS_QUE_ESTOU_LENDO);
-//
-//    }
-//
-//    @Test
-//    @DisplayName("Deve mudar o status do livro na estante do usuário")
-//    void deveMudarStatusDoLivro() {
-//
-//        Long idUsuario = 1L;
-//        String isbn = "123456";
-//        LivroStatus novoStatus = LivroStatus.LIVROS_QUE_QUERO_LER;
-//
-//        UsuarioLivro usuarioLivro = new UsuarioLivro();
-//        usuarioLivro.setStatus(LivroStatus.LIVROS_QUE_QUERO_LER);
-//
-//        when(repository.findByUsuario_IdAndLivro_Isbn(idUsuario, isbn))
-//                .thenReturn(Optional.of(usuarioLivro));
-//
-//        service.mudarStatus(idUsuario, isbn, novoStatus);
-//
-//        assertEquals(novoStatus, usuarioLivro.getStatus());
-//
-//        verify(repository).save(usuarioLivro);
-//        verify(repository).findByUsuario_IdAndLivro_Isbn(idUsuario, isbn);
-//    }
-//
-//    @Test
-//    @DisplayName("Deve lançar excessão ao tentar mudar o status do livro que não esta a estante do usuário")
-//    void deveLancarExcessaoDeLivroInexistente() {
-//
-//        Long idUsuario = 1L;
-//        String isbn = "123456";
-//        LivroStatus novoStatus = LivroStatus.LIVROS_QUE_QUERO_LER;
-//
-//        UsuarioLivro usuarioLivro = new UsuarioLivro();
-//        usuarioLivro.setStatus(LivroStatus.LIVROS_QUE_QUERO_LER);
-//
-//        when(repository.findByUsuario_IdAndLivro_Isbn(idUsuario, isbn))
-//                .thenReturn(Optional.empty());
-//
-//        LivroNaoEncontradoException exception = assertThrows(LivroNaoEncontradoException.class,
-//                () -> service.mudarStatus(idUsuario, isbn, novoStatus));
-//
-//        assertEquals("O usuario não possue o livro na estante.", exception.getMessage());
-//    }
+    //
+    // @Test
+    // @DisplayName("Deve adicionar um livro a estante de um usuário")
+    // void deveAdicionarLivroNaEstanteDoUsuario() {
+    // Usuario usuario = UserFixture.entidadeCompleta();
+    // Long idUsuario = usuario.getId();
+    // Livro livro = LivroFixture.entity();
+    // Long idDoLivro = livro.getId();
+    // UsuarioLivroId usuarioLivroId = new UsuarioLivroId();
+    // usuarioLivroId.setLivroId(idDoLivro);
+    // usuarioLivroId.setUsuarioId(usuario.getId());
+    // UsuarioLivro usuarioLivro = new UsuarioLivro(usuarioLivroId,
+    // LivroStatus.LIVROS_QUE_QUERO_LER, usuario, livro);
+    //
+    // when(service.buscar(idDoLivro)).thenReturn(livro);
+    // when(usuarioServiceI.getUsuario(idUsuario)).thenReturn(usuario);
+    // when(repository.findByUsuarioIdAndLivroId(idUsuario,
+    // idDoLivro)).thenReturn(Optional.empty());
+    //
+    // service.adicionar(idUsuario, idDoLivro);
+    // ArgumentCaptor<UsuarioLivro> captor =
+    // ArgumentCaptor.forClass(UsuarioLivro.class);
+    // verify(repository).save(captor.capture());
+    //
+    // UsuarioLivro salvo = captor.getValue();
+    //
+    // assertEquals(idUsuario, salvo.getUsuario().getId());
+    // assertEquals(idDoLivro, salvo.getLivro().getId());
+    // assertEquals(LivroStatus.LIVROS_QUE_QUERO_LER, salvo.getStatus());
+    //
+    // verify(repository).findByUsuarioIdAndLivroId(idUsuario, idDoLivro);
+    // verify(usuarioServiceI).getUsuario(idUsuario);
+    // verify(livroServiceI).buscar(idDoLivro);
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve lançar excessão ao tentar adicionar um livro já existente
+    // na estante de um usuário")
+    // void deveLancarExcessaoAoTentarAdicionarLivroNaEstanteDoUsuario() {
+    // Usuario usuario = UserFixture.entidadeCompleta();
+    // Long idUsuario = usuario.getId();
+    // Livro livro = LivroFixture.entity();
+    // Long idDoLivro = livro.getId();
+    // UsuarioLivroId usuarioLivroId = new UsuarioLivroId();
+    // usuarioLivroId.setLivroId(idDoLivro);
+    // usuarioLivroId.setUsuarioId(usuario.getId());
+    // UsuarioLivro usuarioLivro = new UsuarioLivro(usuarioLivroId,
+    // LivroStatus.LIVROS_QUE_QUERO_LER, usuario, livro);
+    //
+    // when(livroServiceI.buscar(idDoLivro)).thenReturn(livro);
+    // when(usuarioServiceI.getUsuario(idUsuario)).thenReturn(usuario);
+    // when(repository.findByUsuarioIdAndLivroId(idUsuario,
+    // idDoLivro)).thenReturn(Optional.of(usuarioLivro));
+    //
+    // UsuarioJaPossueOLivroException exception =
+    // assertThrows(UsuarioJaPossueOLivroException.class,
+    // () -> service.adicionar(idUsuario, idDoLivro));
+    //
+    // assertEquals("O usuario já possue o livro na estante.",
+    // exception.getMessage());
+    //
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve retornar uma lista com todos os livros da estante do
+    // usuário")
+    // void deveRetornarListaDeLivroDaEstanteDoUsuario() {
+    // Long idUsuario = 1L;
+    // Pageable pageable = PageRequest.of(0, 10);
+    //
+    // Livro livro1 = LivroFixture.entity();
+    // Livro livro2 = LivroFixture.entity();
+    //
+    // UsuarioLivro ul1 = new UsuarioLivro();
+    // ul1.setLivro(livro1);
+    // ul1.setStatus(LivroStatus.LIVROS_QUE_QUERO_LER);
+    //
+    // UsuarioLivro ul2 = new UsuarioLivro();
+    // ul2.setLivro(livro2);
+    // ul2.setStatus(LivroStatus.LIVROS_QUE_ESTOU_LENDO);
+    //
+    // List<UsuarioLivro> lista = List.of(ul1, ul2);
+    // Page<UsuarioLivro> pageMock = new PageImpl<>(lista, pageable, lista.size());
+    //
+    // LivroTelaLeituraResponse response1 =
+    // LivroFixture.responseTelaDeLeitura(LivroStatus.LIVROS_QUE_QUERO_LER);
+    // LivroTelaLeituraResponse response2 =
+    // LivroFixture.responseTelaDeLeitura(LivroStatus.LIVROS_QUE_ESTOU_LENDO);
+    //
+    // when(repository.findAllByUsuarioId(idUsuario,
+    // pageable)).thenReturn(pageMock);
+    // when(livroMapper.toLivroTelaLeituraResponse(livro1,
+    // LivroStatus.LIVROS_QUE_QUERO_LER)).thenReturn(response1);
+    // when(livroMapper.toLivroTelaLeituraResponse(livro2,
+    // LivroStatus.LIVROS_QUE_ESTOU_LENDO)).thenReturn(response2);
+    //
+    // Page<LivroTelaLeituraResponse> resultado = service.lista(idUsuario,
+    // pageable);
+    //
+    // assertEquals(2, resultado.getContent().size());
+    // assertEquals(2, resultado.getTotalElements());
+    // assertEquals(response1, resultado.getContent().get(0));
+    // assertEquals(response2, resultado.getContent().get(1));
+    //
+    // verify(repository).findAllByUsuarioId(idUsuario, pageable);
+    // verify(livroMapper).toLivroTelaLeituraResponse(livro1,
+    // LivroStatus.LIVROS_QUE_QUERO_LER);
+    // verify(livroMapper).toLivroTelaLeituraResponse(livro2,
+    // LivroStatus.LIVROS_QUE_ESTOU_LENDO);
+    //
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve mudar o status do livro na estante do usuário")
+    // void deveMudarStatusDoLivro() {
+    //
+    // Long idUsuario = 1L;
+    // String isbn = "123456";
+    // LivroStatus novoStatus = LivroStatus.LIVROS_QUE_QUERO_LER;
+    //
+    // UsuarioLivro usuarioLivro = new UsuarioLivro();
+    // usuarioLivro.setStatus(LivroStatus.LIVROS_QUE_QUERO_LER);
+    //
+    // when(repository.findByUsuario_IdAndLivro_Isbn(idUsuario, isbn))
+    // .thenReturn(Optional.of(usuarioLivro));
+    //
+    // service.mudarStatus(idUsuario, isbn, novoStatus);
+    //
+    // assertEquals(novoStatus, usuarioLivro.getStatus());
+    //
+    // verify(repository).save(usuarioLivro);
+    // verify(repository).findByUsuario_IdAndLivro_Isbn(idUsuario, isbn);
+    // }
+    //
+    // @Test
+    // @DisplayName("Deve lançar excessão ao tentar mudar o status do livro que não
+    // esta a estante do usuário")
+    // void deveLancarExcessaoDeLivroInexistente() {
+    //
+    // Long idUsuario = 1L;
+    // String isbn = "123456";
+    // LivroStatus novoStatus = LivroStatus.LIVROS_QUE_QUERO_LER;
+    //
+    // UsuarioLivro usuarioLivro = new UsuarioLivro();
+    // usuarioLivro.setStatus(LivroStatus.LIVROS_QUE_QUERO_LER);
+    //
+    // when(repository.findByUsuario_IdAndLivro_Isbn(idUsuario, isbn))
+    // .thenReturn(Optional.empty());
+    //
+    // LivroNaoEncontradoException exception =
+    // assertThrows(LivroNaoEncontradoException.class,
+    // () -> service.mudarStatus(idUsuario, isbn, novoStatus));
+    //
+    // assertEquals("O usuario não possue o livro na estante.",
+    // exception.getMessage());
+    // }
 }
