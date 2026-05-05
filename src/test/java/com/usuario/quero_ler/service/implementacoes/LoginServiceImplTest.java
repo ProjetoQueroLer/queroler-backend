@@ -70,10 +70,11 @@ class LoginServiceImplTest {
         LoginRequestDto dto = LoginFixture.requestDto();
         String token = "token.mock";
 
-        when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
+        when(repository.findByUserIgnoreCaseAndExcluidoFalse(dto.user())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(dto.senha(), user.getSenha())).thenReturn(true);
         when(tokenService.generateToken(user)).thenReturn(token);
 
+        
         service.login(dto, response);
 
     }
@@ -83,7 +84,7 @@ class LoginServiceImplTest {
     void deveLancarExcessaoAoFazerLoginComUsuarioNaoCadastrado() {
         LoginRequestDto dto = LoginFixture.requestDto();
 
-        when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.empty());
+        when(repository.findByUserIgnoreCaseAndExcluidoFalse(dto.user())).thenReturn(Optional.empty());
 
         UsuarioNaoEncontradoException exception = assertThrows(UsuarioNaoEncontradoException.class,
                 () -> service.login(dto, response)
@@ -99,7 +100,7 @@ class LoginServiceImplTest {
         LoginRequestDto dto = LoginFixture.requestDto();
         String token = "token.admin.mock";
 
-        when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
+        when(repository.findByUserIgnoreCaseAndExcluidoFalse(dto.user())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(dto.senha(), user.getSenha())).thenReturn(true);
         when(tokenService.generateToken(user)).thenReturn(token);
 
@@ -112,7 +113,7 @@ class LoginServiceImplTest {
         User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
         LoginRequestDto dto = new LoginRequestDto(user.getUser(), "Teste1234$");
 
-        when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
+        when(repository.findByUserIgnoreCaseAndExcluidoFalse(dto.user())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(dto.senha(), user.getSenha())).thenReturn(false);
 
         CredenciaisInvalidasException exception = assertThrows(CredenciaisInvalidasException.class,
@@ -120,5 +121,20 @@ class LoginServiceImplTest {
         );
 
         assertEquals("E-mail ou senha inválida.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve bloquear login quando usuário estiver excluído (soft-delete)")
+    void deveBloquearLoginQuandoUsuarioExcluido() {
+        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
+        user.setExcluido(true);
+        LoginRequestDto dto = new LoginRequestDto(user.getUser(), "Teste123&");
+
+        when(repository.findByUserIgnoreCaseAndExcluidoFalse(dto.user())).thenReturn(Optional.empty());
+
+        UsuarioNaoEncontradoException exception = assertThrows(UsuarioNaoEncontradoException.class,
+                () -> service.login(dto, response));
+
+        assertEquals("Usuario não cadastrado", exception.getMessage());
     }
 }

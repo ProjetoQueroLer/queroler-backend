@@ -4,6 +4,7 @@ import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.LivroStatus;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.UsuarioJaPossueOLivroException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioNaoAutenticadoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import com.usuario.quero_ler.mappers.UsuarioMapper;
@@ -18,8 +19,11 @@ import com.usuario.quero_ler.service.UsuarioService;
 import com.usuario.quero_ler.utils.Senhas;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,15 +79,29 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public void excluirPerfil(Long id) {
         Usuario usuario = getUsuario(id);
-        if (usuario.getUser().getProfile().equals(UsuarioProfile.LEITOR)) {
-            List<UsuarioNotificacao> notificacoes = usuarioNotificacaoRepository.findByUsuarioId(id);
-            for (UsuarioNotificacao un : notificacoes) {
-                usuarioNotificacaoRepository.delete(un);
+
+        User usuarioAutenticado = getUsuarioAutenticado();
+        boolean actorIsAdmin = UsuarioProfile.ADMINISTRADOR.equals(usuarioAutenticado.getProfile());
+        boolean actorIsOwner = usuario.getUser() != null && usuario.getUser().getId() != null
+                && usuario.getUser().getId().equals(usuarioAutenticado.getId());
+
+        if (!actorIsAdmin) {
+            if (!actorIsOwner || !UsuarioProfile.LEITOR.equals(usuario.getUser().getProfile())) {
+                throw new UsuarioSemPermissaoParaAcaoException("Ação não permitida para este usuário.");
             }
-            repository.delete(usuario);
-        } else {
-            throw new UsuarioSemPermissaoParaAcaoException("Ação não permitida para este usuário.");
         }
+
+        LocalDateTime agora = LocalDateTime.now();
+        usuario.setExcluido(true);
+        usuario.setDataExclusao(agora);
+
+        User user = usuario.getUser();
+        if (user != null) {
+            user.setExcluido(true);
+            user.setDataExclusao(agora);
+        }
+
+        repository.save(usuario);
     }
 
     @Override
@@ -98,7 +116,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void adicionarLivro(Long id, Long idLivro, LivroStatus status){
+    public void adicionarLivro(Long id, Long idLivro, LivroStatus status) {
         Usuario usuario = getUsuario(id);
 
         Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(id, idLivro);
@@ -120,11 +138,22 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioLivroRepository.save(novoUsuarioLivro);
     }
 
-
     public Usuario getUsuario(Long id) {
-        return repository.findById(id).orElseThrow(
+        return repository.findByIdAndExcluidoFalse(id).orElseThrow(
                 () -> new UsuarioNaoEncontradoException("Não foi encontrado nenhum usuário" +
-                        " com ID: '" + id + "'.")
-        );
+                        " com ID: '" + id + "'."));
+    }
+
+    private User getUsuarioAutenticado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new UsuarioNaoAutenticadoException("Usuário não autenticado.");
+        }
+
+        if (!(authentication.getPrincipal() instanceof User user)) {
+            throw new UsuarioNaoAutenticadoException("Usuário não autenticado.");
+        }
+
+        return user;
     }
 }

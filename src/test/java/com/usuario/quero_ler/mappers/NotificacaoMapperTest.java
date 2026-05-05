@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,13 +24,14 @@ class NotificacaoMapperTest {
     @DisplayName("Deve converter uma notificação request e notificação entity")
     void toEntity() {
         NotificacaoRequestDto dto = NotificacaoFixture.requestDto();
-        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime base = LocalDateTime.now();
 
         Notificacao resposta = mapper.toEntity(dto);
 
         assertNull(resposta.getId());
         assertEquals(dto.notificacao(),resposta.getNotificacao());
-        assertEquals(agora, resposta.getDataDeCriacao());
+        assertNotNull(resposta.getDataDeCriacao());
+        assertTrue(Duration.between(base, resposta.getDataDeCriacao()).abs().toSeconds() <= 2);
     }
 
     @Test

@@ -26,8 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Sql(scripts = {"/gerar_banco.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = {"/limpar_banco.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(scripts = { "/gerar_banco.sql" }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = { "/limpar_banco.sql" }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 public class UsuariosTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -55,9 +55,8 @@ public class UsuariosTest extends AbstractIntegrationTest {
         ResponseEntity<UsuarioResponseDto> resposta = template.exchange(
                 "/usuarios",
                 HttpMethod.POST,
-            new HttpEntity<>(dto, authHeaders),
-                UsuarioResponseDto.class
-        );
+                new HttpEntity<>(dto, authHeaders),
+                UsuarioResponseDto.class);
 
         Long id = resposta.getBody().id();
         Usuario usuarioSalvo = repository.findById(id).get();
@@ -78,10 +77,9 @@ public class UsuariosTest extends AbstractIntegrationTest {
         ResponseEntity<UsuarioDadosResponse> resposta = template.exchange(
                 "/usuarios/{id}",
                 HttpMethod.GET,
-            new HttpEntity<>(authHeaders),
+                new HttpEntity<>(authHeaders),
                 UsuarioDadosResponse.class,
-                id
-        );
+                id);
 
         Usuario usuarioDoBanco = repository.findById(id).get();
 
@@ -104,10 +102,9 @@ public class UsuariosTest extends AbstractIntegrationTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/usuarios/{id}/dados-adicionais",
                 HttpMethod.PUT,
-            new HttpEntity<>(dto, authHeaders),
+                new HttpEntity<>(dto, authHeaders),
                 Void.class,
-                id
-        );
+                id);
 
         Usuario usuarioSalvo = repository.findById(id).get();
 
@@ -116,7 +113,6 @@ public class UsuariosTest extends AbstractIntegrationTest {
         assertEquals(dto.estado(), usuarioSalvo.getEstado());
         assertEquals(dto.pais(), usuarioSalvo.getPais());
         assertEquals(dto.foto(), usuarioSalvo.getFoto());
-
 
     }
 
@@ -129,10 +125,9 @@ public class UsuariosTest extends AbstractIntegrationTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/usuarios/{id}/alterar-senha",
                 HttpMethod.PUT,
-            new HttpEntity<>(dto, authHeaders),
+                new HttpEntity<>(dto, authHeaders),
                 Void.class,
-                id
-        );
+                id);
 
         assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
@@ -140,7 +135,8 @@ public class UsuariosTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Deve alterar de um usuario Leitor com sucesso!")
     public void deveAlterarUmUsuarioLeitorComSucesso() {
-        UsuarioAtualizadoLeitorRequest dto = new UsuarioAtualizadoLeitorRequest("Nome Alterado", "emailAlterado@gmail.com", null,
+        UsuarioAtualizadoLeitorRequest dto = new UsuarioAtualizadoLeitorRequest("Nome Alterado",
+                "emailAlterado@gmail.com", null,
                 "Cidade alterada", "Estado Alterado", "Pais alterado", null);
 
         Long id = 2L;
@@ -148,10 +144,9 @@ public class UsuariosTest extends AbstractIntegrationTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/usuarios/{id}",
                 HttpMethod.PUT,
-            new HttpEntity<>(dto, authHeaders),
+                new HttpEntity<>(dto, authHeaders),
                 Void.class,
-                id
-        );
+                id);
 
         Usuario usuarioSalvo = repository.findById(id).get();
 
@@ -175,10 +170,9 @@ public class UsuariosTest extends AbstractIntegrationTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/usuarios/{id}/administrador",
                 HttpMethod.PUT,
-            new HttpEntity<>(dto, authHeaders),
+                new HttpEntity<>(dto, authHeaders),
                 Void.class,
-                id
-        );
+                id);
 
         Usuario usuarioSalvo = repository.findById(id).get();
 
@@ -198,10 +192,51 @@ public class UsuariosTest extends AbstractIntegrationTest {
         ResponseEntity<Void> resposta = template.exchange(
                 "/usuarios/{id}",
                 HttpMethod.DELETE,
-            new HttpEntity<>(authHeaders),
+                new HttpEntity<>(authHeaders),
                 Void.class,
-                id
-        );
+                id);
         assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        Usuario usuarioDoBanco = repository.findById(id).orElseThrow();
+        assertThat(usuarioDoBanco.getExcluido()).isTrue();
+        assertThat(usuarioDoBanco.getDataExclusao()).isNotNull();
+        assertThat(usuarioDoBanco.getUser().getExcluido()).isTrue();
+        assertThat(usuarioDoBanco.getUser().getDataExclusao()).isNotNull();
+
+        logar(1L);
+        ResponseEntity<String> getDepoisDelete = template.exchange(
+                "/usuarios/{id}",
+                HttpMethod.GET,
+                new HttpEntity<>(authHeaders),
+                String.class,
+                id);
+        assertThat(getDepoisDelete.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        LoginRequestDto loginDto = new LoginRequestDto(usuarioDoBanco.getUser().getUser(), "Teste123&");
+        ResponseEntity<Void> loginResponse = template.postForEntity("/logins", loginDto, Void.class);
+        assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("Administrador deve conseguir excluir outro usuário (soft-delete)")
+    public void adminDeveExcluirOutroUsuarioComSucesso() {
+        Long idAdmin = 1L;
+        Long idLeitor = 2L;
+
+        logar(idAdmin);
+        ResponseEntity<Void> resposta = template.exchange(
+                "/usuarios/{id}",
+                HttpMethod.DELETE,
+                new HttpEntity<>(authHeaders),
+                Void.class,
+                idLeitor);
+
+        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        Usuario usuarioDoBanco = repository.findById(idLeitor).orElseThrow();
+        assertThat(usuarioDoBanco.getExcluido()).isTrue();
+        assertThat(usuarioDoBanco.getDataExclusao()).isNotNull();
+        assertThat(usuarioDoBanco.getUser().getExcluido()).isTrue();
+        assertThat(usuarioDoBanco.getUser().getDataExclusao()).isNotNull();
     }
 }

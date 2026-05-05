@@ -15,14 +15,16 @@ import com.usuario.quero_ler.repository.UsuarioRepository;
 import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.service.LoginService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,6 +57,11 @@ class UsuarioServiceImplTest {
     @Mock
     private LivroService livroServiceI;
 
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
     @DisplayName("Deve criar um usuário com sucesso.")
     void deveCriarUmUsuarioComSucesso() {
@@ -63,7 +70,7 @@ class UsuarioServiceImplTest {
         Usuario usuario = UserFixture.entidadePrincipal(user);
         UsuarioResponseDto response = UserFixture.response(usuario);
 
-        when(loginService.criar(dto,UsuarioProfile.LEITOR)).thenReturn(user);
+        when(loginService.criar(dto, UsuarioProfile.LEITOR)).thenReturn(user);
         when(mapper.toEntity(dto)).thenReturn(usuario);
         when(repository.save(usuario)).thenReturn(usuario);
         when(mapper.toResponse(usuario)).thenReturn(response);
@@ -71,10 +78,10 @@ class UsuarioServiceImplTest {
         UsuarioResponseDto resposta = service.criar(dto);
 
         assertNotNull(resposta.id());
-        assertEquals(dto.nome(),resposta.nome());
-        assertEquals(dto.email(),resposta.email());
-        assertEquals(dto.cpf(),resposta.cpf());
-        assertEquals(dto.dataDeNascimento(),resposta.dataDeNascimento());
+        assertEquals(dto.nome(), resposta.nome());
+        assertEquals(dto.email(), resposta.email());
+        assertEquals(dto.cpf(), resposta.cpf());
+        assertEquals(dto.dataDeNascimento(), resposta.dataDeNascimento());
     }
 
     @Test
@@ -86,13 +93,13 @@ class UsuarioServiceImplTest {
         Long id = usuarioComDadosBasicos.getId();
         Usuario usuarioComDadosCompletos = UserFixture.entidadeCompleta(user);
 
-        when(repository.findById(id)).thenReturn(Optional.of(usuarioComDadosBasicos));
-        when(mapper.complementarCadastro(usuarioComDadosBasicos,dto)).thenReturn(usuarioComDadosCompletos);
+        when(repository.findByIdAndExcluidoFalse(id)).thenReturn(Optional.of(usuarioComDadosBasicos));
+        when(mapper.complementarCadastro(usuarioComDadosBasicos, dto)).thenReturn(usuarioComDadosCompletos);
         when(repository.save(usuarioComDadosCompletos)).thenReturn(usuarioComDadosCompletos);
 
-       service.adicionarDados(id,dto);
+        service.adicionarDados(id, dto);
 
-       verify(repository).findById(id);
+        verify(repository).findByIdAndExcluidoFalse(id);
     }
 
     @Test
@@ -103,18 +110,18 @@ class UsuarioServiceImplTest {
         Long id = usuario.getId();
         UsuarioDadosResponse response = UserFixture.responseDados(usuario);
 
-        when(repository.findById(id)).thenReturn(Optional.of(usuario));
+        when(repository.findByIdAndExcluidoFalse(id)).thenReturn(Optional.of(usuario));
         when(mapper.toResponseDados(usuario)).thenReturn(response);
 
         UsuarioDadosResponse resposta = service.getDadosDoUsuario(id);
 
-        assertEquals(usuario.getNome(),resposta.nome());
-        assertEquals(usuario.getEmail(),resposta.email());
-        assertEquals(usuario.getDataDeNascimento(),resposta.dataDeNascimento());
-        assertEquals(usuario.getCidade(),resposta.cidade());
-        assertEquals(usuario.getEstado(),resposta.estado());
-        assertEquals(usuario.getPais(),resposta.pais());
-        assertEquals(usuario.getFoto(),resposta.foto());
+        assertEquals(usuario.getNome(), resposta.nome());
+        assertEquals(usuario.getEmail(), resposta.email());
+        assertEquals(usuario.getDataDeNascimento(), resposta.dataDeNascimento());
+        assertEquals(usuario.getCidade(), resposta.cidade());
+        assertEquals(usuario.getEstado(), resposta.estado());
+        assertEquals(usuario.getPais(), resposta.pais());
+        assertEquals(usuario.getFoto(), resposta.foto());
     }
 
     @Test
@@ -124,19 +131,18 @@ class UsuarioServiceImplTest {
         Usuario usuario = UserFixture.entidadeCompleta(user);
         Long id = usuario.getId();
         UsuarioAtualizadoLeitorRequest atualizacoes = new UsuarioAtualizadoLeitorRequest(
-                "Nome atualizado","emailAtual@gmail.com", LocalDate.of(1978,9,12),
-                null,"cidade atualizada",null,null
-        );
+                "Nome atualizado", "emailAtual@gmail.com", LocalDate.of(1978, 9, 12),
+                null, "cidade atualizada", null, null);
 
-        Usuario usuarioAtualizado = UserFixture.atualizar(usuario,atualizacoes);
+        Usuario usuarioAtualizado = UserFixture.atualizar(usuario, atualizacoes);
 
-        when(repository.findById(id)).thenReturn(Optional.of(usuario));
-        when(mapper.update(usuario,atualizacoes)).thenReturn(usuarioAtualizado);
+        when(repository.findByIdAndExcluidoFalse(id)).thenReturn(Optional.of(usuario));
+        when(mapper.update(usuario, atualizacoes)).thenReturn(usuarioAtualizado);
         when(repository.save(usuarioAtualizado)).thenReturn(usuarioAtualizado);
 
-        service.atualizar(id,atualizacoes);
+        service.atualizar(id, atualizacoes);
 
-        verify(mapper).update(usuario,atualizacoes);
+        verify(mapper).update(usuario, atualizacoes);
         verify(repository).save(usuarioAtualizado);
 
     }
@@ -148,20 +154,18 @@ class UsuarioServiceImplTest {
         Usuario usuario = UserFixture.entidadeCompleta(user);
         Long id = usuario.getId();
         UsuarioAtualizadoAdministradorRequest atualizacoes = new UsuarioAtualizadoAdministradorRequest(
-                 LocalDate.of(1978,9,12),null,"cidade atualizada",null,null
-        );
-        Usuario usuarioAtualizado = UserFixture.atualizar(usuario,atualizacoes);
+                LocalDate.of(1978, 9, 12), null, "cidade atualizada", null, null);
+        Usuario usuarioAtualizado = UserFixture.atualizar(usuario, atualizacoes);
 
-        when(repository.findById(id)).thenReturn(Optional.of(usuario));
-        when(mapper.update(usuario,atualizacoes)).thenReturn(usuarioAtualizado);
+        when(repository.findByIdAndExcluidoFalse(id)).thenReturn(Optional.of(usuario));
+        when(mapper.update(usuario, atualizacoes)).thenReturn(usuarioAtualizado);
         when(repository.save(usuarioAtualizado)).thenReturn(usuarioAtualizado);
 
-        service.atualizar(id,atualizacoes);
+        service.atualizar(id, atualizacoes);
 
-        verify(mapper).update(usuario,atualizacoes);
+        verify(mapper).update(usuario, atualizacoes);
         verify(repository).save(usuarioAtualizado);
     }
-
 
     @Test
     @DisplayName("Deve excluir o perfil com sucesso.")
@@ -170,48 +174,61 @@ class UsuarioServiceImplTest {
         Usuario usuario = UserFixture.entidadeCompleta(user);
         Long id = usuario.getId();
 
-        when(repository.findById(id)).thenReturn(Optional.of(usuario));
-        when(usuarioNotificacaoRepository.findByUsuarioId(id)).thenReturn(List.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
+
+        when(repository.findByIdAndExcluidoFalse(id)).thenReturn(Optional.of(usuario));
+        when(repository.save(usuario)).thenReturn(usuario);
 
         service.excluirPerfil(id);
 
-        verify(repository).findById(id);
-        verify(repository).delete(usuario);
-        verifyNoMoreInteractions(repository);
+        assertTrue(usuario.getExcluido());
+        assertNotNull(usuario.getDataExclusao());
+        assertTrue(usuario.getUser().getExcluido());
+        assertNotNull(usuario.getUser().getDataExclusao());
+
+        verify(repository).findByIdAndExcluidoFalse(id);
+        verify(repository).save(usuario);
     }
 
     @Test
-    @DisplayName("Deve lançar excessão ao tentar excluir o perfil de administrador.")
-    void deveLancarExcessaoAoTentarExcluirPerfilDeAdministrador() {
-        User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
-        Usuario usuario = UserFixture.entidadeCompleta(user);
-        Long id = usuario.getId();
+    @DisplayName("Deve permitir ADMIN excluir perfil de LEITOR.")
+    void devePermitirAdminExcluirPerfilDeLeitor() {
+        User admin = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
+        User leitor = UserFixture.userEntity(UsuarioProfile.LEITOR);
+        Usuario usuarioLeitor = UserFixture.entidadeCompleta(leitor);
+        Long id = usuarioLeitor.getId();
 
-        when(repository.findById(id)).thenReturn(Optional.of(usuario));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities()));
 
-        UsuarioSemPermissaoParaAcaoException exception = assertThrows(UsuarioSemPermissaoParaAcaoException.class,
-                ()->service.excluirPerfil(id)
-        );
+        when(repository.findByIdAndExcluidoFalse(id)).thenReturn(Optional.of(usuarioLeitor));
+        when(repository.save(usuarioLeitor)).thenReturn(usuarioLeitor);
 
-        assertEquals("Ação não permitida para este usuário.",exception.getMessage());
+        service.excluirPerfil(id);
 
+        assertTrue(usuarioLeitor.getExcluido());
+        assertTrue(usuarioLeitor.getUser().getExcluido());
+        verify(repository).save(usuarioLeitor);
     }
 
     @Test
-    @DisplayName("Deve lançar excessão ao tentar excluir o perfil de moderador.")
-    void deveLancarExcessaoAoTentarExcluirPerfilDeModerador() {
-        User user = UserFixture.userEntity(UsuarioProfile.MODERADOR);
-        Usuario usuario = UserFixture.entidadeCompleta(user);
-        Long id = usuario.getId();
+    @DisplayName("Deve negar LEITOR tentando excluir perfil de ADMIN.")
+    void deveNegarLeitorExcluirPerfilDeAdmin() {
+        User leitor = UserFixture.userEntity(UsuarioProfile.LEITOR);
+        User admin = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
+        Usuario usuarioAdmin = UserFixture.entidadeCompleta(admin);
+        Long id = usuarioAdmin.getId();
 
-        when(repository.findById(id)).thenReturn(Optional.of(usuario));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(leitor, null, leitor.getAuthorities()));
+
+        when(repository.findByIdAndExcluidoFalse(id)).thenReturn(Optional.of(usuarioAdmin));
 
         UsuarioSemPermissaoParaAcaoException exception = assertThrows(UsuarioSemPermissaoParaAcaoException.class,
-                ()->service.excluirPerfil(id)
-        );
+                () -> service.excluirPerfil(id));
 
-        assertEquals("Ação não permitida para este usuário.",exception.getMessage());
-
+        assertEquals("Ação não permitida para este usuário.", exception.getMessage());
     }
 
     @Test
@@ -220,9 +237,9 @@ class UsuarioServiceImplTest {
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
         Usuario usuario = UserFixture.entidadeCompleta(user);
         Long id = usuario.getId();
-        UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&","Alterado253$");
+        UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&", "Alterado253$");
 
-        when(repository.findById(id)).thenReturn(Optional.of(usuario));
+        when(repository.findByIdAndExcluidoFalse(id)).thenReturn(Optional.of(usuario));
 
         service.alterarSenha(id, dto);
 
@@ -236,30 +253,30 @@ class UsuarioServiceImplTest {
         Usuario usuario = UserFixture.entidadeCompleta(user);
         Long id = usuario.getId();
 
-        when(repository.findById(id)).thenReturn(Optional.of(usuario));
+        when(repository.findByIdAndExcluidoFalse(id)).thenReturn(Optional.of(usuario));
 
         Usuario resposta = service.getUsuario(id);
 
         assertNotNull(resposta.getId());
-        assertEquals(usuario.getNome(),resposta.getNome());
-        assertEquals(usuario.getCpf(),resposta.getCpf());
-        assertEquals(usuario.getDataDeNascimento(),resposta.getDataDeNascimento());
-        assertEquals(usuario.getEmail(),resposta.getEmail());
-        assertEquals(usuario.getCpf(),resposta.getCpf());
-        assertEquals(usuario.getCidade(),resposta.getCidade());
-        assertEquals(usuario.getEstado(),resposta.getEstado());
-        assertEquals(usuario.getPais(),resposta.getPais());
+        assertEquals(usuario.getNome(), resposta.getNome());
+        assertEquals(usuario.getCpf(), resposta.getCpf());
+        assertEquals(usuario.getDataDeNascimento(), resposta.getDataDeNascimento());
+        assertEquals(usuario.getEmail(), resposta.getEmail());
+        assertEquals(usuario.getCpf(), resposta.getCpf());
+        assertEquals(usuario.getCidade(), resposta.getCidade());
+        assertEquals(usuario.getEstado(), resposta.getEstado());
+        assertEquals(usuario.getPais(), resposta.getPais());
     }
 
     @Test
     @DisplayName("Deve lançar excessão ao buscar usuario por id e não encontrar")
-    void deveLancarExcessaoAoBuscarUsuarioPorIdENaoEncontrar(){
+    void deveLancarExcessaoAoBuscarUsuarioPorIdENaoEncontrar() {
         Long id = 99L;
 
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        when(repository.findByIdAndExcluidoFalse(id)).thenReturn(Optional.empty());
 
         UsuarioNaoEncontradoException exception = assertThrows(UsuarioNaoEncontradoException.class,
-                ()-> service.getUsuario(id));
+                () -> service.getUsuario(id));
 
         assertEquals("Não foi encontrado nenhum usuário" +
                 " com ID: '" + id + "'.", exception.getMessage());
