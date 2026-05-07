@@ -2,6 +2,7 @@ package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.UsuarioProfile;
+import com.usuario.quero_ler.exceptions.especies.SenhaInvalidaException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import com.usuario.quero_ler.fixtures.UserFixture;
@@ -12,6 +13,7 @@ import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
+import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.service.LoginService;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +21,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -45,6 +53,13 @@ class UsuarioServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private TokenService tokenService;
+
+    @Mock
+    private PasswordEncoder encoder;
+
 
     @Mock
     private UsuarioNotificacaoRepository usuarioNotificacaoRepository;
@@ -215,19 +230,52 @@ class UsuarioServiceImplTest {
     }
 
     @Test
-    @DisplayName("Deve alterar senha com sucesso.")
+    @DisplayName("Deve alterar a senha do usuário com sucesso.")
     void deveAlterarSenhaComSucesso() {
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
+        String token = "token-valido";
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
-        Usuario usuario = UserFixture.entidadeCompleta(user);
-        Long id = usuario.getId();
-        UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&","Alterado253$");
+        String senhaAtual = "Teste123&";
+        String novaSenha = "Nov@Senha123";
+        UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest(senhaAtual, novaSenha);
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
 
-        when(repository.findById(id)).thenReturn(Optional.of(usuario));
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+        SecurityContextHolder.setContext(securityContext);
+        when(tokenService.validateToken(token)).thenReturn(token);
 
-        service.alterarSenha(id, dto);
+        service.alterarSenha(dto, token);
 
+        assertTrue(encoder.matches(novaSenha,user.getSenha()));
+        verify(tokenService).validateToken(token);
         verify(userRepository).save(user);
     }
+
+@Test
+@DisplayName("Deve lancar exceção quando senha atual estiver incorreta.")
+void deveLancarExcecaoQuandoSenhaAtualEstiverIncorreta() {
+    PasswordEncoder encoder = new BCryptPasswordEncoder();
+    String token = "token-valido";
+    User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
+    String senhaAtual = "Errada123&";
+    String novaSenha = "Nov@Senha123";
+    UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest(senhaAtual, novaSenha);
+    Authentication authentication = mock(Authentication.class);
+    SecurityContext securityContext = mock(SecurityContext.class);
+
+    when(securityContext.getAuthentication()).thenReturn(authentication);
+    when(authentication.getPrincipal()).thenReturn(user);
+    SecurityContextHolder.setContext(securityContext);
+    when(tokenService.validateToken(token)).thenReturn(token);
+
+    SenhaInvalidaException exception = assertThrows(SenhaInvalidaException.class,
+            ()-> service.alterarSenha(dto, token));
+
+    assertEquals("A senha incorreta.",exception.getMessage());
+    verify(tokenService).validateToken(token);
+}
 
     @Test
     @DisplayName("Deve retornar um usuário com sucesso.")

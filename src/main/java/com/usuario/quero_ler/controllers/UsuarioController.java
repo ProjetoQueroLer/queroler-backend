@@ -2,11 +2,13 @@ package com.usuario.quero_ler.controllers;
 
 import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -31,9 +33,11 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping("/{id}/alterar-senha")
-    public ResponseEntity<Void> alterarSenha(@PathVariable Long id, @RequestBody @Valid UsuarioAlterarSenhaRequest dto) {
-        serviceI.alterarSenha(id, dto);
+    @PutMapping("/alterar-senha")
+    public ResponseEntity<Void> alterarSenha(@RequestBody @Valid UsuarioAlterarSenhaRequest dto,
+                                             @RequestHeader("Authorization") String token) {
+
+        serviceI.alterarSenha(dto,token);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

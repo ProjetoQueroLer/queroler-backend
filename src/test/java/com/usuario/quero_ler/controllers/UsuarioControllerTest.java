@@ -113,15 +113,19 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Deve alterar a senha do usuário com sucesso")
     void deveAlterarASenhaDoUsuarioComSucesso() throws Exception {
-        Long id = 1L;
-        UsuarioAlterarSenhaRequest request = new UsuarioAlterarSenhaRequest("Teste123&", "Senha1232@");
+        String token = "Bearer token-teste";
+        UsuarioAlterarSenhaRequest request = new UsuarioAlterarSenhaRequest(
+                        "Teste123&",
+                        "Senha1232@"
+                );
 
-        mockMvc.perform(put("/usuarios/{id}/alterar-senha", id)
+        mockMvc.perform(put("/usuarios/alterar-senha")
+                        .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        verify(service).alterarSenha(id, request);
+        verify(service).alterarSenha(request, token);
     }
 
     @Test

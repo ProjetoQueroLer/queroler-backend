@@ -12,7 +12,7 @@ public interface UsuarioService {
     Usuario getUsuario(Long id);
     void atualizar(Long id, UsuarioAtualizadoLeitorRequest dto);
     void atualizar(Long id, UsuarioAtualizadoAdministradorRequest dto);
-    void alterarSenha(Long id, UsuarioAlterarSenhaRequest dto);
+    void alterarSenha(UsuarioAlterarSenhaRequest dto,String token);
     void excluirPerfil(Long id);
     void adicionarLivro(Long id, Long idLivro, LivroStatus status);
 }
