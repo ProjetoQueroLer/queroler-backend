@@ -35,7 +35,7 @@ public class DiarioDeLeitura {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<AcompanhamentoDeLeitura> cometarios= new ArrayList<>();
+    private List<AcompanhamentoDeLeitura> comentarios = new ArrayList<>();
     private int nota;
     private String tituloDaResenha;
 
@@ -43,6 +43,6 @@ public class DiarioDeLeitura {
     private String resenha;
 
     public void adicionarComentario(AcompanhamentoDeLeitura comentario){
-        cometarios.add(comentario);
+        comentarios.add(comentario);
     }
 }

@@ -1,4 +1,4 @@
-CREATE TABLE tb_acompanhamento_leitura (
+CREATE TABLE IF NOT EXISTS tb_acompanhamento_leitura  (
                                            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
                                            pagina_inicial INT NOT NULL,

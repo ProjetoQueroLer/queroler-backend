@@ -1,4 +1,4 @@
-CREATE TABLE tb_diario_leitura (
+CREATE TABLE IF NOT EXISTS tb_diario_leitura (
                                    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
                                    usuario_id BIGINT NOT NULL,
