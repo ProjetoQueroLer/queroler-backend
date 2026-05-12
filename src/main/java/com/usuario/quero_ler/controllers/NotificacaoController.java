@@ -25,7 +25,7 @@ public class NotificacaoController {
 
     @PutMapping("/{id}")
     ResponseEntity<Void> marcarComoLidas(@PathVariable Long id) {
-        log.info("PUT /notificacoes/{}/ - marcar como lidas", id);
+        log.info("PUT /notificacoes/{} - marcar como lidas", id);
         serviceI.marcarComoLidas(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
