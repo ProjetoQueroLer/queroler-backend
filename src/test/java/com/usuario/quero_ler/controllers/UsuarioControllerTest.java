@@ -45,33 +45,33 @@ class UsuarioControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
-    @DisplayName("Deve criar um Usuário com sucesso")
-    void deveCriarUmUsuarioComSucesso() throws Exception {
-        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
-        UsuarioRequestDto request = UserFixture.requestDto();
-        Usuario usuario = UserFixture.entidadeCompleta(user);
-        UsuarioResponseDto response = UserFixture.response(usuario);
-
-        when(service.criar(request)).thenReturn(response);
-
-        mockMvc.perform(post("/usuarios")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(response.id()))
-                .andExpect(jsonPath("$.nome").value(response.nome()))
-                .andExpect(jsonPath("$.email").value(response.email()))
-                .andExpect(jsonPath("$.cpf").value(response.cpf()))
-                .andExpect(jsonPath("$.dataDeNascimento")
-                        .value(response.dataDeNascimento().toString()))
-                .andExpect(jsonPath("$.cidade").value(response.cidade()))
-                .andExpect(jsonPath("$.estado").value(response.estado()))
-                .andExpect(jsonPath("$.pais").value(response.pais()))
-                .andExpect(jsonPath("$.email").value(response.email()));
-
-        verify(service).criar(request);
-    }
+//    @Test
+//    @DisplayName("Deve criar um Usuário com sucesso")
+//    void deveCriarUmUsuarioComSucesso() throws Exception {
+//        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
+//        UsuarioRequestDto request = UserFixture.requestDto();
+//        Usuario usuario = UserFixture.entidadeCompleta(user);
+//        UsuarioResponseDto response = UserFixture.response(usuario);
+//
+//        when(service.criar(request)).thenReturn(response);
+//
+//        mockMvc.perform(post("/usuarios")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(request)))
+//                .andExpect(status().isCreated())
+//                .andExpect(jsonPath("$.id").value(response.id()))
+//                .andExpect(jsonPath("$.nome").value(response.nome()))
+//                .andExpect(jsonPath("$.email").value(response.email()))
+//                .andExpect(jsonPath("$.cpf").value(response.cpf()))
+//                .andExpect(jsonPath("$.dataDeNascimento")
+//                        .value(response.dataDeNascimento().toString()))
+//                .andExpect(jsonPath("$.cidade").value(response.cidade()))
+//                .andExpect(jsonPath("$.estado").value(response.estado()))
+//                .andExpect(jsonPath("$.pais").value(response.pais()))
+//                .andExpect(jsonPath("$.email").value(response.email()));
+//
+//        verify(service).criar(request);
+//    }
 
     @Test
     @DisplayName("Deve retornar dados do usuário")

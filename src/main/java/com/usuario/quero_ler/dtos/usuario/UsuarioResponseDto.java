@@ -15,5 +15,5 @@ public record UsuarioResponseDto(
         String cidade,
         String estado,
         String pais,
-        byte[] foto
+        String fotoUrl
 ) {}

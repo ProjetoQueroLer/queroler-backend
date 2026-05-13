@@ -3,9 +3,7 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.LivroStatus;
 import com.usuario.quero_ler.enums.UsuarioProfile;
-import com.usuario.quero_ler.exceptions.especies.UsuarioJaPossueOLivroException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
+import com.usuario.quero_ler.exceptions.especies.*;
 import com.usuario.quero_ler.mappers.UsuarioMapper;
 import com.usuario.quero_ler.models.*;
 import com.usuario.quero_ler.repository.UserRepository;
@@ -19,7 +17,11 @@ import com.usuario.quero_ler.utils.Senhas;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,13 +35,23 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
     private final UsuarioLivroRepository usuarioLivroRepository;
     private final LivroService livroService;
+    private final LoginService loginService;
 
     @Transactional
     @Override
-    public UsuarioResponseDto criar(UsuarioRequestDto dto) {
+    public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
         Senhas.validarIguais(dto.senha(), dto.confirmarSenha());
         User user = login.criar(dto, UsuarioProfile.LEITOR);
         Usuario usuario = mapper.toEntity(dto);
+
+        if (foto != null && !foto.isEmpty()) {
+            validarFoto(foto);
+            try {
+                usuario.setFoto(foto.getBytes());
+            } catch (IOException e) {
+                throw new CapaForaDePadraoException("Erro ao ler imagem" + e);
+            }
+        }
         usuario.setUser(user);
         usuario = repository.save(usuario);
         return mapper.toResponse(usuario);
@@ -98,7 +110,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void adicionarLivro(Long id, Long idLivro, LivroStatus status){
+    public void adicionarLivro(Long id, Long idLivro, LivroStatus status) {
         Usuario usuario = getUsuario(id);
 
         Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(id, idLivro);
@@ -126,5 +138,48 @@ public class UsuarioServiceImpl implements UsuarioService {
                 () -> new UsuarioNaoEncontradoException("Não foi encontrado nenhum usuário" +
                         " com ID: '" + id + "'.")
         );
+    }
+
+    @Override
+    public byte[] buscarFoto() {
+        Usuario usuarioLogado = loginService.getUsuarioLogado().getUsuario();
+
+        if (usuarioLogado.getFoto() == null) {
+            throw new FotoNaoCadastradaException("Foto não cadastrada");
+        } else {
+            return usuarioLogado.getFoto();
+        }
+    }
+
+    protected void validarFoto(MultipartFile foto) {
+        try {
+            if (foto == null || foto.isEmpty()) {
+                return;
+            }
+
+            long tamanhoMaximo = 10 * 1024 * 1024;
+            if (foto.getSize() > tamanhoMaximo) {
+                throw new CapaForaDePadraoException("Imagem excede o tamanho máximo de 10MB");
+            }
+
+            List<String> tiposPermitidos = List.of(
+                    "image/jpeg",
+                    "image/jpg",
+                    "image/png"
+            );
+
+            if (foto.getContentType() == null ||
+                    !tiposPermitidos.contains(foto.getContentType())) {
+                throw new CapaForaDePadraoException("Formato inválido. Use JPG ou PNG");
+            }
+
+            BufferedImage imagem = ImageIO.read(foto.getInputStream());
+            if (imagem == null) {
+                throw new CapaForaDePadraoException("Arquivo enviado não é uma imagem válida");
+            }
+
+        } catch (IOException e) {
+            throw new CapaForaDePadraoException("Erro ao processar imagem");
+        }
     }
 }
