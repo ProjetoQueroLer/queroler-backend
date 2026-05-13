@@ -6,6 +6,8 @@ import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.models.Usuario;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 
 public class UserFixture {
@@ -21,7 +23,7 @@ public class UserFixture {
     private static final String CIDADE= "Valinhos";
     private static final String ESTADO = "São paulo";
     private static final String PAIS = "Brasil";
-    private static final byte[] FOTO = null;
+    private static final byte[] FOTO = carregarImagem();
 
     public static UsuarioRequestDto  requestDto(){
         return new UsuarioRequestDto(
@@ -70,7 +72,7 @@ public class UserFixture {
         return new UsuarioResponseDto(
                 user.getId(), user.getNome(), user.getEmail(), user.getCpf(),
                 user.getUser().getProfile(),user.getDataDeNascimento(),user.getAceitarTermos(),
-                user.getCidade(), user.getEstado(), user.getPais(), user.getFoto()
+                user.getCidade(), user.getEstado(), user.getPais(), "/usuarios/foto"
         );
     }
     public static UsuarioDadosResponse responseDados(Usuario user){
@@ -98,6 +100,22 @@ public class UserFixture {
         usuario.setPais(atualizacoes.pais() != null ? atualizacoes.pais() : usuario.getPais());
         usuario.setFoto(atualizacoes.foto() != null ? atualizacoes.foto() : usuario.getFoto());
         return usuario;
+    }
+
+    private static byte[] carregarImagem() {
+        try (InputStream is = LivroFixture.class
+                .getClassLoader()
+                .getResourceAsStream("usuario.jpg")) {
+
+            if (is == null) {
+                throw new RuntimeException("Arquivo usuario.jpg não encontrado");
+            }
+
+            return is.readAllBytes();
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao carregar imagem", e);
+        }
     }
 
 }
