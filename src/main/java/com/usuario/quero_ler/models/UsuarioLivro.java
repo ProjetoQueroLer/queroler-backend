@@ -29,4 +29,9 @@ public class UsuarioLivro {
     @JoinColumn(name = "livro_id",  nullable = false)
     @MapsId("livroId")
     private Livro livro;
+
+    @OneToOne(mappedBy = "usuarioLivro",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private DiarioDeLeitura diarioDeLeitura;
 }

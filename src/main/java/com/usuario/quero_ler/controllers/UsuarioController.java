@@ -1,5 +1,6 @@
 package com.usuario.quero_ler.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.LivroStatus;
 import com.usuario.quero_ler.service.UsuarioService;
@@ -7,8 +8,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RestController
@@ -16,11 +19,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/usuarios")
 public class UsuarioController {
     private final UsuarioService serviceI;
+    private final ObjectMapper mapper;
 
-    @PostMapping
-    public ResponseEntity<UsuarioResponseDto> criar(@RequestBody @Valid UsuarioRequestDto dto) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UsuarioResponseDto> criar(@RequestPart(value = "imagem", required = false) MultipartFile foto,
+            @RequestPart("dados") String dadosJson) throws Exception {
+        UsuarioRequestDto dto = mapper.readValue(dadosJson, UsuarioRequestDto.class);
         log.info("POST /usuarios - criar usuario: {}", dto.email());
-        UsuarioResponseDto resp = serviceI.criar(dto);
+        UsuarioResponseDto resp = serviceI.criar(dto, foto);
         log.info("Usuario criado: id={}", resp != null ? resp.id() : null);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
@@ -76,5 +82,12 @@ public class UsuarioController {
         log.info("POST /usuarios/{}/livro - adicionar livro {} status={}", id, idLivro, status);
         serviceI.adicionarLivro(id, idLivro, status);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/foto")
+    public ResponseEntity<byte[]> buscarFoto() {
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(serviceI.buscarFoto());
     }
 }

@@ -26,6 +26,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    @ExceptionHandler(FotoNaoCadastradaException.class)
+    public ResponseEntity<Object> handlerFotoNaoCadastradaException(FotoNaoCadastradaException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
     @ExceptionHandler(IsbnNaoEncontradoException.class)
     public ResponseEntity<Object> handlerIsbnNaoEncontradoException(IsbnNaoEncontradoException ex) {
         log.error("IsbnNaoEncontradoException: {}", ex.getMessage());
