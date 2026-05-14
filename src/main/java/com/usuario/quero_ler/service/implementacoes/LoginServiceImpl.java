@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 @Getter
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class LoginServiceImpl implements LoginService {
 	private final UserRepository repository;
 
@@ -43,21 +45,25 @@ public class LoginServiceImpl implements LoginService {
 	@Transactional
 	@Override
 	public User criar(UsuarioRequestDto dto, UsuarioProfile profile) {
+		log.info("LoginServiceImpl.criar - email={} profile={}", dto.email(), profile);
 		User user = new User();
 		String senha = Senhas.gerar(dto.senha());
 		user.setUser(dto.email());
 		user.setSenha(passwordEncoder.encode(dto.senha()));
 		user.setProfile(profile);
 		user = repository.save(user);
+		log.debug("User criado id={}", user.getId());
 		return user;
 	}
 
 	@Override
 	public void login(LoginRequestDto dto, HttpServletResponse response) {
+		log.info("LoginServiceImpl.login - user={}", dto.user());
 
 		User user = repository.findByUserIgnoreCase(dto.user())
 				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não cadastrado"));
 		if (!passwordEncoder.matches(dto.senha(), user.getSenha())) {
+			log.warn("Login falhou para user={}", dto.user());
 			throw new CredenciaisInvalidasException("E-mail ou senha inválida.");
 		}
 
@@ -72,7 +78,7 @@ public class LoginServiceImpl implements LoginService {
 				.build();
 
 		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
+		log.info("LoginServiceImpl.login - sucesso user={}", dto.user());
 	}
 
 	@Override

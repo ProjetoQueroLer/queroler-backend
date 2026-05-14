@@ -12,10 +12,12 @@ import com.usuario.quero_ler.repository.DocumentoRepository;
 import com.usuario.quero_ler.service.DocumentoService;
 import com.usuario.quero_ler.service.NotificacaoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class DocumentoServiceImpl implements DocumentoService {
     private final DocumentoRepository repository;
     private final DocumentoMapper mapper;
@@ -23,20 +25,24 @@ public class DocumentoServiceImpl implements DocumentoService {
 
     @Override
     public DocumentoResponseDto criar(DocumentoRequestDto dto) {
+        log.info("DocumentoServiceImpl.criar - dto={}", dto);
         Documento documento = mapper.toEntity(dto);
         documento = repository.save(documento);
         gerarNonificacao(documento.getTipo().name());
-        return mapper.toResponse(documento);
+        DocumentoResponseDto resp = mapper.toResponse(documento);
+        log.info("Documento criado id={}", resp != null ? resp.id() : null);
+        return resp;
     }
 
     @Override
     public void alterar(Long id, DocumentoAlteracoesDto dto) {
+        log.info("DocumentoServiceImpl.alterar - id={} dto={}", id, dto);
         Documento documento = repository.findById(id).orElseThrow(
-                () -> new DocumentoNaoEncontradoException("Documento não cadastrado.")
-        );
+                () -> new DocumentoNaoEncontradoException("Documento não cadastrado."));
         documento = mapper.toUpdate(documento, dto);
         gerarNonificacao(documento.getTipo().name());
         documento = repository.save(documento);
+        log.info("Documento atualizado id={}", documento.getId());
     }
 
     @Override
@@ -46,6 +52,7 @@ public class DocumentoServiceImpl implements DocumentoService {
     }
 
     protected void gerarNonificacao(String texto) {
+        log.debug("Gerando notificacao: {}", texto);
         notificacaoService.criar(new NotificacaoRequestDto(texto));
     }
 

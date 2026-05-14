@@ -16,6 +16,7 @@ import com.usuario.quero_ler.service.UsuarioService;
 import com.usuario.quero_ler.utils.Senhas;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,21 +28,23 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class UsuarioServiceImpl implements UsuarioService {
-    private final LoginService login;
+    private final LoginService loginService;
     private final UsuarioRepository repository;
     private final UserRepository userRepository;
     private final UsuarioMapper mapper;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
     private final UsuarioLivroRepository usuarioLivroRepository;
     private final LivroService livroService;
-    private final LoginService loginService;
 
     @Transactional
     @Override
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
+        log.info("UsuarioServiceImpl.criar - email={}", dto.email());
+
         Senhas.validarIguais(dto.senha(), dto.confirmarSenha());
-        User user = login.criar(dto, UsuarioProfile.LEITOR);
+        User user = loginService.criar(dto, UsuarioProfile.LEITOR);
         Usuario usuario = mapper.toEntity(dto);
 
         if (foto != null && !foto.isEmpty()) {
@@ -54,11 +57,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
         usuario.setUser(user);
         usuario = repository.save(usuario);
-        return mapper.toResponse(usuario);
+        UsuarioResponseDto resp = mapper.toResponse(usuario);
+        log.info("Usuario criado id={}", usuario.getId());
+        return resp;
     }
 
     @Override
     public void adicionarDados(Long id, UsuarioDadosComplementarRequest dto) {
+        log.info("UsuarioServiceImpl.adicionarDados - id={}", id);
         Usuario usuario = getUsuario(id);
         usuario = mapper.complementarCadastro(usuario, dto);
         usuario = repository.save(usuario);
@@ -66,12 +72,14 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public UsuarioDadosResponse getDadosDoUsuario(Long id) {
+        log.debug("UsuarioServiceImpl.getDadosDoUsuario - id={}", id);
         Usuario usuario = getUsuario(id);
         return mapper.toResponseDados(usuario);
     }
 
     @Override
     public void atualizar(Long id, UsuarioAtualizadoLeitorRequest dto) {
+        log.info("UsuarioServiceImpl.atualizar (leitor) - id={}", id);
         Usuario usuario = getUsuario(id);
         usuario = mapper.update(usuario, dto);
         usuario = repository.save(usuario);
@@ -79,6 +87,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public void atualizar(Long id, UsuarioAtualizadoAdministradorRequest dto) {
+        log.info("UsuarioServiceImpl.atualizar (administrador) - id={}", id);
         Usuario usuario = getUsuario(id);
         usuario = mapper.update(usuario, dto);
         repository.save(usuario);
@@ -86,6 +95,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public void excluirPerfil(Long id) {
+        log.info("UsuarioServiceImpl.excluirPerfil - id={}", id);
         Usuario usuario = getUsuario(id);
         if (usuario.getUser().getProfile().equals(UsuarioProfile.LEITOR)) {
             List<UsuarioNotificacao> notificacoes = usuarioNotificacaoRepository.findByUsuarioId(id);
@@ -100,6 +110,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public void alterarSenha(Long id, UsuarioAlterarSenhaRequest dto) {
+        log.info("UsuarioServiceImpl.alterarSenha - id={}", id);
         Senhas.validar(dto.senhaNova());
         Usuario usuario = getUsuario(id);
         User user = usuario.getUser();
@@ -111,6 +122,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public void adicionarLivro(Long id, Long idLivro, LivroStatus status) {
+        log.info("UsuarioServiceImpl.adicionarLivro - usuarioId={} livroId={} status={}", id, idLivro, status);
         Usuario usuario = getUsuario(id);
 
         Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(id, idLivro);
@@ -132,12 +144,11 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioLivroRepository.save(novoUsuarioLivro);
     }
 
-
     public Usuario getUsuario(Long id) {
+        log.debug("UsuarioServiceImpl.getUsuario - id={}", id);
         return repository.findById(id).orElseThrow(
                 () -> new UsuarioNaoEncontradoException("Não foi encontrado nenhum usuário" +
-                        " com ID: '" + id + "'.")
-        );
+                        " com ID: '" + id + "'."));
     }
 
     @Override
@@ -165,8 +176,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             List<String> tiposPermitidos = List.of(
                     "image/jpeg",
                     "image/jpg",
-                    "image/png"
-            );
+                    "image/png");
 
             if (foto.getContentType() == null ||
                     !tiposPermitidos.contains(foto.getContentType())) {

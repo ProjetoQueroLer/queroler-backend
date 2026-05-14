@@ -14,6 +14,7 @@ import com.usuario.quero_ler.service.AutorService;
 import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.utils.LivroFiltro;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class LivroServiceImpl implements LivroService {
 
     private final LivroRepository repository;
@@ -38,29 +40,31 @@ public class LivroServiceImpl implements LivroService {
     private final UsuarioLivroRepository usuarioLivroRepository;
 
     @Override
-    public LivroResponse criar(LivroRequest dto,MultipartFile capaDoLivro) {
+    public LivroResponse criar(LivroRequest dto, MultipartFile capaDoLivro) {
+        log.info("LivroServiceImpl.criar - titulo={} isbn={}", dto.titulo(), dto.isbn());
 
         Optional<Livro> isbn = repository.findByIsbn(dto.isbn());
-        if(isbn.isPresent()){
+        if (isbn.isPresent()) {
             throw new IsbnJaCadastradoException("Isbn já cadatrado");
         }
 
         Livro livro = mapper.toEntity(dto);
-        for (AutorRequest autorRequest : dto.autores()){
+        for (AutorRequest autorRequest : dto.autores()) {
             Autor autor = AutorService.criar(autorRequest);
             livro.adicionarAutor(autor);
         }
-        if (capaDoLivro != null && !capaDoLivro.isEmpty()){
+        if (capaDoLivro != null && !capaDoLivro.isEmpty()) {
             validarCapaDoLivro(capaDoLivro);
             try {
                 livro.setCapaDoLivro(capaDoLivro.getBytes());
             } catch (IOException e) {
-                throw new CapaForaDePadraoException("Erro ao ler imagem"+ e);
+                log.error("Erro ao ler imagem", e);
+                throw new LerImagemException("Erro ao ler imagem", e);
             }
         }
 
         livro = repository.save(livro);
-
+        log.info("Livro salvo id={}", livro.getId());
         return mapper.toResponse(livro);
     }
 
@@ -71,10 +75,11 @@ public class LivroServiceImpl implements LivroService {
     }
 
     @Override
-    public Page<LivroResponse> listarPopulares(){
-        Pageable pageable= LivroFiltro.top5MaisVotados();
-        Page<LivroResponse> livros = repository.findAll(pageable).map(mapper ::toResponse);
-        if(livros.isEmpty()){
+    public Page<LivroResponse> listarPopulares() {
+        Pageable pageable = LivroFiltro.top5MaisVotados();
+        log.info("LivroServiceImpl.listarPopulares");
+        Page<LivroResponse> livros = repository.findAll(pageable).map(mapper::toResponse);
+        if (livros.isEmpty()) {
             throw new LivroNaoEncontradoException("Não há livros em top5!");
         }
         return livros;
@@ -89,6 +94,7 @@ public class LivroServiceImpl implements LivroService {
         try {
             livro.setCapaDoLivro(capaDoLivro.getBytes());
         } catch (IOException e) {
+            log.error("Erro ao ler capa do livro id={}", id, e);
             throw new LerImagemException("Erro ao ler imagem", e);
         }
 
@@ -96,12 +102,12 @@ public class LivroServiceImpl implements LivroService {
     }
 
     @Override
-    public byte[] buscarCapa(Long id){
+    public byte[] buscarCapa(Long id) {
+        log.debug("LivroServiceImpl.buscarCapa id={}", id);
         Livro livro = repository.findById(id).orElseThrow(
-                ()-> new LivroNaoEncontradoException("Livro não encontrado")
-        );
+                () -> new LivroNaoEncontradoException("Livro não encontrado"));
 
-        if (livro.getCapaDoLivro()== null){
+        if (livro.getCapaDoLivro() == null) {
             throw new CapaNaoCadastradaException("Capa não cadastrada");
         } else {
             return livro.getCapaDoLivro();
@@ -109,18 +115,19 @@ public class LivroServiceImpl implements LivroService {
     }
 
     @Override
-    public LivroResponse buscarIsbn(String isbn){
+    public LivroResponse buscarIsbn(String isbn) {
+        log.info("LivroServiceImpl.buscarIsbn isbn={}", isbn);
         Livro livro = repository.findByIsbn(isbn).orElseThrow(
-                ()-> new IsbnNaoEncontradoException("Não há nenhum livro cadastrado com o código ISBN informado")
-        );
+                () -> new IsbnNaoEncontradoException("Não há nenhum livro cadastrado com o código ISBN informado"));
         return mapper.toResponse(livro);
     }
 
     @Override
-    public Page<LivroCardResponse> buscar(String titulo, String editora,String autor, Pageable pageable){
+    public Page<LivroCardResponse> buscar(String titulo, String editora, String autor, Pageable pageable) {
+        log.info("LivroServiceImpl.buscar titulo={} editora={} autor={}", titulo, editora, autor);
         Specification<Livro> filtro = LivroFiltro.filtro(titulo, editora, autor);
-        Page<LivroCardResponse> livros = repository.findAll(filtro,pageable).map(mapper ::toCardResponse);
-        if(livros.isEmpty()){
+        Page<LivroCardResponse> livros = repository.findAll(filtro, pageable).map(mapper::toCardResponse);
+        if (livros.isEmpty()) {
             throw new LivroNaoEncontradoException("Nenhum livro encontrado para essa busca!");
         }
         return livros;
@@ -140,8 +147,7 @@ public class LivroServiceImpl implements LivroService {
             List<String> tiposPermitidos = List.of(
                     "image/jpeg",
                     "image/jpg",
-                    "image/png"
-            );
+                    "image/png");
 
             if (capaDoLivro.getContentType() == null ||
                     !tiposPermitidos.contains(capaDoLivro.getContentType())) {
@@ -154,40 +160,45 @@ public class LivroServiceImpl implements LivroService {
             }
 
         } catch (IOException e) {
+            log.error("Erro ao validar capa do livro", e);
             throw new CapaForaDePadraoException("Erro ao processar imagem");
         }
     }
 
     @Override
     public Livro buscar(Long id) {
+        log.debug("LivroServiceImpl.buscar id={}", id);
         return repository.findById(id).orElseThrow(
-                ()-> new LivroNaoEncontradoException("Livro não cadastrado.")
-        );
+                () -> new LivroNaoEncontradoException("Livro não cadastrado."));
     }
 
     @Override
-    public Page<LivroDetalhadoResponse> getLivrosDoUsuario(Long id, Pageable pageable){
-        Page<LivroDetalhadoResponse> livros = usuarioLivroRepository.findLivrosByUsuarioId(id,pageable)
+    public Page<LivroDetalhadoResponse> getLivrosDoUsuario(Long id, Pageable pageable) {
+        log.info("LivroServiceImpl.getLivrosDoUsuario id={} page={}", id, pageable.getPageNumber());
+        Page<LivroDetalhadoResponse> livros = usuarioLivroRepository.findLivrosByUsuarioId(id, pageable)
                 .map(mapper::toLivroDetalhadoResponse);
         return livros;
     }
 
     @Override
-    public Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Long id,Pageable pageable){
+    public Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Long id, Pageable pageable) {
         List<UsuarioLivro> usuarioLivros = usuarioLivroRepository.findAllByUsuarioId(id, pageable).stream().toList();
         List<LivroTelaLeituraResponse> resposta = new ArrayList<>();
 
-        for (UsuarioLivro usuarioLivro: usuarioLivros){
+        for (UsuarioLivro usuarioLivro : usuarioLivros) {
             Livro livro = usuarioLivro.getLivro();
-            resposta.add(mapper.toLivroTelaLeituraResponse(livro,usuarioLivro.getStatus()));
+            resposta.add(mapper.toLivroTelaLeituraResponse(livro, usuarioLivro.getStatus()));
         }
+        log.debug("LivroServiceImpl.getLivrosTelaDeLeituraDoUsuario id={} count={}", id, resposta.size());
         Page<LivroTelaLeituraResponse> page = new PageImpl<>(resposta, pageable, resposta.size());
         return page;
     }
 
     @Override
-    public void alterarStatusDoLivroNoUsuario(Long id, Long idUsuario, LivroStatus status){
-        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByLivro_IdAndUsuario_Id(id,idUsuario);
+    public void alterarStatusDoLivroNoUsuario(Long id, Long idUsuario, LivroStatus status) {
+        log.info("LivroServiceImpl.alterarStatusDoLivroNoUsuario livroId={} usuarioId={} status={}", id, idUsuario,
+                status);
+        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByLivro_IdAndUsuario_Id(id, idUsuario);
         if (usuarioLivro.isEmpty()) {
             throw new LivroNaoEncontradoException("O usuario não possue o livro na estante.");
         }

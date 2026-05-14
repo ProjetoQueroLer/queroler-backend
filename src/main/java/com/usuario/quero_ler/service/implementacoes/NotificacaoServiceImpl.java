@@ -11,6 +11,7 @@ import com.usuario.quero_ler.service.NotificacaoService;
 import com.usuario.quero_ler.service.UsuarioService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class NotificacaoServiceImpl implements NotificacaoService {
     private final NotificacaoRepository repository;
     private final UsuarioService usuarioService;
@@ -31,21 +33,25 @@ public class NotificacaoServiceImpl implements NotificacaoService {
     @Transactional
     @Override
     public NotificacaoResponseDto criar(NotificacaoRequestDto dto) {
+        log.info("NotificacaoServiceImpl.criar - texto={}", dto.notificacao());
         Notificacao notificacao = mapper.toEntity(dto);
         notificacao = repository.save(notificacao);
         usuarioNotificacaoRepository.enviarParaTodosUsuarios(notificacao.getId());
+        log.debug("Notificacao salva id={}", notificacao.getId());
         return mapper.toResponse(notificacao);
     }
 
     @Transactional
     @Override
     public Page<NotificacaoResponseDto> naoLidas(Long idUsuario, Pageable pageable) {
+        log.info("NotificacaoServiceImpl.naoLidas - usuarioId={}", idUsuario);
         apagarNotificacoesComMaisDe30Dias();
         Usuario usuario = usuarioService.getUsuario(idUsuario);
         List<Notificacao> usuarioNotificacaos = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
         List<NotificacaoResponseDto> notificacoes = new ArrayList<>();
         for (Notificacao notificacao : usuarioNotificacaos) {
-            notificacoes.add(new NotificacaoResponseDto(notificacao.getId(), notificacao.getNotificacao(), notificacao.getDataDeCriacao()));
+            notificacoes.add(new NotificacaoResponseDto(notificacao.getId(), notificacao.getNotificacao(),
+                    notificacao.getDataDeCriacao()));
         }
         Page<NotificacaoResponseDto> page = new PageImpl<>(notificacoes, pageable, notificacoes.size());
         return page;
@@ -54,6 +60,7 @@ public class NotificacaoServiceImpl implements NotificacaoService {
     @Transactional
     @Override
     public void marcarComoLidas(Long idUsuario) {
+        log.info("NotificacaoServiceImpl.marcarComoLidas - usuarioId={}", idUsuario);
         apagarNotificacoesComMaisDe30Dias();
         Usuario usuario = usuarioService.getUsuario(idUsuario);
         usuarioNotificacaoRepository.marcarComoLidas(idUsuario);

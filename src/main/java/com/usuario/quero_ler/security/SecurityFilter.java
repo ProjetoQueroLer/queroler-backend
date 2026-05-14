@@ -7,6 +7,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
+@Slf4j
 public class SecurityFilter extends OncePerRequestFilter {
 
   @Autowired
@@ -28,12 +30,16 @@ public class SecurityFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
 
     var token = this.recoverToken(request);
+    log.debug("SecurityFilter - token present={}", token != null);
     if (token != null) {
       var userName = tokenService.validateToken(token);
       var user = userRepository.findByUserIgnoreCase(userName).orElse(null);
       if (user != null) {
+        log.debug("SecurityFilter - authenticated user={}", user.getUser());
         var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
+      } else {
+        log.debug("SecurityFilter - user not found for token username={}", userName);
       }
     }
     filterChain.doFilter(request, response);
