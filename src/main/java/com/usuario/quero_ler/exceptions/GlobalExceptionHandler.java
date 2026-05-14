@@ -57,6 +57,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    @ExceptionHandler(UsuarioLivroNaoEncontradoException.class)
+    public ResponseEntity<Object> handlerUsuarioLivroNaoEncontrado(UsuarioLivroNaoEncontradoException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
     @ExceptionHandler(SenhaInvalidaException.class)
     public ResponseEntity<Object> handlerSenhaInvalidaException(SenhaInvalidaException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
