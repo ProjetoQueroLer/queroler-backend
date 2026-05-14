@@ -30,19 +30,15 @@ public class DiarioDeLeitura {
     private LocalDateTime terminoDaLeitura;
     private Integer paginasLidas;
 
-    @OneToMany(
-            mappedBy = "diarioDeLeitura",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "diarioDeLeitura", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AcompanhamentoDeLeitura> comentarios = new ArrayList<>();
-    private int nota;
+    private Integer nota;
     private String tituloDaResenha;
 
     @Column(columnDefinition = "TEXT")
     private String resenha;
 
-    public void adicionarComentario(AcompanhamentoDeLeitura comentario){
+    public void adicionarComentario(AcompanhamentoDeLeitura comentario) {
         comentarios.add(comentario);
     }
 }
