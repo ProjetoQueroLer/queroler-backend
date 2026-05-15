@@ -122,6 +122,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
+    @ExceptionHandler(LoginJaCadastradoException.class)
+    public ResponseEntity<Object> handlerLoginJaCadastradoException(LoginJaCadastradoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
     @ExceptionHandler(CredenciaisInvalidasException.class)
     public ResponseEntity<Object> handlerCredenciaisInvalidasException(CredenciaisInvalidasException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
