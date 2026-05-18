@@ -16,7 +16,7 @@ public interface LivroService {
     void inserirCapaDoLivro(Long id, MultipartFile capaDoLivro);
     byte[] buscarCapa(Long id);
     Livro buscar(Long id);
-    Page<LivroDetalhadoResponse> getLivrosDoUsuario(Long id, Pageable pageable);
-    void alterarStatusDoLivroNoUsuario(Long id, Long idUsuario, LivroStatus status);
-    Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Long id,Pageable pageable);
+    Page<LivroDetalhadoResponse> getLivrosDoUsuario(Pageable pageable);
+    void alterarStatusDoLivroNoUsuario(Long id, LivroStatus status);
+    Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Pageable pageable);
 }
