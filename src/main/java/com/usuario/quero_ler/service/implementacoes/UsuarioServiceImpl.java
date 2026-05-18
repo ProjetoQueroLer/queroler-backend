@@ -10,12 +10,17 @@ import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
+import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.service.UsuarioService;
 import com.usuario.quero_ler.utils.Senhas;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -99,14 +104,17 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void alterarSenha(Long id, UsuarioAlterarSenhaRequest dto) {
+    public void alterarSenha(UsuarioAlterarSenhaRequest dto, String token) {
+        tokenService.validateToken(token);
+        User usuarioLogado = getUsuarioLogado();
         Senhas.validar(dto.senhaNova());
-        Usuario usuario = getUsuario(id);
-        User user = usuario.getUser();
-        Senhas.validar(dto.senhaAtual(), user.getSenha());
-        String novaSenha = Senhas.gerar(dto.senhaNova());
-        user.setSenha(novaSenha);
-        user = userRepository.save(user);
+        if(encoder.matches(dto.senhaAtual(),usuarioLogado.getSenha())){
+            String novaSenhaHash = Senhas.gerar(dto.senhaNova());
+            usuarioLogado.setSenha(novaSenhaHash);
+            userRepository.save(usuarioLogado);
+        } else {
+            throw new SenhaInvalidaException("A senha incorreta.");
+        }
     }
 
     @Override
@@ -132,6 +140,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioLivroRepository.save(novoUsuarioLivro);
     }
 
+
+    public User getUsuarioLogado() {
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        return (User) authentication.getPrincipal();
+    }
 
     public Usuario getUsuario(Long id) {
         return repository.findById(id).orElseThrow(
