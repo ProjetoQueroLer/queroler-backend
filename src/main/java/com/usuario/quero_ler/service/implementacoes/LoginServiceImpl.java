@@ -3,28 +3,27 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
 import com.usuario.quero_ler.enums.UsuarioProfile;
-import com.usuario.quero_ler.exceptions.especies.*;
+import com.usuario.quero_ler.exceptions.especies.CredenciaisInvalidasException;
+import com.usuario.quero_ler.exceptions.especies.LoginJaCadastradoException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.utils.Senhas;
-
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.time.Duration;
-
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 
 @Getter
 @RequiredArgsConstructor
@@ -41,17 +40,15 @@ public class LoginServiceImpl implements LoginService {
     @Transactional
     @Override
     public User criar(UsuarioRequestDto dto, UsuarioProfile profile) {
+        if (repository.existsByUserIgnoreCase(dto.email())) {
+            throw new LoginJaCadastradoException("Email já cadastrado.");
+        }
         User user = new User();
         String senha = Senhas.gerar(dto.senha());
         user.setUser(dto.email());
         user.setSenha(passwordEncoder.encode(dto.senha()));
         user.setProfile(profile);
-
-        if (repository.existsByUserIgnoreCase(user.getUser())) {
-            throw new LoginJaCadastradoException("Email já cadastrado");
-        }
-
-       repository.save(user);
+        repository.save(user);
 
         return user;
     }

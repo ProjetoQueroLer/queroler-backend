@@ -3,6 +3,7 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.FotoNaoCadastradaException;
+import com.usuario.quero_ler.exceptions.especies.LoginJaCadastradoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import com.usuario.quero_ler.fixtures.UserFixture;
@@ -22,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -78,6 +80,21 @@ class UsuarioServiceImplTest {
         assertEquals(dto.email(), resposta.email());
         assertEquals(dto.cpf(), resposta.cpf());
         assertEquals(dto.dataDeNascimento(), resposta.dataDeNascimento());
+    }
+
+    @Test
+    @DisplayName("Deve lançar excessão ao tentar cadastrar um usuario com CPF já cadastrado.")
+    void deveLançarExcessaoAoTentarCadastrarUmUsuarioComCPFjaCadastrado() {
+        UsuarioRequestDto dto = UserFixture.requestDto();
+        MultipartFile foto = null;
+
+        when(repository.existsByCpf(dto.cpf())).thenReturn(true);
+
+        LoginJaCadastradoException exception = assertThrows(LoginJaCadastradoException.class,
+                ()-> service.criar(dto,foto));
+
+        assertEquals("CPF já cadastrado.",exception.getMessage());
+
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CredenciaisInvalidasException;
+import com.usuario.quero_ler.exceptions.especies.LoginJaCadastradoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.fixtures.LoginFixture;
 import com.usuario.quero_ler.fixtures.UserFixture;
@@ -61,6 +62,22 @@ class LoginServiceImplTest {
         assertNotNull(resposta.getId());
         assertEquals(dto.email(), resposta.getUser());
         assertEquals(resposta.getProfile(), profile);
+    }
+
+    @Test
+    @DisplayName("Deve lançar excessão de login, e mail já cadastrado.")
+    void deveLancarExcessaoDeEmailJaCadartrado() {
+        UsuarioRequestDto dto = UserFixture.requestDto();
+        String email = dto.email();
+
+        when(repository.existsByUserIgnoreCase(email)).thenReturn(true);
+
+        LoginJaCadastradoException exception = assertThrows(LoginJaCadastradoException.class,
+                ()-> service.criar(dto,UsuarioProfile.LEITOR)
+        );
+
+        assertEquals("Email já cadastrado.",exception.getMessage());
+
     }
 
     @Test

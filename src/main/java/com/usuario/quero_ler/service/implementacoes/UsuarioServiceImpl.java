@@ -41,7 +41,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
         if (repository.existsByCpf(dto.cpf())) {
-            throw new LoginJaCadastradoException("CPF já cadastrado");
+            throw new LoginJaCadastradoException("CPF já cadastrado.");
         }
         Senhas.validarIguais(dto.senha(), dto.confirmarSenha());
         User user = login.criar(dto, UsuarioProfile.LEITOR);
