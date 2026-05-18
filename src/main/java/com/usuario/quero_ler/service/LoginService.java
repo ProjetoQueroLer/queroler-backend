@@ -10,4 +10,5 @@ import jakarta.servlet.http.HttpServletResponse;
 public interface LoginService {
     User criar(UsuarioRequestDto dto, UsuarioProfile profile);
     void login(LoginRequestDto dto, HttpServletResponse response);
+    User getUsuarioLogado();
 }

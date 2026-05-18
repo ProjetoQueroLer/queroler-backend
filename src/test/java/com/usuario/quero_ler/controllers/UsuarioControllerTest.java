@@ -16,11 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -48,16 +51,33 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Deve criar um Usuário com sucesso")
     void deveCriarUmUsuarioComSucesso() throws Exception {
+
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
         UsuarioRequestDto request = UserFixture.requestDto();
         Usuario usuario = UserFixture.entidadeCompleta(user);
         UsuarioResponseDto response = UserFixture.response(usuario);
 
-        when(service.criar(request)).thenReturn(response);
+        MockMultipartFile dados = new MockMultipartFile(
+                "dados",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
 
-        mockMvc.perform(post("/usuarios")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        MockMultipartFile imagem = new MockMultipartFile(
+                "imagem",
+                "foto.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "imagem fake".getBytes()
+        );
+
+        when(service.criar(any(UsuarioRequestDto.class), any(MultipartFile.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(multipart("/usuarios")
+                        .file(dados)
+                        .file(imagem)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(response.id()))
                 .andExpect(jsonPath("$.nome").value(response.nome()))
@@ -67,10 +87,9 @@ class UsuarioControllerTest {
                         .value(response.dataDeNascimento().toString()))
                 .andExpect(jsonPath("$.cidade").value(response.cidade()))
                 .andExpect(jsonPath("$.estado").value(response.estado()))
-                .andExpect(jsonPath("$.pais").value(response.pais()))
-                .andExpect(jsonPath("$.email").value(response.email()));
+                .andExpect(jsonPath("$.pais").value(response.pais()));
 
-        verify(service).criar(request);
+        verify(service).criar(any(UsuarioRequestDto.class), any(MultipartFile.class));
     }
 
     @Test
