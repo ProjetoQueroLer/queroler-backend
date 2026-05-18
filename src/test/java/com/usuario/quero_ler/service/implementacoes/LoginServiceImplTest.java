@@ -11,9 +11,7 @@ import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
-
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,14 +35,14 @@ class LoginServiceImplTest {
     @Mock
     private UserRepository repository;
 
-        @Mock
-        private TokenService tokenService;
+    @Mock
+    private TokenService tokenService;
 
-        @Mock
-        private PasswordEncoder passwordEncoder;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
-        @Mock
-        private HttpServletResponse response;
+    @Mock
+    private HttpServletResponse response;
 
     @Test
     @DisplayName("Deve criar um login com sucesso")
@@ -65,18 +63,18 @@ class LoginServiceImplTest {
     }
 
     @Test
-    @DisplayName("Deve lançar excessão de login, e mail já cadastrado.")
-    void deveLancarExcessaoDeEmailJaCadartrado() {
+    @DisplayName("Deve lançar exceção de login, e mail já cadastrado.")
+    void deveLancarExcecaoDeEmailJaCadartrado() {
         UsuarioRequestDto dto = UserFixture.requestDto();
         String email = dto.email();
 
         when(repository.existsByUserIgnoreCase(email)).thenReturn(true);
 
         LoginJaCadastradoException exception = assertThrows(LoginJaCadastradoException.class,
-                ()-> service.criar(dto,UsuarioProfile.LEITOR)
+                () -> service.criar(dto, UsuarioProfile.LEITOR)
         );
 
-        assertEquals("Email já cadastrado.",exception.getMessage());
+        assertEquals("Email já cadastrado.", exception.getMessage());
 
     }
 
@@ -96,8 +94,8 @@ class LoginServiceImplTest {
     }
 
     @Test
-    @DisplayName("Deve lançar excessão ao tentar login com usuário não cadastrado.")
-    void deveLancarExcessaoAoFazerLoginComUsuarioNaoCadastrado() {
+    @DisplayName("Deve lançar exceção ao tentar login com usuário não cadastrado.")
+    void deveLancarExcecaoAoFazerLoginComUsuarioNaoCadastrado() {
         LoginRequestDto dto = LoginFixture.requestDto();
 
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.empty());
@@ -124,8 +122,8 @@ class LoginServiceImplTest {
     }
 
     @Test
-    @DisplayName("Deve lançar excessão ao tentar login com senha inválida.")
-    void deveLancarExcessaoAoFazerLoginComSenhaInvalido() {
+    @DisplayName("Deve lançar exceção ao tentar login com senha inválida.")
+    void deveLancarExcecaoAoFazerLoginComSenhaInvalido() {
         User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
         LoginRequestDto dto = new LoginRequestDto(user.getUser(), "Teste1234$");
 

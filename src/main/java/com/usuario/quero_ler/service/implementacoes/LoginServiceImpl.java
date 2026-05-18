@@ -48,8 +48,7 @@ public class LoginServiceImpl implements LoginService {
         user.setUser(dto.email());
         user.setSenha(passwordEncoder.encode(dto.senha()));
         user.setProfile(profile);
-        repository.save(user);
-
+        user = repository.save(user);
         return user;
     }
 
