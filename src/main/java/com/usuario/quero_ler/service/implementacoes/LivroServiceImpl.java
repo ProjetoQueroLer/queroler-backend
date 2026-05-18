@@ -12,6 +12,7 @@ import com.usuario.quero_ler.repository.LivroRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.service.AutorService;
 import com.usuario.quero_ler.service.LivroService;
+import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.utils.LivroFiltro;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,7 @@ public class LivroServiceImpl implements LivroService {
     private final LivroMapper mapper;
     private final AutorService AutorService;
     private final UsuarioLivroRepository usuarioLivroRepository;
+    private final LoginService loginService;
 
     @Override
     public LivroResponse criar(LivroRequest dto,MultipartFile capaDoLivro) {
@@ -166,14 +168,16 @@ public class LivroServiceImpl implements LivroService {
     }
 
     @Override
-    public Page<LivroDetalhadoResponse> getLivrosDoUsuario(Long id, Pageable pageable){
+    public Page<LivroDetalhadoResponse> getLivrosDoUsuario(Pageable pageable){
+        Long id = loginService.getUsuarioLogado().getUsuario().getId();
         Page<LivroDetalhadoResponse> livros = usuarioLivroRepository.findLivrosByUsuarioId(id,pageable)
                 .map(mapper::toLivroDetalhadoResponse);
         return livros;
     }
 
     @Override
-    public Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Long id,Pageable pageable){
+    public Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Pageable pageable){
+        Long id = loginService.getUsuarioLogado().getUsuario().getId();
         List<UsuarioLivro> usuarioLivros = usuarioLivroRepository.findAllByUsuarioId(id, pageable).stream().toList();
         List<LivroTelaLeituraResponse> resposta = new ArrayList<>();
 
@@ -186,7 +190,8 @@ public class LivroServiceImpl implements LivroService {
     }
 
     @Override
-    public void alterarStatusDoLivroNoUsuario(Long id, Long idUsuario, LivroStatus status){
+    public void alterarStatusDoLivroNoUsuario(Long id, LivroStatus status){
+        Long idUsuario = loginService.getUsuarioLogado().getUsuario().getId();
         Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByLivro_IdAndUsuario_Id(id,idUsuario);
         if (usuarioLivro.isEmpty()) {
             throw new LivroNaoEncontradoException("O usuario não possue o livro na estante.");

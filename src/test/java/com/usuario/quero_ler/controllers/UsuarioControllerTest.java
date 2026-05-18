@@ -96,14 +96,12 @@ class UsuarioControllerTest {
     @DisplayName("Deve retornar dados do usuário")
     void deveRetornarDadosDoUsuario() throws Exception {
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
-        UsuarioRequestDto request = UserFixture.requestDto();
         Usuario usuario = UserFixture.entidadeCompleta(user);
-        Long id = usuario.getId();
         UsuarioDadosResponse response = UserFixture.responseDados(usuario);
 
-        when(service.getDadosDoUsuario(id)).thenReturn(response);
+        when(service.getDadosDoUsuario()).thenReturn(response);
 
-        mockMvc.perform(get("/usuarios/{id}", id))
+        mockMvc.perform(get("/usuarios"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value(response.nome()))
                 .andExpect(jsonPath("$.email").value(response.email()))
@@ -112,97 +110,87 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.pais").value(response.pais()))
                 .andExpect(jsonPath("$.foto").value(response.foto()));
 
-        verify(service).getDadosDoUsuario(id);
+        verify(service).getDadosDoUsuario();
     }
 
     @Test
     @DisplayName("Deve inserir dados adicionais ao usuário com sucesso")
     void deveInserirDadosAdcionais() throws Exception {
-        Long id = 1L;
         UsuarioDadosComplementarRequest complementarRequest = UserFixture.requestDadosComplementares();
 
-        mockMvc.perform(put("/usuarios/{id}/dados-adicionais", id)
+        mockMvc.perform(put("/usuarios/dados-adicionais")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(complementarRequest)))
                 .andExpect(status().isNoContent());
 
-        verify(service).adicionarDados(id, complementarRequest);
+        verify(service).adicionarDados(complementarRequest);
     }
 
     @Test
     @DisplayName("Deve alterar a senha do usuário com sucesso")
     void deveAlterarASenhaDoUsuarioComSucesso() throws Exception {
-        String token = "Bearer token-teste";
-        UsuarioAlterarSenhaRequest request = new UsuarioAlterarSenhaRequest(
-                        "Teste123&",
-                        "Senha1232@"
-                );
+        UsuarioAlterarSenhaRequest request = new UsuarioAlterarSenhaRequest("Teste123&", "Senha1232@");
 
         mockMvc.perform(put("/usuarios/alterar-senha")
-                        .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        verify(service).alterarSenha(request, token);
+        verify(service).alterarSenha(request);
     }
 
     @Test
     @DisplayName("Deve atualizar usuário leitor com sucesso")
     void deveAtualizarUsuarioLeitorComSucesso() throws Exception {
-        Long id = 1L;
         UsuarioAtualizadoLeitorRequest request = new UsuarioAtualizadoLeitorRequest("Nome atualizado",
                 null, null, null, null, null, null);
 
-        mockMvc.perform(put("/usuarios/{id}", id)
+        mockMvc.perform(put("/usuarios")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        verify(service).atualizar(id, request);
+        verify(service).atualizar(request);
     }
 
     @Test
     @DisplayName("Deve atualizar usuário administrador com sucesso")
     void deveAtualizarUsuarioAdministradorComSucesso() throws Exception {
-        Long id = 1L;
         UsuarioAtualizadoAdministradorRequest request = new UsuarioAtualizadoAdministradorRequest(LocalDate.of(2015, 06, 03),
                 null, null, null, null);
 
-        mockMvc.perform(put("/usuarios/{id}/administrador", id)
+        mockMvc.perform(put("/usuarios/administrador")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        verify(service).atualizar(id, request);
+        verify(service).atualizar(request);
     }
 
     @Test
     @DisplayName("Deve apagar um perfil com sucesso")
     void deveApagarUmPerfilComSucesso() throws Exception {
-        Long id = 1L;
 
-        mockMvc.perform(delete("/usuarios/{id}", id)
+        mockMvc.perform(delete("/usuarios")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
-        verify(service).excluirPerfil(id);
+        verify(service).excluirPerfil();
     }
 
     @Test
     @DisplayName("Deve adicionar um livro na estante do usuario.")
     void deveAdicionarUmLivroNaEstanteDoUsuario() throws Exception {
-        Long idUsuario = 1L;
         Long idLivro = 10L;
         LivroStatus status = LivroStatus.LIVROS_QUE_QUERO_LER;
 
-        mockMvc.perform(post("/usuarios/{id}/livro", idUsuario)
+        mockMvc.perform(post("/usuarios/livro")
                         .param("idLivro", idLivro.toString())
                         .param("status", String.valueOf(status))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        verify(service).adicionarLivro(idUsuario, idLivro, status);
+        verify(service).adicionarLivro(idLivro, status);
     }
 
 }

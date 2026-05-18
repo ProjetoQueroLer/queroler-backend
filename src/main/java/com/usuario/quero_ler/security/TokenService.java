@@ -38,6 +38,7 @@ public class TokenService {
 			return JWT.create()
 					.withIssuer(issuer)
 					.withSubject(user.getUser())
+					.withClaim("userid", user.getId())
 					.withClaim("role", user.getProfile().name())
 					.withIssuedAt(now)
 					.withJWTId(java.util.UUID.randomUUID().toString())
