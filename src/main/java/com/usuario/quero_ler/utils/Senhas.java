@@ -5,6 +5,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 public class Senhas {
     public static String gerar(String senha) {
+        validar(senha);
         return BCrypt.hashpw(senha, BCrypt.gensalt());
     }
 
