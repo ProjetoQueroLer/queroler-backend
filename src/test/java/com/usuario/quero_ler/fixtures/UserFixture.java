@@ -29,6 +29,12 @@ public class UserFixture {
                 DATA_DE_NASCIMENTO,CHECK_TERMO
         );
     }
+    public static UsuarioRequestDto  requestDto(String senha){
+        return new UsuarioRequestDto(
+                NOME,EMAIL,CONFIRMAR_EMAIL,senha,senha,CPF,
+                DATA_DE_NASCIMENTO,CHECK_TERMO
+        );
+    }
 
     public static UsuarioDadosComplementarRequest requestDadosComplementares(){
         return new UsuarioDadosComplementarRequest(

@@ -42,9 +42,10 @@ public class LoginServiceImpl implements LoginService {
 	@Override
 	public User criar(UsuarioRequestDto dto, UsuarioProfile profile) {
 		User user = new User();
+		Senhas.validar(dto.senha());
 		String senha = Senhas.gerar(dto.senha());
 		user.setUser(dto.email());
-		user.setSenha(passwordEncoder.encode(dto.senha()));
+		user.setSenha(senha);
 		user.setProfile(profile);
 		user = repository.save(user);
 		return user;
