@@ -14,6 +14,8 @@ import com.usuario.quero_ler.service.LoginService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 
 @RequiredArgsConstructor
 @Service
@@ -47,6 +49,31 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
         if (repository.existsByUsuarioLivro(usuarioLivro)) {
             throw new DiarioJaExisteException("Já existe um diário de leitura para este usuário e livro.");
         }
+
+        repository.save(diario);
+    }
+
+    @Transactional
+    @Override
+    public void atualizar(Long id, DiarioDeLeituraRequestDto dto) {
+        validateDto(dto);
+
+        DiarioDeLeitura diario = repository.findById(id)
+                .orElseThrow(() -> new DiarioNaoEncontradoException("Diário de leitura não encontrado."));
+
+        Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
+
+        if (diario.getUsuarioLivro() == null || diario.getUsuarioLivro().getUsuario() == null ||
+                !diario.getUsuarioLivro().getUsuario().getId().equals(usuarioId)) {
+            throw new UsuarioSemPermissaoParaAcaoException("Usuário sem permissão para atualizar este diário.");
+        }
+
+        diario.setInicioDaLeitura(dto.inicioDaLeitura());
+        diario.setTerminoDaLeitura(dto.terminoDaLeitura());
+        diario.setPaginasLidas(dto.paginasLidas());
+        diario.setNota(dto.nota());
+        diario.setTituloDaResenha(dto.tituloDaResenha());
+        diario.setResenha(dto.resenha());
 
         repository.save(diario);
     }

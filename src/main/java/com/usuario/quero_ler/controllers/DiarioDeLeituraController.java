@@ -20,4 +20,11 @@ public class DiarioDeLeituraController {
         service.criar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> atualizar(@PathVariable Long id, @RequestBody @Valid DiarioDeLeituraRequestDto dto) {
+        service.atualizar(id, dto);
+        return ResponseEntity.noContent().build();
+    }
 }
+    
