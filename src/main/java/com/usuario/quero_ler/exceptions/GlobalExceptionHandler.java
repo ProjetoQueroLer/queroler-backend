@@ -62,6 +62,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    @ExceptionHandler(UsuarioLivroNaoEncontradoException.class)
+    public ResponseEntity<Object> handlerUsuarioLivroNaoEncontrado(UsuarioLivroNaoEncontradoException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
     @ExceptionHandler(SenhaInvalidaException.class)
     public ResponseEntity<Object> handlerSenhaInvalidaException(SenhaInvalidaException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -130,6 +135,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EnumInvalidoException.class)
     public ResponseEntity<String> handleEnumInvalido(EnumInvalidoException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(DadosDiarioInvalidoException.class)
+    public ResponseEntity<Object> handlerDadosDiarioInvalido(
+            DadosDiarioInvalidoException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException.class)
+    public ResponseEntity<Object> handlerDiarioJaExiste(
+            com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
