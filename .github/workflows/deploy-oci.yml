@@ -228,5 +228,5 @@ jobs:
             EOF
 
             sudo docker compose pull
-            sudo docker compose up -d
+            sudo docker compose up -d || (sudo docker logs postgres-queroler-${{ github.ref_name }} && exit 1)
             sudo docker image prune -f
