@@ -50,7 +50,6 @@ class UsuarioMapperTest {
         assertEquals(usuario.getCidade(),resposta.cidade());
         assertEquals(usuario.getEstado(),resposta.estado());
         assertEquals(usuario.getPais(),resposta.pais());
-        assertEquals(usuario.getFoto(),resposta.foto());
     }
 
     @Test

@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.*;
 public class NotificacaoController {
     private final NotificacaoService serviceI;
 
-    @GetMapping("/{id}/usuario")
-    public ResponseEntity<Page<NotificacaoResponseDto>> naoLidas(@PathVariable Long id, Pageable pageable) {
-        return ResponseEntity.status(HttpStatus.OK).body(serviceI.naoLidas(id, pageable));
+    @GetMapping
+    public ResponseEntity<Page<NotificacaoResponseDto>> naoLidas(Pageable pageable) {
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.naoLidas(pageable));
     }
 
-    @PutMapping("/{id}")
-    ResponseEntity<Void> marcarComoLidas(@PathVariable Long id) {
-        serviceI.marcarComoLidas(id);
+    @PutMapping
+    ResponseEntity<Void> marcarComoLidas() {
+        serviceI.marcarComoLidas();
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

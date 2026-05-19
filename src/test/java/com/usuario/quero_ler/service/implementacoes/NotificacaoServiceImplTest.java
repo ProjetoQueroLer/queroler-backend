@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import com.usuario.quero_ler.models.Usuario;
+import com.usuario.quero_ler.service.LoginService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +48,7 @@ class NotificacaoServiceImplTest {
     private UsuarioNotificacaoRepository usuarioNotificacaoRepository;
 
     @Mock
-    private UsuarioServiceImpl usuarioService;
+    private LoginService loginService;
 
     @Test
     @DisplayName("Deve criar uma notificação para todos os usuarios do sistema")
@@ -74,49 +75,47 @@ class NotificacaoServiceImplTest {
     @DisplayName("Deve marcar todas as notificaçoes de determinado usuario como lidas.")
     void deveRetornarNotificacoesNaoLidas() {
 
-        Long idUsuario = 1L;
         Pageable pageable = PageRequest.of(0, 10);
 
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
         Usuario usuario = UserFixture.entidadePrincipal(user);
         usuario.setUser(user);
+        user.setUsuario(usuario);
 
         Notificacao notificacao = NotificacaoFixture.entity();
         Notificacao notificacao2 = NotificacaoFixture.entity();
 
         List<Notificacao> lista = List.of(notificacao,notificacao2);
 
-        when(usuarioService.getUsuario(idUsuario)).thenReturn(usuario);
-        when(usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario))
+        when(loginService.getUsuarioLogado()).thenReturn(user);
+        when(usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(usuario.getId()))
                 .thenReturn(lista);
 
         Page<NotificacaoResponseDto> resultado =
-                service.naoLidas(idUsuario, pageable);
+                service.naoLidas(pageable);
 
         assertEquals(2, resultado.getTotalElements());
         assertEquals(notificacao.getId(), resultado.getContent().get(0).id());
         assertEquals(notificacao2.getId(), resultado.getContent().get(1).id());
 
-        verify(usuarioService).getUsuario(idUsuario);
-        verify(usuarioNotificacaoRepository).buscarNotificacoesNaoLidas(idUsuario);
+        verify(loginService).getUsuarioLogado();
+        verify(usuarioNotificacaoRepository).buscarNotificacoesNaoLidas(usuario.getId());
     }
 
     @Test
     @DisplayName("Deve marcar todas as notificaçoes do usuario como lidas")
     void deveMarcarNotificacoesDoUsuarioComoLidas() {
-        Long idUsuario = 1L;
-
             User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
             Usuario usuario = UserFixture.entidadeCompleta(user);
+            user.setUsuario(usuario);
 
+            when(loginService.getUsuarioLogado()).thenReturn(user);
 
-            when(usuarioService.getUsuario(idUsuario)).thenReturn(usuario);
-
-            service.marcarComoLidas(idUsuario);
+            service.marcarComoLidas();
 
             assertNotNull(usuario.getUser());
-            verify(usuarioService).getUsuario(idUsuario);
-            verify(usuarioNotificacaoRepository).marcarComoLidas(idUsuario);
+            verify(loginService).getUsuarioLogado();
+            verify(usuarioNotificacaoRepository).marcarComoLidas(usuario.getId());
         }
 
     @Test

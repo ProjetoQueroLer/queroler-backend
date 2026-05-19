@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.mappers;
 
 import com.usuario.quero_ler.dtos.usuario.*;
+import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.Usuario;
 import org.springframework.stereotype.Component;
 
@@ -67,7 +68,7 @@ public class UsuarioMapper {
                 usuario.getCidade(),
                 usuario.getEstado(),
                 usuario.getPais(),
-                usuario.getFoto()
+                getUrlFoto(usuario)
         );
     }
 
@@ -81,5 +82,13 @@ public class UsuarioMapper {
                 usuario.getPais(),
                 usuario.getFoto()
         );
+    }
+
+    protected String getUrlFoto(Usuario usuario){
+        String urlCapa= "Foto não encontrada.";
+        if(usuario.getFoto()!=null){
+            urlCapa = "/usuarios/foto";
+        }
+        return urlCapa;
     }
 }

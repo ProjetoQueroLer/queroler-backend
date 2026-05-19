@@ -7,8 +7,8 @@ import com.usuario.quero_ler.models.Notificacao;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.NotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
+import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.service.NotificacaoService;
-import com.usuario.quero_ler.service.UsuarioService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,9 +24,9 @@ import java.util.List;
 @Service
 public class NotificacaoServiceImpl implements NotificacaoService {
     private final NotificacaoRepository repository;
-    private final UsuarioService usuarioService;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
     private final NotificacaoMapper mapper;
+    private final LoginService loginService;
 
     @Transactional
     @Override
@@ -39,9 +39,9 @@ public class NotificacaoServiceImpl implements NotificacaoService {
 
     @Transactional
     @Override
-    public Page<NotificacaoResponseDto> naoLidas(Long idUsuario, Pageable pageable) {
+    public Page<NotificacaoResponseDto> naoLidas(Pageable pageable) {
         apagarNotificacoesComMaisDe30Dias();
-        Usuario usuario = usuarioService.getUsuario(idUsuario);
+        Long idUsuario = loginService.getUsuarioLogado().getUsuario().getId();
         List<Notificacao> usuarioNotificacaos = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
         List<NotificacaoResponseDto> notificacoes = new ArrayList<>();
         for (Notificacao notificacao : usuarioNotificacaos) {
@@ -53,9 +53,9 @@ public class NotificacaoServiceImpl implements NotificacaoService {
 
     @Transactional
     @Override
-    public void marcarComoLidas(Long idUsuario) {
+    public void marcarComoLidas() {
         apagarNotificacoesComMaisDe30Dias();
-        Usuario usuario = usuarioService.getUsuario(idUsuario);
+        Long idUsuario = loginService.getUsuarioLogado().getUsuario().getId();
         usuarioNotificacaoRepository.marcarComoLidas(idUsuario);
     }
 

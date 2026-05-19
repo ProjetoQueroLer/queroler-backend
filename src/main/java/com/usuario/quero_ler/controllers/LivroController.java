@@ -65,20 +65,20 @@ public class LivroController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/usuario/{idUsuario}")
-    public ResponseEntity<Void> mudarStatus(@PathVariable Long id,  @PathVariable Long idUsuario,
+    @PutMapping("/{id}/usuario")
+    public ResponseEntity<Void> mudarStatus(@PathVariable Long id,
                                             @RequestParam LivroStatus status) {
-        serviceI.alterarStatusDoLivroNoUsuario(id,idUsuario, status);
+        serviceI.alterarStatusDoLivroNoUsuario(id, status);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/tela_de_leitura/usuario/{id}")
-    public ResponseEntity<Page<LivroTelaLeituraResponse>> livrosDoUsuarioParaTelaDeLeitura(@PathVariable Long id, Pageable pageable){
-        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getLivrosTelaDeLeituraDoUsuario(id, pageable));
+    @GetMapping("/tela_de_leitura")
+    public ResponseEntity<Page<LivroTelaLeituraResponse>> livrosDoUsuarioParaTelaDeLeitura(Pageable pageable){
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getLivrosTelaDeLeituraDoUsuario(pageable));
     }
 
-    @GetMapping("/detalhados/usuario/{id}")
-    public ResponseEntity<Page<LivroDetalhadoResponse>> getLivrosDetalhadosDoUsuario(@PathVariable Long id, Pageable pageable){
-        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getLivrosDoUsuario(id,pageable));
+    @GetMapping("/detalhados")
+    public ResponseEntity<Page<LivroDetalhadoResponse>> getLivrosDetalhadosDoUsuario(Pageable pageable){
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getLivrosDoUsuario(pageable));
     }
 }

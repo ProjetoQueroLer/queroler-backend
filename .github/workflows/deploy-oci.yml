@@ -1,0 +1,208 @@
+name: Deploy OCI - Quero Ler Backend
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'develop'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+  DB_NAME: ${{ github.ref_name == 'main' && 'db_quero_ler_v2' || 'db_quero_ler_dev' }}
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-infrastructure:
+    name: Deploy OCI Infrastructure (${{ github.ref_name }})
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+
+    env:
+      TF_VAR_name: ${{ vars.TF_VAR_NAME }}-${{ github.ref_name }}
+      TF_VAR_how_many_nodes: ${{ github.ref_name == 'main' && vars.TF_VAR_PROD_NODES || vars.TF_VAR_DEV_NODES }}
+      TF_VAR_shape: ${{ vars.TF_VAR_SHAPE }}
+      TF_VAR_availability_domain: ${{ vars.TF_VAR_AVAILABILITY_DOMAIN }}
+      TF_VAR_ocpus_per_node: ${{ github.ref_name == 'main' && vars.TF_VAR_PROD_OCPUS || vars.TF_VAR_DEV_OCPUS }}
+      TF_VAR_memory_in_gbs_per_node: ${{ github.ref_name == 'main' && vars.TF_VAR_PROD_MEMORY || vars.TF_VAR_DEV_MEMORY }}
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_CLOUD_TOKEN }}
+
+    steps:
+      - name: Checkout Terraform Project
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.TF_REPO_OWNER }}/${{ secrets.TF_REPO_NAME }}
+          token: ${{ secrets.PAT_TOKEN }}
+          path: terraform-infra
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure OCI Credentials
+        run: |
+          mkdir -p ~/.oci
+          echo "${{ secrets.OCI_TF_PRIVATE_KEY }}" > ~/.oci/oci_tf_private_key.pem
+          chmod 600 ~/.oci/oci_tf_private_key.pem
+
+      - name: Terraform Init
+        working-directory: terraform-infra
+        run: terraform init -input=false
+        env:
+          TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
+          TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
+          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
+          TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
+          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
+
+      - name: Terraform Plan
+        working-directory: terraform-infra
+        run: terraform plan -input=false
+        env:
+          TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
+          TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
+          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
+          TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
+          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -input=false
+        working-directory: terraform-infra
+        env:
+          TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
+          TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
+          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
+          TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
+          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
+
+      - name: Get Instance IP
+        id: instance_ip
+        working-directory: terraform-infra
+        run: |
+          IP=$(terraform output -raw ssh-with-ubuntu-user | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1)
+          echo "public_ip=$IP" >> $GITHUB_OUTPUT
+
+      - name: Wait for SSH
+        run: |
+          echo "Waiting for SSH to be available..."
+          for i in {1..30}; do
+            ssh-keyscan -H ${{ steps.instance_ip.outputs.public_ip }} >> ~/.ssh/known_hosts 2>/dev/null && break
+            sleep 10
+          done
+
+  deploy-application:
+    name: Deploy Application (${{ github.ref_name }})
+    needs: [build-and-push, deploy-infrastructure]
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Instance IP
+        id: instance_ip
+        run: echo "public_ip=${{ needs.deploy-infrastructure.outputs.public_ip }}" >> $GITHUB_OUTPUT
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ steps.instance_ip.outputs.public_ip }}
+          username: ubuntu
+          key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          script: |
+            # Login to GHCR
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Create deployment directory
+            mkdir -p ~/queroler-deploy-${{ github.ref_name }}
+            cd ~/queroler-deploy-${{ github.ref_name }}
+
+            # Create docker-compose.yml
+            cat > docker-compose.yml << 'EOF'
+            services:
+              db:
+                image: postgres:latest
+                container_name: postgres-queroler-${{ github.ref_name }}
+                environment:
+                  POSTGRES_DB: ${{ env.DB_NAME }}
+                  POSTGRES_USER: postgres
+                  POSTGRES_PASSWORD: ${{ github.ref_name == 'main' && secrets.DB_PASSWORD_PROD || secrets.DB_PASSWORD_DEV }}
+                ports:
+                  - "5432:5432"
+                volumes:
+                  - postgres_data_${{ github.ref_name }}:/var/lib/postgresql/data
+                healthcheck:
+                  test: ["CMD-SHELL", "pg_isready -U postgres -d ${{ env.DB_NAME }}"]
+                  interval: 10s
+                  timeout: 5s
+                  retries: 5
+
+              api:
+                image: ${{ needs.build-and-push.outputs.image_tag }}
+                container_name: api-queroler-${{ github.ref_name }}
+                ports:
+                  - "8080:8080"
+                depends_on:
+                  db:
+                    condition: service_healthy
+                environment:
+                  - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${{ env.DB_NAME }}
+                  - SPRING_DATASOURCE_USERNAME=postgres
+                  - SPRING_DATASOURCE_PASSWORD=${{ github.ref_name == 'main' && secrets.DB_PASSWORD_PROD || secrets.DB_PASSWORD_DEV }}
+                  - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+                  - SPRING_PROFILES_ACTIVE=${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+
+            volumes:
+              postgres_data_${{ github.ref_name }}:
+            EOF
+
+            # Pull and deploy
+            docker compose pull
+            docker compose up -d
+
+            # Cleanup old images
+            docker image prune -f
