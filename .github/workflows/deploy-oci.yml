@@ -181,7 +181,7 @@ jobs:
             sudo iptables -P FORWARD ACCEPT
             sudo systemctl restart docker
 
-            # Cleanup any existing containers
+            # Cleanup any existing containers and volumes
             sudo docker rm -f postgres-queroler-${{ github.ref_name }} 2>/dev/null || true
             sudo docker rm -f api-queroler-${{ github.ref_name }} 2>/dev/null || true
             sudo docker volume rm -f postgres_data_${{ github.ref_name }} 2>/dev/null || true
@@ -192,7 +192,7 @@ jobs:
             cat > docker-compose.yml << 'EOF'
             services:
               db:
-                image: postgres:latest
+                image: postgres:17
                 container_name: postgres-queroler-${{ github.ref_name }}
                 environment:
                   POSTGRES_DB: ${{ env.DB_NAME }}
