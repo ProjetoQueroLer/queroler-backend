@@ -222,6 +222,7 @@ jobs:
                   - SPRING_DATASOURCE_PASSWORD=${{ github.ref_name == 'main' && secrets.DB_PASSWORD_PROD || secrets.DB_PASSWORD_DEV }}
                   - SPRING_JPA_HIBERNATE_DDL_AUTO=update
                   - SPRING_PROFILES_ACTIVE=${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+                  - API_SECURITY_TOKEN_SECRET=${{ secrets.API_SECURITY_TOKEN_SECRET }}
 
             volumes:
               postgres_data_${{ github.ref_name }}:
