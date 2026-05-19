@@ -62,6 +62,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
 
+    outputs:
+      public_ip: ${{ steps.instance_ip.outputs.public_ip }}
+
     env:
       TF_VAR_name: ${{ vars.TF_VAR_NAME }}-${{ github.ref_name }}
       TF_VAR_how_many_nodes: ${{ github.ref_name == 'main' && vars.TF_VAR_PROD_NODES || vars.TF_VAR_DEV_NODES }}
@@ -142,17 +145,10 @@ jobs:
     environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Get Instance IP
-        id: instance_ip
-        run: echo "public_ip=${{ needs.deploy-infrastructure.outputs.public_ip }}" >> $GITHUB_OUTPUT
-
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ steps.instance_ip.outputs.public_ip }}
+          host: ${{ needs.deploy-infrastructure.outputs.public_ip }}
           username: ubuntu
           key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
           script: |
