@@ -155,7 +155,13 @@ jobs:
     steps:
       - name: Decode SSH Key
         id: decode_key
-        run: echo "ssh_key=$(echo '${{ needs.deploy-infrastructure.outputs.ssh_key }}' | base64 -d)" >> $GITHUB_OUTPUT
+        run: |
+          DECODED=$(echo '${{ needs.deploy-infrastructure.outputs.ssh_key }}' | base64 -d)
+          {
+            echo "ssh_key<<ENDOFKEY"
+            echo "$DECODED"
+            echo "ENDOFKEY"
+          } >> $GITHUB_OUTPUT
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
