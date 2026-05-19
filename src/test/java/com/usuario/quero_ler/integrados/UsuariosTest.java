@@ -76,11 +76,10 @@ public class UsuariosTest extends AbstractIntegrationTest {
         Long id = 2L;
         logar(id);
         ResponseEntity<UsuarioDadosResponse> resposta = template.exchange(
-                "/usuarios/{id}",
+                "/usuarios",
                 HttpMethod.GET,
             new HttpEntity<>(authHeaders),
-                UsuarioDadosResponse.class,
-                id
+                UsuarioDadosResponse.class
         );
 
         Usuario usuarioDoBanco = repository.findById(id).get();
@@ -102,11 +101,10 @@ public class UsuariosTest extends AbstractIntegrationTest {
         Long id = 2L;
         logar(id);
         ResponseEntity<Void> resposta = template.exchange(
-                "/usuarios/{id}/dados-adicionais",
+                "/usuarios/dados-adicionais",
                 HttpMethod.PUT,
             new HttpEntity<>(dto, authHeaders),
-                Void.class,
-                id
+                Void.class
         );
 
         Usuario usuarioSalvo = repository.findById(id).get();
@@ -127,11 +125,10 @@ public class UsuariosTest extends AbstractIntegrationTest {
         Long id = 2L;
         logar(id);
         ResponseEntity<Void> resposta = template.exchange(
-                "/usuarios/{id}/alterar-senha",
+                "/usuarios/alterar-senha",
                 HttpMethod.PUT,
             new HttpEntity<>(dto, authHeaders),
-                Void.class,
-                id
+                Void.class
         );
 
         assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -146,11 +143,10 @@ public class UsuariosTest extends AbstractIntegrationTest {
         Long id = 2L;
         logar(id);
         ResponseEntity<Void> resposta = template.exchange(
-                "/usuarios/{id}",
+                "/usuarios",
                 HttpMethod.PUT,
             new HttpEntity<>(dto, authHeaders),
-                Void.class,
-                id
+                Void.class
         );
 
         Usuario usuarioSalvo = repository.findById(id).get();
@@ -173,11 +169,10 @@ public class UsuariosTest extends AbstractIntegrationTest {
         Long id = 1L;
         logar(id);
         ResponseEntity<Void> resposta = template.exchange(
-                "/usuarios/{id}/administrador",
+                "/usuarios/administrador",
                 HttpMethod.PUT,
             new HttpEntity<>(dto, authHeaders),
-                Void.class,
-                id
+                Void.class
         );
 
         Usuario usuarioSalvo = repository.findById(id).get();
@@ -196,11 +191,10 @@ public class UsuariosTest extends AbstractIntegrationTest {
         Long id = 2L;
         logar(id);
         ResponseEntity<Void> resposta = template.exchange(
-                "/usuarios/{id}",
+                "/usuarios",
                 HttpMethod.DELETE,
             new HttpEntity<>(authHeaders),
-                Void.class,
-                id
+                Void.class
         );
         assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }

@@ -10,12 +10,17 @@ import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
+import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.service.UsuarioService;
 import com.usuario.quero_ler.utils.Senhas;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +33,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
-    private final LoginService login;
     private final UsuarioRepository repository;
     private final UserRepository userRepository;
     private final UsuarioMapper mapper;
@@ -44,7 +48,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new LoginJaCadastradoException("CPF já cadastrado.");
         }
         Senhas.validarIguais(dto.senha(), dto.confirmarSenha());
-        User user = login.criar(dto, UsuarioProfile.LEITOR);
+        User user = loginService.criar(dto, UsuarioProfile.LEITOR);
         Usuario usuario = mapper.toEntity(dto);
 
         if (foto != null && !foto.isEmpty()) {
@@ -61,37 +65,37 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void adicionarDados(Long id, UsuarioDadosComplementarRequest dto) {
-        Usuario usuario = getUsuario(id);
+    public void adicionarDados(UsuarioDadosComplementarRequest dto) {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
         usuario = mapper.complementarCadastro(usuario, dto);
         usuario = repository.save(usuario);
     }
 
     @Override
-    public UsuarioDadosResponse getDadosDoUsuario(Long id) {
-        Usuario usuario = getUsuario(id);
+    public UsuarioDadosResponse getDadosDoUsuario() {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
         return mapper.toResponseDados(usuario);
     }
 
     @Override
-    public void atualizar(Long id, UsuarioAtualizadoLeitorRequest dto) {
-        Usuario usuario = getUsuario(id);
+    public void atualizar(UsuarioAtualizadoLeitorRequest dto) {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
         usuario = mapper.update(usuario, dto);
         usuario = repository.save(usuario);
     }
 
     @Override
-    public void atualizar(Long id, UsuarioAtualizadoAdministradorRequest dto) {
-        Usuario usuario = getUsuario(id);
+    public void atualizar(UsuarioAtualizadoAdministradorRequest dto) {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
         usuario = mapper.update(usuario, dto);
         repository.save(usuario);
     }
 
     @Override
-    public void excluirPerfil(Long id) {
-        Usuario usuario = getUsuario(id);
+    public void excluirPerfil() {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
         if (usuario.getUser().getProfile().equals(UsuarioProfile.LEITOR)) {
-            List<UsuarioNotificacao> notificacoes = usuarioNotificacaoRepository.findByUsuarioId(id);
+            List<UsuarioNotificacao> notificacoes = usuarioNotificacaoRepository.findByUsuarioId(usuario.getId());
             for (UsuarioNotificacao un : notificacoes) {
                 usuarioNotificacaoRepository.delete(un);
             }
@@ -102,9 +106,9 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void alterarSenha(Long id, UsuarioAlterarSenhaRequest dto) {
+    public void alterarSenha(UsuarioAlterarSenhaRequest dto) {
         Senhas.validar(dto.senhaNova());
-        Usuario usuario = getUsuario(id);
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
         User user = usuario.getUser();
         Senhas.validar(dto.senhaAtual(), user.getSenha());
         String novaSenha = Senhas.gerar(dto.senhaNova());
@@ -113,10 +117,10 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void adicionarLivro(Long id, Long idLivro, LivroStatus status) {
-        Usuario usuario = getUsuario(id);
+    public void adicionarLivro(Long idLivro, LivroStatus status) {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
 
-        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(id, idLivro);
+        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(usuario.getId(), idLivro);
         if (usuarioLivro.isPresent()) {
             throw new UsuarioJaPossueOLivroException("O usuario já possue o livro na estante.");
         }
@@ -135,6 +139,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioLivroRepository.save(novoUsuarioLivro);
     }
 
+
+    public User getUsuarioLogado() {
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        return (User) authentication.getPrincipal();
+    }
 
     public Usuario getUsuario(Long id) {
         return repository.findById(id).orElseThrow(

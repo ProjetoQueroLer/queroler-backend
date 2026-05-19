@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,47 +29,46 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(serviceI.criar(dto,foto));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UsuarioDadosResponse> dadosDoUsuario(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getDadosDoUsuario(id));
+    @GetMapping
+    public ResponseEntity<UsuarioDadosResponse> dadosDoUsuario() {
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getDadosDoUsuario());
     }
 
-    @PutMapping("/{id}/dados-adicionais")
-    public ResponseEntity<Void> inserirDadosAdicionais(@PathVariable Long id, @RequestBody @Valid UsuarioDadosComplementarRequest dto) {
-        serviceI.adicionarDados(id, dto);
+    @PutMapping("/dados-adicionais")
+    public ResponseEntity<Void> inserirDadosAdicionais(@RequestBody @Valid UsuarioDadosComplementarRequest dto) {
+        serviceI.adicionarDados(dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping("/{id}/alterar-senha")
-    public ResponseEntity<Void> alterarSenha(@PathVariable Long id, @RequestBody @Valid UsuarioAlterarSenhaRequest dto) {
-        serviceI.alterarSenha(id, dto);
+    @PutMapping("/alterar-senha")
+    public ResponseEntity<Void> alterarSenha(@RequestBody @Valid UsuarioAlterarSenhaRequest dto) {
+        serviceI.alterarSenha(dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoLeitorRequest dto) {
-        serviceI.atualizar(id, dto);
+    @PutMapping
+    public ResponseEntity<Void> alterar(@RequestBody @Valid UsuarioAtualizadoLeitorRequest dto) {
+        serviceI.atualizar(dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping("/{id}/administrador")
-    public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoAdministradorRequest dto) {
-        serviceI.atualizar(id, dto);
+    @PutMapping("/administrador")
+    public ResponseEntity<Void> alterar(@RequestBody @Valid UsuarioAtualizadoAdministradorRequest dto) {
+        serviceI.atualizar(dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirPerfil(@PathVariable Long id) {
-        serviceI.excluirPerfil(id);
+    @DeleteMapping
+    public ResponseEntity<Void> excluirPerfil() {
+        serviceI.excluirPerfil();
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PostMapping("/{id}/livro")
-    public ResponseEntity<Void> adicionarLivro(@PathVariable Long id,
-                                               @RequestParam Long idLivro,
+    @PostMapping("/livro")
+    public ResponseEntity<Void> adicionarLivro(@RequestParam Long idLivro,
                                                @RequestParam LivroStatus status){
 
-        serviceI.adicionarLivro(id, idLivro,status);
+        serviceI.adicionarLivro(idLivro,status);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
