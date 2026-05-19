@@ -10,6 +10,7 @@ import com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException;
 import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.service.DiarioDeLeituraService;
+import com.usuario.quero_ler.service.LoginService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,14 +21,17 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 
     private final DiarioDeLeituraRepository repository;
     private final UsuarioLivroRepository usuarioLivroRepository;
+    private final LoginService loginService;
 
     @Transactional
     @Override
     public void criar(DiarioDeLeituraRequestDto dto) {
         validateDto(dto);
 
+        Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
+
         UsuarioLivro usuarioLivro = usuarioLivroRepository
-                .findByUsuarioIdAndLivroId(dto.usuarioId(), dto.livroId())
+                .findByUsuarioIdAndLivroId(usuarioId, dto.livroId())
                 .orElseThrow(() -> new UsuarioLivroNaoEncontradoException("Usuário/Livro não encontrado na estante."));
 
         DiarioDeLeitura diario = DiarioDeLeitura.builder()
@@ -58,10 +62,6 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
     }
 
     private void validateRequiredFields(DiarioDeLeituraRequestDto dto) {
-        if (dto.usuarioId() == null) {
-            throw new DadosDiarioInvalidoException("usuarioId é obrigatório.");
-        }
-
         if (dto.livroId() == null) {
             throw new DadosDiarioInvalidoException("livroId é obrigatório.");
         }

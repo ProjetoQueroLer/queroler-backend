@@ -3,6 +3,8 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
 import com.usuario.quero_ler.models.Usuario;
+import com.usuario.quero_ler.models.User;
+import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.models.UsuarioLivro;
 import com.usuario.quero_ler.models.UsuarioLivroId;
 import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
@@ -33,11 +35,13 @@ class DiarioDeLeituraServiceImplTest {
         @Mock
         private UsuarioLivroRepository usuarioLivroRepository;
 
+        @Mock
+        private LoginService loginService;
+
         @Test
         @DisplayName("Deve salvar diario de leitura quando usuarioLivro existir")
         void deveSalvarDiarioQuandoUsuarioLivroExistir() {
                 DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-                                1L,
                                 2L,
                                 LocalDateTime.now().minusDays(1),
                                 LocalDateTime.now(),
@@ -54,6 +58,12 @@ class DiarioDeLeituraServiceImplTest {
                 usuarioLivro.setId(id);
                 usuarioLivro.setUsuario(new Usuario());
 
+                User user = new User();
+                Usuario usuario = new Usuario();
+                usuario.setId(1L);
+                user.setUsuario(usuario);
+                when(loginService.getUsuarioLogado()).thenReturn(user);
+
                 when(usuarioLivroRepository.findByUsuarioIdAndLivroId(1L, 2L))
                                 .thenReturn(Optional.of(usuarioLivro));
 
@@ -66,7 +76,6 @@ class DiarioDeLeituraServiceImplTest {
         @DisplayName("Deve lançar UsuarioLivroNaoEncontradoException quando não existir")
         void deveLancarQuandoNaoExistir() {
                 DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-                                1L,
                                 2L,
                                 LocalDateTime.now().minusDays(1),
                                 LocalDateTime.now(),
@@ -74,6 +83,12 @@ class DiarioDeLeituraServiceImplTest {
                                 5,
                                 "Título",
                                 "resenha");
+
+                User user = new User();
+                Usuario usuario = new Usuario();
+                usuario.setId(1L);
+                user.setUsuario(usuario);
+                when(loginService.getUsuarioLogado()).thenReturn(user);
 
                 when(usuarioLivroRepository.findByUsuarioIdAndLivroId(1L, 2L))
                                 .thenReturn(Optional.empty());
@@ -87,7 +102,6 @@ class DiarioDeLeituraServiceImplTest {
         @DisplayName("Deve lançar DadosDiarioInvalidoException quando inicio da leitura for no futuro")
         void deveLancarQuandoInicioNoFuturo() {
                 DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-                                1L,
                                 2L,
                                 LocalDateTime.now().plusDays(1),
                                 null,
@@ -108,7 +122,6 @@ class DiarioDeLeituraServiceImplTest {
                 LocalDateTime termino = inicio.minusDays(1);
 
                 DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-                                1L,
                                 2L,
                                 inicio,
                                 termino,
@@ -126,7 +139,6 @@ class DiarioDeLeituraServiceImplTest {
         @DisplayName("Deve lançar DadosDiarioInvalidoException quando paginasLidas for negativa")
         void deveLancarQuandoPaginasNegativas() {
                 DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-                                1L,
                                 2L,
                                 LocalDateTime.now().minusDays(1),
                                 null,
@@ -144,7 +156,6 @@ class DiarioDeLeituraServiceImplTest {
         @DisplayName("Deve lançar DadosDiarioInvalidoException quando nota estiver fora do intervalo")
         void deveLancarQuandoNotaForaIntervalo() {
                 DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-                                1L,
                                 2L,
                                 LocalDateTime.now().minusDays(1),
                                 null,
