@@ -96,7 +96,7 @@ jobs:
           TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
           TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
           TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
-          TF_VAR_private_key_path: "~/.oci/oci_tf_private_key.pem"
+          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
 
       - name: Terraform Plan
         working-directory: terraform-infra
@@ -106,7 +106,7 @@ jobs:
           TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
           TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
           TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
-          TF_VAR_private_key_path: "~/.oci/oci_tf_private_key.pem"
+          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -input=false
@@ -116,7 +116,7 @@ jobs:
           TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
           TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
           TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
-          TF_VAR_private_key_path: "~/.oci/oci_tf_private_key.pem"
+          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
 
       - name: Get Instance IP
         id: instance_ip
