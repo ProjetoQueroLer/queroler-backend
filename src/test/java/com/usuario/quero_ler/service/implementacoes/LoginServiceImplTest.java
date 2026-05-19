@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,11 +72,11 @@ class LoginServiceImplTest {
         String token = "token.mock";
 
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(dto.senha(), user.getSenha())).thenReturn(true);
         when(tokenService.generateToken(user)).thenReturn(token);
 
         service.login(dto, response);
 
+        verify(tokenService).generateToken(user);
     }
 
     @Test
@@ -100,10 +101,10 @@ class LoginServiceImplTest {
         String token = "token.admin.mock";
 
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(dto.senha(), user.getSenha())).thenReturn(true);
         when(tokenService.generateToken(user)).thenReturn(token);
 
         assertDoesNotThrow(() -> service.login(dto, response));
+        verify(tokenService).generateToken(user);
     }
 
     @Test
@@ -113,12 +114,11 @@ class LoginServiceImplTest {
         LoginRequestDto dto = new LoginRequestDto(user.getUser(), "Teste1234$");
 
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(dto.senha(), user.getSenha())).thenReturn(false);
 
         CredenciaisInvalidasException exception = assertThrows(CredenciaisInvalidasException.class,
                 () -> service.login(dto, response)
         );
 
-        assertEquals("E-mail ou senha inválida.", exception.getMessage());
+        assertEquals("Senha incorreta.", exception.getMessage());
     }
 }

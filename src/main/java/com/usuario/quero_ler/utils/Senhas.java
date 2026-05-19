@@ -2,6 +2,8 @@ package com.usuario.quero_ler.utils;
 
 import com.usuario.quero_ler.exceptions.especies.SenhaInvalidaException;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class Senhas {
     public static String gerar(String senha) {
@@ -39,10 +41,8 @@ public class Senhas {
         }
     }
 
-    public static void validarIguais(String senha, String confirma) {
-        if (!senha.equals(confirma)) {
-            throw new SenhaInvalidaException("As senhas devem ser iguais.");
-        }
-        validar(senha);
+    public static boolean validarSenhasIguais(String senha01, String senha02) {
+        PasswordEncoder passwordEncoder= new BCryptPasswordEncoder();
+        return passwordEncoder.matches(senha01,senha02);
     }
 }

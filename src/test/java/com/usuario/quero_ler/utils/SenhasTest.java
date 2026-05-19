@@ -97,7 +97,7 @@ class SenhasTest {
         String senha = "Teste1234";
 
         SenhaInvalidaException exception = assertThrows(SenhaInvalidaException.class,
-                () -> Senhas.validarIguais(senha, "99999999"));
+                () -> Senhas.validarSenhasIguais(senha, "99999999"));
 
         assertEquals("As senhas devem ser iguais.", exception.getMessage());
     }
@@ -106,6 +106,6 @@ class SenhasTest {
     @DisplayName("Deve validar senhas .")
     void deveValidarSenhasIguais() {
         String senha = "Teste1234&";
-        assertDoesNotThrow(() -> Senhas.validarIguais(senha, senha));
+        assertDoesNotThrow(() -> Senhas.validarSenhasIguais(senha, senha));
     }
 }
