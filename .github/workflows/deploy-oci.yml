@@ -178,6 +178,9 @@ jobs:
           script: |
             sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
+            sudo iptables -P FORWARD ACCEPT
+            sudo systemctl restart docker
+
             mkdir -p ~/queroler-deploy-${{ github.ref_name }}
             cd ~/queroler-deploy-${{ github.ref_name }}
 
