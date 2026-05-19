@@ -1,9 +1,6 @@
 package com.usuario.quero_ler.service.implementacoes;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -14,6 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import com.usuario.quero_ler.utils.Senhas;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -304,16 +302,15 @@ class UsuarioServiceImplTest {
     @DisplayName("Deve alterar a senha do usuário com sucesso.")
     void deveAlterarSenhaComSucesso() {
         String token = "token-valido";
+        String novaSenha = "Alterado253$";
         User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
         Usuario usuario = UserFixture.entidadeCompleta(user);
         user.setUsuario(usuario);
-        UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&", "Alterado253$");
+        UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&", novaSenha);
 
         when(loginService.getUsuarioLogado()).thenReturn(user);
 
         service.alterarSenha(dto);
-
-        verify(tokenService).validateToken(token);
         verify(userRepository).save(user);
     }
 

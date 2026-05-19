@@ -57,8 +57,8 @@ public class LoginServiceImpl implements LoginService {
 
 		User user = repository.findByUserIgnoreCase(dto.user())
 				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não cadastrado"));
-		if (!passwordEncoder.matches(dto.senha(), user.getSenha())) {
-			throw new CredenciaisInvalidasException("E-mail ou senha inválida.");
+		if(!Senhas.validarSenhasIguais(dto.senha(), user.getSenha())){
+			throw new CredenciaisInvalidasException("Senha incorreta.");
 		}
 
 		String token = tokenService.generateToken(user);

@@ -10,7 +10,6 @@ import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
-import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.service.UsuarioService;
@@ -19,8 +18,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,7 +41,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Transactional
     @Override
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
-        Senhas.validarIguais(dto.senha(), dto.confirmarSenha());
+        Senhas.validarSenhasIguais(dto.senha(), dto.confirmarSenha());
         User user = loginService.criar(dto, UsuarioProfile.LEITOR);
         Usuario usuario = mapper.toEntity(dto);
 
@@ -107,6 +104,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         Senhas.validar(dto.senhaNova());
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
         User user = usuario.getUser();
+        if (!Senhas.validarSenhasIguais(dto.senhaAtual(),user.getSenha())){
+            throw new CredenciaisInvalidasException("A senha digitada não corresponde a atual.");
+        }
         Senhas.validar(dto.senhaAtual(), user.getSenha());
         String novaSenha = Senhas.gerar(dto.senhaNova());
         user.setSenha(novaSenha);
