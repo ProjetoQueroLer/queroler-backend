@@ -181,6 +181,11 @@ jobs:
             sudo iptables -P FORWARD ACCEPT
             sudo systemctl restart docker
 
+            # Cleanup any existing containers
+            sudo docker rm -f postgres-queroler-${{ github.ref_name }} 2>/dev/null || true
+            sudo docker rm -f api-queroler-${{ github.ref_name }} 2>/dev/null || true
+            sudo docker volume rm -f postgres_data_${{ github.ref_name }} 2>/dev/null || true
+
             mkdir -p ~/queroler-deploy-${{ github.ref_name }}
             cd ~/queroler-deploy-${{ github.ref_name }}
 
