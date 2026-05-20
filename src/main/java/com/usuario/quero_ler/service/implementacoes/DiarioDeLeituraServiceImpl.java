@@ -1,9 +1,12 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
+import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
 import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
 import java.time.LocalDateTime;
+import java.util.Optional;
+
 import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.UsuarioLivro;
 import com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException;
@@ -50,6 +53,19 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 
         repository.save(diario);
     }
+		public DiarioDeLeituraResponseDto buscarLeituraPorLivroEUsuario (Long livroId){
+
+			Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId()
+
+			Optional <DiarioDeLeitura> diario = repository.findByUsuarioIdAndLivroId(usuarioId, livroId);
+			if (diario.isEmpty()){
+				
+			}
+
+
+			return dto;
+
+		}
 
     private void validateDto(DiarioDeLeituraRequestDto dto) {
         if (dto == null) {
