@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
+import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
 import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.models.User;
@@ -175,8 +176,7 @@ class DiarioDeLeituraServiceImplTest {
         @Test
         @DisplayName("Deve atualizar diario quando existir e pertencer ao usuario")
         void deveAtualizarQuandoExistirEProprio() {
-                DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-                                2L,
+                DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
                                 LocalDateTime.now().minusDays(2),
                                 LocalDateTime.now().minusDays(1),
                                 20,
@@ -213,8 +213,7 @@ class DiarioDeLeituraServiceImplTest {
         @Test
         @DisplayName("Deve lançar DiarioNaoEncontradoException quando não existir")
         void deveLancarQuandoDiarioNaoExistir() {
-                DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-                                2L,
+                DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
                                 LocalDateTime.now().minusDays(2),
                                 LocalDateTime.now().minusDays(1),
                                 20,
@@ -232,8 +231,7 @@ class DiarioDeLeituraServiceImplTest {
         @Test
         @DisplayName("Deve lançar UsuarioSemPermissaoParaAcaoException quando diário não pertencer ao usuário")
         void deveLancarQuandoNaoForDono() {
-                DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-                                2L,
+                DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
                                 LocalDateTime.now().minusDays(2),
                                 LocalDateTime.now().minusDays(1),
                                 20,
@@ -269,9 +267,9 @@ class DiarioDeLeituraServiceImplTest {
 
         @Test
         @DisplayName("Deve lançar DadosDiarioInvalidoException quando payload for inválido")
+
         void deveLancarQuandoPayloadInvalido() {
-                DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-                                2L,
+                DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
                                 LocalDateTime.now().plusDays(1),
                                 null,
                                 0,

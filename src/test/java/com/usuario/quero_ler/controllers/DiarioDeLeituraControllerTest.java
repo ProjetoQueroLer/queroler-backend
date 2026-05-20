@@ -2,6 +2,7 @@ package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
+import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
 import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
 import com.usuario.quero_ler.fixtures.DiarioLeituraFixtures;
 import com.usuario.quero_ler.repository.UserRepository;
@@ -80,9 +81,17 @@ class DiarioDeLeituraControllerTest {
         void putAtualizarSucesso() throws Exception {
                 DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
 
-                String json = objectMapper.writeValueAsString(requestDto);
+                DiarioDeLeituraAtualizadoRequest updateDto = new DiarioDeLeituraAtualizadoRequest(
+                                requestDto.inicioDaLeitura(),
+                                requestDto.terminoDaLeitura(),
+                                requestDto.paginasLidas(),
+                                requestDto.nota(),
+                                requestDto.tituloDaResenha(),
+                                requestDto.resenha());
 
-                doNothing().when(service).atualizar(any(Long.class), any(DiarioDeLeituraRequestDto.class));
+                String json = objectMapper.writeValueAsString(updateDto);
+
+                doNothing().when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
 
                 mockMvc.perform(put("/leituras/1")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -95,10 +104,18 @@ class DiarioDeLeituraControllerTest {
         void putAtualizarNotFound() throws Exception {
                 DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
 
-                String json = objectMapper.writeValueAsString(requestDto);
+                DiarioDeLeituraAtualizadoRequest atualizadoDto = new DiarioDeLeituraAtualizadoRequest(
+                                requestDto.inicioDaLeitura(),
+                                requestDto.terminoDaLeitura(),
+                                requestDto.paginasLidas(),
+                                requestDto.nota(),
+                                requestDto.tituloDaResenha(),
+                                requestDto.resenha());
+
+                String json = objectMapper.writeValueAsString(atualizadoDto);
 
                 doThrow(new DiarioNaoEncontradoException("Não encontrado"))
-                                .when(service).atualizar(any(Long.class), any(DiarioDeLeituraRequestDto.class));
+                                .when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
 
                 mockMvc.perform(put("/leituras/1")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -111,10 +128,18 @@ class DiarioDeLeituraControllerTest {
         void putAtualizarSemPermissao() throws Exception {
                 DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
 
-                String json = objectMapper.writeValueAsString(requestDto);
+                DiarioDeLeituraAtualizadoRequest atualizadoDto = new DiarioDeLeituraAtualizadoRequest(
+                                requestDto.inicioDaLeitura(),
+                                requestDto.terminoDaLeitura(),
+                                requestDto.paginasLidas(),
+                                requestDto.nota(),
+                                requestDto.tituloDaResenha(),
+                                requestDto.resenha());
+
+                String json = objectMapper.writeValueAsString(atualizadoDto);
 
                 doThrow(new UsuarioSemPermissaoParaAcaoException("Sem permissão"))
-                                .when(service).atualizar(any(Long.class), any(DiarioDeLeituraRequestDto.class));
+                                .when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
 
                 mockMvc.perform(put("/leituras/1")
                                 .contentType(MediaType.APPLICATION_JSON)
