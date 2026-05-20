@@ -3,6 +3,7 @@ package com.usuario.quero_ler.models;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Setter
+@Getter
 @Builder
 @Entity
 @Table(name = "tb_diario_leitura")
