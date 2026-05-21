@@ -2,17 +2,15 @@ package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.LivroStatus;
-import com.usuario.quero_ler.models.User;
+import com.usuario.quero_ler.exceptions.especies.AusenciaDeDadosException;
 import com.usuario.quero_ler.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,7 +40,7 @@ public class UsuarioController {
         UsuarioDadosComplementarRequest dto= null;
 
         if (dados == null && (imagem == null || imagem.isEmpty())) {
-            throw new IllegalArgumentException("É necessário enviar dados ou imagem.");
+            throw new AusenciaDeDadosException("É necessário enviar dados ou imagem.");
         }
 
         if (dados != null){
@@ -66,7 +64,7 @@ public class UsuarioController {
         UsuarioAtualizadoLeitorRequest dto = null;
 
         if (dados == null && (imagem == null || imagem.isEmpty())) {
-            throw new IllegalArgumentException("É necessário enviar dados ou imagem.");
+            throw new AusenciaDeDadosException("É necessário enviar dados ou imagem.");
         }
 
         if(dados!= null){
@@ -84,7 +82,7 @@ public class UsuarioController {
         UsuarioAtualizadoAdministradorRequest dto = null;
 
         if (dados == null && (imagem == null || imagem.isEmpty())) {
-            throw new IllegalArgumentException("É necessário enviar dados ou imagem.");
+            throw new AusenciaDeDadosException("É necessário enviar dados ou imagem.");
         }
 
         if(dados != null){
