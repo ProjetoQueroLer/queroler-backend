@@ -1,8 +1,11 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
+import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
 import com.usuario.quero_ler.models.Usuario;
+import com.usuario.quero_ler.models.DiarioDeLeitura;
+import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.models.UsuarioLivro;
@@ -20,6 +23,9 @@ import java.time.LocalDateTime;
 import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
 import java.util.Optional;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -46,9 +52,10 @@ class DiarioDeLeituraServiceImplTest {
                                 LocalDateTime.now().minusDays(1),
                                 LocalDateTime.now(),
                                 10,
-                                5,
+                                5.0,
                                 "Título",
-                                "resenha");
+                                "resenha",
+																true);
 
                 UsuarioLivroId id = new UsuarioLivroId();
                 id.setUsuarioId(1L);
@@ -80,9 +87,10 @@ class DiarioDeLeituraServiceImplTest {
                                 LocalDateTime.now().minusDays(1),
                                 LocalDateTime.now(),
                                 10,
-                                5,
+                                5.0,
                                 "Título",
-                                "resenha");
+                                "resenha",
+																true);
 
                 User user = new User();
                 Usuario usuario = new Usuario();
@@ -106,9 +114,10 @@ class DiarioDeLeituraServiceImplTest {
                                 LocalDateTime.now().plusDays(1),
                                 null,
                                 10,
-                                4,
+                                4.0,
                                 "Título",
-                                "resenha");
+                                "resenha",
+																true);
 
                 assertThrows(DadosDiarioInvalidoException.class, () -> service.criar(dto));
 
@@ -126,9 +135,10 @@ class DiarioDeLeituraServiceImplTest {
                                 inicio,
                                 termino,
                                 10,
-                                4,
+                                4.0,
                                 "Título",
-                                "resenha");
+                                "resenha",
+																true);
 
                 assertThrows(DadosDiarioInvalidoException.class, () -> service.criar(dto));
 
@@ -143,9 +153,10 @@ class DiarioDeLeituraServiceImplTest {
                                 LocalDateTime.now().minusDays(1),
                                 null,
                                 -5,
-                                4,
+                                4.0,
                                 "Título",
-                                "resenha");
+                                "resenha",
+																true);
 
                 assertThrows(DadosDiarioInvalidoException.class, () -> service.criar(dto));
 
@@ -160,12 +171,67 @@ class DiarioDeLeituraServiceImplTest {
                                 LocalDateTime.now().minusDays(1),
                                 null,
                                 10,
-                                6,
+                                6.0,
                                 "Título",
-                                "resenha");
+                                "resenha",
+																true);
 
                 assertThrows(DadosDiarioInvalidoException.class, () -> service.criar(dto));
 
                 verify(repository, never()).save(any());
         }
+				@Test
+        @DisplayName("Deve buscar os dados de um diario com sucesso.")
+				void deveBuscarOsDadosDeUmDiarioComSucesso(){
+         Long livroId = 2L;
+         Long usuarioId = 1L;
+
+         UsuarioLivroId id = new UsuarioLivroId();
+         id.setUsuarioId(usuarioId);
+         id.setLivroId(livroId);
+
+         Livro livro = new Livro();
+         livro.setId(livroId);
+         livro.setTitulo("Dom Casmurro");
+         livro.setNumeroDePaginas(256);
+                                     
+         UsuarioLivro usuarioLivro = new UsuarioLivro();
+         usuarioLivro.setId(id);
+         usuarioLivro.setLivro(livro);
+                                    
+         DiarioDeLeitura diario = DiarioDeLeitura.builder()
+                 .id(10L)
+                 .usuarioLivro(usuarioLivro)
+                 .inicioDaLeitura(LocalDateTime.now().minusDays(5))
+                 .terminoDaLeitura(null)
+                 .paginasLidas(50)
+                 .nota(4.5)
+                 .tituloDaResenha("Ótima leitura")
+                 .resenha("Livro muito bom...")
+                 .spoiler(false)
+                 .build();
+                                     
+         User user = new User();
+         Usuario usuario = new Usuario();
+         usuario.setId(usuarioId);
+
+         when(loginService.getUsuarioLogado()).thenReturn(user);
+         when(repository.findByUsuarioIdAndLivroId(usuarioId, livroId))
+                 .thenReturn(Optional.of(diario));
+                                                 
+         DiarioDeLeituraResponseDto resultado = service.buscarLeituraPorLivroEUsuario(livroId);
+                                                                                              
+         assertNotNull(resultado);
+         assertEquals(10L, resultado.id());
+         assertEquals(livroId, resultado.livro().id());
+         assertEquals("Dom Casmurro", resultado.livro().titulo());
+         assertEquals(256, resultado.livro().numeroDePaginas());
+         assertEquals(4.5, resultado.nota());
+         assertEquals("Ótima leitura", resultado.tituloDaResenha());
+         assertEquals("Livro muito bom...", resultado.resenha());
+         assertFalse(resultado.spoilers());
+
+         verify(loginService).getUsuarioLogado();
+         verify(repository).findByUsuarioIdAndLivroId(usuarioId, livroId);
+				}
 }

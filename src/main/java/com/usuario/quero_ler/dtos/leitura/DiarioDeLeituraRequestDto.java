@@ -17,9 +17,10 @@ public record DiarioDeLeituraRequestDto(
 
                 @PositiveOrZero(message = "A quantidade de páginas lidas deve ser positiva ou zero") Integer paginasLidas,
 
-                @Min(value = 0, message = "A nota mínima é 0") @Max(value = 5, message = "A nota máxima é 5") Integer nota,
+                @Min(value = 0, message = "A nota mínima é 0") @Max(value = 5, message = "A nota máxima é 5") Double nota,
 
                 String tituloDaResenha,
 
-                String resenha) {
+                String resenha,
+								Boolean spoiler) {
 }

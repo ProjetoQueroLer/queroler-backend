@@ -15,8 +15,9 @@ public final class DiarioLeituraFixtures {
                 LocalDateTime.now().minusDays(1),
                 LocalDateTime.now(),
                 10,
-                4,
+                4.0,
                 "Titulo",
-                "resenha");
+                "resenha",
+								true);
     }
 }
