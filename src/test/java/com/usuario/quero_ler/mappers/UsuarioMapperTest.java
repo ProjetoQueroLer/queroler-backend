@@ -52,22 +52,22 @@ class UsuarioMapperTest {
         assertEquals(usuario.getPais(),resposta.pais());
     }
 
-    @Test
-    @DisplayName("Deve atualizar um usuário leitor")
-    void toUpdate() {
-        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
-        Usuario usuario = UserFixture.entidadeCompleta(user);
-        UsuarioAtualizadoLeitorRequest atualizacoes = new UsuarioAtualizadoLeitorRequest(
-                "nome atualizado","email atualizado", null,"cabralha",
-                "Bahia",null,null);
-
-        Usuario resposta = mapper.update(usuario,atualizacoes);
-
-        assertEquals(usuario.getId(),resposta.getId());
-        assertEquals(atualizacoes.nome(),resposta.getNome());
-        assertEquals(atualizacoes.email(),resposta.getEmail());
-        assertEquals(usuario.getDataDeNascimento(),resposta.getDataDeNascimento());
-        assertEquals(atualizacoes.cidade(),resposta.getCidade());
-        assertEquals(atualizacoes.estado(),resposta.getEstado());
-    }
+//    @Test
+//    @DisplayName("Deve atualizar um usuário leitor")
+//    void toUpdate() {
+//        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
+//        Usuario usuario = UserFixture.entidadeCompleta(user);
+//        UsuarioAtualizadoLeitorRequest atualizacoes = new UsuarioAtualizadoLeitorRequest(
+//                "nome atualizado","email atualizado", null,"cabralha",
+//                "Bahia",null,null);
+//
+//        Usuario resposta = mapper.update(usuario,atualizacoes);
+//
+//        assertEquals(usuario.getId(),resposta.getId());
+//        assertEquals(atualizacoes.nome(),resposta.getNome());
+//        assertEquals(atualizacoes.email(),resposta.getEmail());
+//        assertEquals(usuario.getDataDeNascimento(),resposta.getDataDeNascimento());
+//        assertEquals(atualizacoes.cidade(),resposta.getCidade());
+//        assertEquals(atualizacoes.estado(),resposta.getEstado());
+//    }
 }

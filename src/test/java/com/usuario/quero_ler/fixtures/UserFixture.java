@@ -34,7 +34,7 @@ public class UserFixture {
 
     public static UsuarioDadosComplementarRequest requestDadosComplementares(){
         return new UsuarioDadosComplementarRequest(
-                CIDADE,ESTADO,PAIS,FOTO
+                CIDADE,ESTADO,PAIS
         );
     }
 
@@ -87,7 +87,6 @@ public class UserFixture {
         usuario.setCidade(atualizacoes !=null ? atualizacoes.cidade() : usuario.getCidade());
         usuario.setEstado(atualizacoes.estado() != null ? atualizacoes.estado() : usuario.getEstado());
         usuario.setPais(atualizacoes.pais() != null ? atualizacoes.pais() : usuario.getPais());
-        usuario.setFoto(atualizacoes.foto() != null ? atualizacoes.foto() : usuario.getFoto());
         return usuario;
     }
 
@@ -98,7 +97,6 @@ public class UserFixture {
         usuario.setCidade(atualizacoes.cidade() != null ? atualizacoes.cidade() : usuario.getCidade());
         usuario.setEstado(atualizacoes.estado() != null ? atualizacoes.estado() : usuario.getEstado());
         usuario.setPais(atualizacoes.pais() != null ? atualizacoes.pais() : usuario.getPais());
-        usuario.setFoto(atualizacoes.foto() != null ? atualizacoes.foto() : usuario.getFoto());
         return usuario;
     }
 
@@ -117,5 +115,4 @@ public class UserFixture {
             throw new RuntimeException("Erro ao carregar imagem", e);
         }
     }
-
 }

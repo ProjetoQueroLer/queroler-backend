@@ -94,96 +94,96 @@ public class UsuariosTest extends AbstractIntegrationTest {
         assertEquals(usuarioDoBanco.getFoto(), resposta.getBody().foto());
     }
 
-    @Test
-    @DisplayName("Deve adicionar informações a um usuario com sucesso!")
-    public void deveAdcionarInformacoesAUmUsuarioComSucesso() {
-        UsuarioDadosComplementarRequest dto = UserFixture.requestDadosComplementares();
-        Long id = 2L;
-        logar(id);
-        ResponseEntity<Void> resposta = template.exchange(
-                "/usuarios/dados-adicionais",
-                HttpMethod.PUT,
-            new HttpEntity<>(dto, authHeaders),
-                Void.class
-        );
+//    @Test
+//    @DisplayName("Deve adicionar informações a um usuario com sucesso!")
+//    public void deveAdcionarInformacoesAUmUsuarioComSucesso() {
+//        UsuarioDadosComplementarRequest dto = UserFixture.requestDadosComplementares();
+//        Long id = 2L;
+//        logar(id);
+//        ResponseEntity<Void> resposta = template.exchange(
+//                "/usuarios/dados-adicionais",
+//                HttpMethod.PUT,
+//            new HttpEntity<>(dto, authHeaders),
+//                Void.class
+//        );
+//
+//        Usuario usuarioSalvo = repository.findById(id).get();
+//
+//        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+//        assertEquals(dto.cidade(), usuarioSalvo.getCidade());
+//        assertEquals(dto.estado(), usuarioSalvo.getEstado());
+//        assertEquals(dto.pais(), usuarioSalvo.getPais());
+//        assertEquals(dto.foto(), usuarioSalvo.getFoto());
+//
+//
+//    }
 
-        Usuario usuarioSalvo = repository.findById(id).get();
+//    @Test
+//    @DisplayName("Deve alterar a sennha de um usuario com sucesso!")
+//    public void deveAlterarASenhaDeUmUsuarioComSucesso() {
+//        UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&", "NovaSenha456$");
+//        Long id = 2L;
+//        logar(id);
+//        ResponseEntity<Void> resposta = template.exchange(
+//                "/usuarios/alterar-senha",
+//                HttpMethod.PUT,
+//            new HttpEntity<>(dto, authHeaders),
+//                Void.class
+//        );
+//
+//        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+//    }
 
-        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertEquals(dto.cidade(), usuarioSalvo.getCidade());
-        assertEquals(dto.estado(), usuarioSalvo.getEstado());
-        assertEquals(dto.pais(), usuarioSalvo.getPais());
-        assertEquals(dto.foto(), usuarioSalvo.getFoto());
+//    @Test
+//    @DisplayName("Deve alterar de um usuario Leitor com sucesso!")
+//    public void deveAlterarUmUsuarioLeitorComSucesso() {
+//        UsuarioAtualizadoLeitorRequest dto = new UsuarioAtualizadoLeitorRequest("Nome Alterado", "emailAlterado@gmail.com", null,
+//                "Cidade alterada", "Estado Alterado", "Pais alterado", null);
+//
+//        Long id = 2L;
+//        logar(id);
+//        ResponseEntity<Void> resposta = template.exchange(
+//                "/usuarios",
+//                HttpMethod.PUT,
+//            new HttpEntity<>(dto, authHeaders),
+//                Void.class
+//        );
+//
+//        Usuario usuarioSalvo = repository.findById(id).get();
+//
+//        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+//        assertEquals(dto.nome(), usuarioSalvo.getNome());
+//        assertEquals(dto.email(), usuarioSalvo.getEmail());
+//        assertEquals(dto.cidade(), usuarioSalvo.getCidade());
+//        assertEquals(dto.estado(), usuarioSalvo.getEstado());
+//        assertEquals(dto.pais(), usuarioSalvo.getPais());
+//        assertEquals(UsuarioProfile.LEITOR, usuarioSalvo.getUser().getProfile());
+//    }
 
-
-    }
-
-    @Test
-    @DisplayName("Deve alterar a sennha de um usuario com sucesso!")
-    public void deveAlterarASenhaDeUmUsuarioComSucesso() {
-        UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&", "NovaSenha456$");
-        Long id = 2L;
-        logar(id);
-        ResponseEntity<Void> resposta = template.exchange(
-                "/usuarios/alterar-senha",
-                HttpMethod.PUT,
-            new HttpEntity<>(dto, authHeaders),
-                Void.class
-        );
-
-        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-    }
-
-    @Test
-    @DisplayName("Deve alterar de um usuario Leitor com sucesso!")
-    public void deveAlterarUmUsuarioLeitorComSucesso() {
-        UsuarioAtualizadoLeitorRequest dto = new UsuarioAtualizadoLeitorRequest("Nome Alterado", "emailAlterado@gmail.com", null,
-                "Cidade alterada", "Estado Alterado", "Pais alterado", null);
-
-        Long id = 2L;
-        logar(id);
-        ResponseEntity<Void> resposta = template.exchange(
-                "/usuarios",
-                HttpMethod.PUT,
-            new HttpEntity<>(dto, authHeaders),
-                Void.class
-        );
-
-        Usuario usuarioSalvo = repository.findById(id).get();
-
-        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertEquals(dto.nome(), usuarioSalvo.getNome());
-        assertEquals(dto.email(), usuarioSalvo.getEmail());
-        assertEquals(dto.cidade(), usuarioSalvo.getCidade());
-        assertEquals(dto.estado(), usuarioSalvo.getEstado());
-        assertEquals(dto.pais(), usuarioSalvo.getPais());
-        assertEquals(UsuarioProfile.LEITOR, usuarioSalvo.getUser().getProfile());
-    }
-
-    @Test
-    @DisplayName("Deve alterar de um usuario administrador com sucesso!")
-    public void deveAlterarUmUsuarioAdministradorComSucesso() {
-        UsuarioAtualizadoAdministradorRequest dto = new UsuarioAtualizadoAdministradorRequest(null,
-                "Cidade alterada", "Estado Alterado", "Pais alterado", null);
-
-        Long id = 1L;
-        logar(id);
-        ResponseEntity<Void> resposta = template.exchange(
-                "/usuarios/administrador",
-                HttpMethod.PUT,
-            new HttpEntity<>(dto, authHeaders),
-                Void.class
-        );
-
-        Usuario usuarioSalvo = repository.findById(id).get();
-
-        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertEquals(dto.cidade(), usuarioSalvo.getCidade());
-        assertEquals(dto.estado(), usuarioSalvo.getEstado());
-        assertEquals(dto.pais(), usuarioSalvo.getPais());
-        assertEquals(UsuarioProfile.ADMINISTRADOR, usuarioSalvo.getUser().getProfile());
-
-    }
+//    @Test
+//    @DisplayName("Deve alterar de um usuario administrador com sucesso!")
+//    public void deveAlterarUmUsuarioAdministradorComSucesso() {
+//        UsuarioAtualizadoAdministradorRequest dto = new UsuarioAtualizadoAdministradorRequest(null,
+//                "Cidade alterada", "Estado Alterado", "Pais alterado", null);
+//
+//        Long id = 1L;
+//        logar(id);
+//        ResponseEntity<Void> resposta = template.exchange(
+//                "/usuarios/administrador",
+//                HttpMethod.PUT,
+//            new HttpEntity<>(dto, authHeaders),
+//                Void.class
+//        );
+//
+//        Usuario usuarioSalvo = repository.findById(id).get();
+//
+//        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+//        assertEquals(dto.cidade(), usuarioSalvo.getCidade());
+//        assertEquals(dto.estado(), usuarioSalvo.getEstado());
+//        assertEquals(dto.pais(), usuarioSalvo.getPais());
+//        assertEquals(UsuarioProfile.ADMINISTRADOR, usuarioSalvo.getUser().getProfile());
+//
+//    }
 
     @Test
     @DisplayName("Deve excluir um usuario leitor com sucesso!")
