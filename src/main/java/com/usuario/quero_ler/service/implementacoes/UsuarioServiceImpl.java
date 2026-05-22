@@ -44,24 +44,18 @@ public class UsuarioServiceImpl implements UsuarioService {
         Senhas.validarSenhasIguais(dto.senha(), dto.confirmarSenha());
         User user = loginService.criar(dto, UsuarioProfile.LEITOR);
         Usuario usuario = mapper.toEntity(dto);
+        usuario = validarFoto(usuario, foto);
 
-        if (foto != null && !foto.isEmpty()) {
-            validarFoto(foto);
-            try {
-                usuario.setFoto(foto.getBytes());
-            } catch (IOException e) {
-                throw new CapaForaDePadraoException("Erro ao ler imagem" + e);
-            }
-        }
         usuario.setUser(user);
         usuario = repository.save(usuario);
         return mapper.toResponse(usuario);
     }
 
     @Override
-    public void adicionarDados(UsuarioDadosComplementarRequest dto) {
+    public void adicionarDados(UsuarioDadosComplementarRequest dto, MultipartFile foto) {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
-        usuario = mapper.complementarCadastro(usuario, dto);
+        usuario = validarFoto(usuario, foto);
+        usuario = dto != null ? mapper.complementarCadastro(usuario, dto) : usuario;
         usuario = repository.save(usuario);
     }
 
@@ -72,16 +66,18 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void atualizar(UsuarioAtualizadoLeitorRequest dto) {
+    public void atualizar(UsuarioAtualizadoLeitorRequest dto, MultipartFile foto) {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
-        usuario = mapper.update(usuario, dto);
+        usuario = validarFoto(usuario, foto);
+        usuario = (dto != null ? mapper.update(usuario, dto) : usuario);
         usuario = repository.save(usuario);
     }
 
     @Override
-    public void atualizar(UsuarioAtualizadoAdministradorRequest dto) {
+    public void atualizar(UsuarioAtualizadoAdministradorRequest dto, MultipartFile foto) {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
-        usuario = mapper.update(usuario, dto);
+        usuario = validarFoto(usuario, foto);
+        usuario = dto != null ? mapper.update(usuario, dto) : usuario;
         repository.save(usuario);
     }
 
@@ -104,7 +100,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         Senhas.validar(dto.senhaNova());
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
         User user = usuario.getUser();
-        if (!Senhas.validarSenhasIguais(dto.senhaAtual(),user.getSenha())){
+        if (!Senhas.validarSenhasIguais(dto.senhaAtual(), user.getSenha())) {
             throw new CredenciaisInvalidasException("A senha digitada não corresponde a atual.");
         }
         Senhas.validar(dto.senhaAtual(), user.getSenha());
@@ -161,6 +157,18 @@ public class UsuarioServiceImpl implements UsuarioService {
         } else {
             return usuarioLogado.getFoto();
         }
+    }
+
+    protected Usuario validarFoto(Usuario usuario, MultipartFile foto) {
+        if (foto != null && !foto.isEmpty()) {
+            validarFoto(foto);
+            try {
+                usuario.setFoto(foto.getBytes());
+            } catch (IOException e) {
+                throw new CapaForaDePadraoException("Erro ao ler imagem" + e);
+            }
+        }
+        return usuario;
     }
 
     protected void validarFoto(MultipartFile foto) {

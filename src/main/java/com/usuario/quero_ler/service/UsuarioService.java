@@ -8,11 +8,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface UsuarioService {
     UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto);
-    void adicionarDados(UsuarioDadosComplementarRequest dto);
+    void adicionarDados(UsuarioDadosComplementarRequest dto,MultipartFile foto);
     UsuarioDadosResponse getDadosDoUsuario();
     Usuario getUsuario(Long id);
-    void atualizar(UsuarioAtualizadoLeitorRequest dto);
-    void atualizar(UsuarioAtualizadoAdministradorRequest dto);
+    void atualizar(UsuarioAtualizadoLeitorRequest dto, MultipartFile foto);
+    void atualizar(UsuarioAtualizadoAdministradorRequest dto, MultipartFile foto);
     void alterarSenha(UsuarioAlterarSenhaRequest dto);
     void excluirPerfil();
     void adicionarLivro(Long idLivro, LivroStatus status);

@@ -6,6 +6,5 @@ public record UsuarioAtualizadoAdministradorRequest(
         LocalDate dataDeNascimento,
         String cidade,
         String estado,
-        String pais,
-        byte[] foto
+        String pais
 ) {}
