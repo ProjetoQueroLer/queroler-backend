@@ -23,6 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
+import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
+
 import java.util.Optional;
 import java.util.List;
 
@@ -251,6 +253,24 @@ class DiarioDeLeituraServiceImplTest {
 		assertEquals("Ótima leitura", resultado.tituloDaResenha());
 		assertEquals("Livro muito bom...", resultado.resenha());
 		assertFalse(resultado.spoilers());
+
+		verify(loginService).getUsuarioLogado();
+		verify(repository).findByUsuarioIdAndLivroId(usuarioId, livroId);
+	}
+
+	@Test
+	@DisplayName("Deve gerar uma exception ao tentar buscar o diario.")
+	void deveLancarUmaExcecaoAoBuscarDadosDeUmDiario() {
+		Long livroId = 2L;
+		Long usuarioId = 1L;
+
+		User user = new User();
+		Usuario usuario = new Usuario();
+		usuario.setId(usuarioId);
+		user.setUsuario(usuario);
+
+		when(loginService.getUsuarioLogado()).thenReturn(user);
+		assertThrows(DiarioNaoEncontradoException.class, () -> service.buscarLeituraPorLivroEUsuario(livroId));
 
 		verify(loginService).getUsuarioLogado();
 		verify(repository).findByUsuarioIdAndLivroId(usuarioId, livroId);
