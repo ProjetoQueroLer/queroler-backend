@@ -33,7 +33,6 @@ public class UsuarioMapper {
         usuario.setEstado(dto.estado()!=null? dto.estado() : usuario.getEstado());
         usuario.setPais(dto.pais() !=null? dto.pais() : usuario.getPais());
         usuario.setPais(dto.pais() != null ? dto.pais(): usuario.getPais());
-        usuario.setFoto(dto.foto() != null ? dto.foto() : usuario.getFoto());
         return usuario;
     }
 
@@ -49,9 +48,6 @@ public class UsuarioMapper {
         }
         if (dto.pais() != null) {
             usuario.setPais(dto.pais());
-        }
-        if (dto.foto() != null) {
-            usuario.setFoto(dto.foto());
         }
         return usuario;
     }

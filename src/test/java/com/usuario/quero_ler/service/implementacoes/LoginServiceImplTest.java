@@ -4,6 +4,7 @@ import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CredenciaisInvalidasException;
+import com.usuario.quero_ler.exceptions.especies.SenhaInvalidaException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.fixtures.LoginFixture;
 import com.usuario.quero_ler.fixtures.UserFixture;
@@ -37,14 +38,14 @@ class LoginServiceImplTest {
     @Mock
     private UserRepository repository;
 
-        @Mock
-        private TokenService tokenService;
+    @Mock
+    private TokenService tokenService;
 
-        @Mock
-        private PasswordEncoder passwordEncoder;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
-        @Mock
-        private HttpServletResponse response;
+    @Mock
+    private HttpServletResponse response;
 
     @Test
     @DisplayName("Deve criar um login com sucesso")
@@ -52,9 +53,7 @@ class LoginServiceImplTest {
         UsuarioRequestDto dto = UserFixture.requestDto();
         UsuarioProfile profile = UsuarioProfile.LEITOR;
         User user = UserFixture.userEntity(profile);
-        String senhaHash = "$2a$10$senha.mock";
 
-        when(passwordEncoder.encode(dto.senha())).thenReturn(senhaHash);
         when(repository.save(any(User.class))).thenReturn(user);
 
         User resposta = service.criar(dto, profile);
@@ -120,5 +119,65 @@ class LoginServiceImplTest {
         );
 
         assertEquals("Senha incorreta.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar login com senha vazia.")
+    void deveLancarExcecaoAoTentarCriarLoginComSenhaSemLetrasMaiusculas() {
+        String senha = "";
+        UsuarioRequestDto dto = UserFixture.requestDto(senha);
+        SenhaInvalidaException exception = assertThrows(SenhaInvalidaException.class,
+                () -> service.criar(dto, UsuarioProfile.LEITOR));
+        assertEquals("Senha é obrigatória.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar login com senha com menos de 08 caracteres.")
+    void deveLancarExcecaoAoTentarCriarLoginComSenhaMenorQue08Caracteres() {
+        String senha = "Teste1$";
+        UsuarioRequestDto dto = UserFixture.requestDto(senha);
+        SenhaInvalidaException exception = assertThrows(SenhaInvalidaException.class,
+                () -> service.criar(dto, UsuarioProfile.LEITOR));
+        assertEquals("A senha deve ter no mínimo 8 caracteres.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar login com senha sem letras maiusculas.")
+    void deveLancarExcecaoAoTentarCriarLoginSemLetrasMaiusculas() {
+        String senha = "teste123$";
+        UsuarioRequestDto dto = UserFixture.requestDto(senha);
+        SenhaInvalidaException exception = assertThrows(SenhaInvalidaException.class,
+                () -> service.criar(dto, UsuarioProfile.LEITOR));
+        assertEquals("A senha deve conter pelo menos uma letra maiúscula.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar login com senha sem letras minúsculas.")
+    void deveLancarExcecaoAoTentarCriarLoginSemLetrasMinusculas() {
+        String senha = "TESTES123$";
+        UsuarioRequestDto dto = UserFixture.requestDto(senha);
+        SenhaInvalidaException exception = assertThrows(SenhaInvalidaException.class,
+                () -> service.criar(dto, UsuarioProfile.LEITOR));
+        assertEquals("A senha deve conter pelo menos uma letra minúscula.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar login com senha sem números.")
+    void deveLancarExcecaoAoTentarCriarLoginSemNumero() {
+        String senha = "TestesSemNumeros$";
+        UsuarioRequestDto dto = UserFixture.requestDto(senha);
+        SenhaInvalidaException exception = assertThrows(SenhaInvalidaException.class,
+                () -> service.criar(dto, UsuarioProfile.LEITOR));
+        assertEquals("A senha deve conter pelo menos um número.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar login com senha sem caracteres especiais.")
+    void deveLancarExcecaoAoTentarCriarLoginSemCaracteresEspeciais() {
+        String senha = "Testes12345";
+        UsuarioRequestDto dto = UserFixture.requestDto(senha);
+        SenhaInvalidaException exception = assertThrows(SenhaInvalidaException.class,
+                () -> service.criar(dto, UsuarioProfile.LEITOR));
+        assertEquals("A senha deve conter pelo menos um caractere especial.", exception.getMessage());
     }
 }

@@ -67,6 +67,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    @ExceptionHandler(DiarioNaoEncontradoException.class)
+    public ResponseEntity<Object> handlerDiarioNaoEncontrado(DiarioNaoEncontradoException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
     @ExceptionHandler(SenhaInvalidaException.class)
     public ResponseEntity<Object> handlerSenhaInvalidaException(SenhaInvalidaException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -122,6 +127,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
+    @ExceptionHandler(AusenciaDeDadosException.class)
+    public ResponseEntity<Object> handlerAusenciaDeDadosException(AusenciaDeDadosException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
     @ExceptionHandler(DocumentoNaoPodeSerDeletadoException.class)
     public ResponseEntity<Object> handlerDocumentoNaoPodeSerDeletadoException(DocumentoNaoPodeSerDeletadoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
@@ -148,11 +158,6 @@ public class GlobalExceptionHandler {
             DiarioJaExisteException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
-		@ExceptionHandler(DiarioNaoEncontradoException.class)
-		public ResponseEntity<Object> handlerDiarioNaoEncontradoException(DiarioNaoEncontradoException ex){
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-		}
-
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Object> handleEnumError(HttpMessageNotReadableException ex) {
 
