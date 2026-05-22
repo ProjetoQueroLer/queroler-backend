@@ -143,11 +143,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-    @ExceptionHandler(com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException.class)
+    @ExceptionHandler(DiarioJaExisteException.class)
     public ResponseEntity<Object> handlerDiarioJaExiste(
-            com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException ex) {
+            DiarioJaExisteException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
+		@ExceptionHandler(DiarioNaoEncontradoException.class)
+		public ResponseEntity<Object> handlerDiarioNaoEncontradoException(DiarioNaoEncontradoException ex){
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+		}
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Object> handleEnumError(HttpMessageNotReadableException ex) {

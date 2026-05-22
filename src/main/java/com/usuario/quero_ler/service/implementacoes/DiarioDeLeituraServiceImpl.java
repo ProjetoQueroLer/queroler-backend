@@ -11,6 +11,7 @@ import java.util.Optional;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.UsuarioLivro;
 import com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException;
+import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
 import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.service.DiarioDeLeituraService;
@@ -63,7 +64,7 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 			Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
 
 			DiarioDeLeitura diario = repository.findByUsuarioIdAndLivroId(usuarioId, livroId)
-			.orElseThrow(() -> new EntityNotFoundException("Diario não encontrado!"));
+			.orElseThrow(() -> new DiarioNaoEncontradoException("Diario não encontrado!"));
 				
 			return diarioLeituraMapper.toResponse(diario);
 
