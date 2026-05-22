@@ -164,7 +164,6 @@ public class UsuarioServiceImpl implements UsuarioService {
             validarFoto(foto);
             try {
                 usuario.setFoto(foto.getBytes());
-//                usuario = repository.save(usuario);
             } catch (IOException e) {
                 throw new CapaForaDePadraoException("Erro ao ler imagem" + e);
             }
