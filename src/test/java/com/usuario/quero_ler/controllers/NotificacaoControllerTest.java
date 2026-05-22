@@ -48,32 +48,29 @@ class NotificacaoControllerTest {
     @DisplayName("Deve retornar notificações não lidas do usuário")
     void deveRetornarNotificacoesNaoLidasDoUsuario() throws Exception {
 
-        Long idUsuario = 1L;
-
         NotificacaoResponseDto dto = NotificacaoFixture.response();
         Pageable pageable = PageRequest.of(0, 20);
 
         Page<NotificacaoResponseDto> page = new PageImpl<>(List.of(dto));
 
-        when(service.naoLidas(idUsuario, pageable)).thenReturn(page);
+        when(service.naoLidas(pageable)).thenReturn(page);
 
-        mockMvc.perform(get("/notificacoes/{id}/usuario", idUsuario)
+        mockMvc.perform(get("/notificacoes")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(service).naoLidas(idUsuario, pageable);
+        verify(service).naoLidas(pageable);
     }
 
     @Test
     @DisplayName("Deve marcar as notificações do usuario como lida")
     void deveAlterarDocumento() throws Exception {
-        Long idUsuario = 1L;
 
-        mockMvc.perform(put("/notificacoes/{id}", idUsuario)
+        mockMvc.perform(put("/notificacoes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
-        verify(service).marcarComoLidas(idUsuario);
+        verify(service).marcarComoLidas();
     }
 }

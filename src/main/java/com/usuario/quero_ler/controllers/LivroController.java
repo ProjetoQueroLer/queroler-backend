@@ -73,25 +73,23 @@ public class LivroController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/usuario/{idUsuario}")
-    public ResponseEntity<Void> mudarStatus(@PathVariable Long id, @PathVariable Long idUsuario,
+    @PutMapping("/{id}/usuario")
+    public ResponseEntity<Void> mudarStatus(@PathVariable Long id,
             @RequestParam LivroStatus status) {
-        log.info("PUT /livros/{}/usuario/{} - mudar status {}", id, idUsuario, status);
-        serviceI.alterarStatusDoLivroNoUsuario(id, idUsuario, status);
+        log.info("PUT /livros/{}/usuario - mudar status {}", id, status);
+        serviceI.alterarStatusDoLivroNoUsuario(id, status);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/tela_de_leitura/usuario/{id}")
-    public ResponseEntity<Page<LivroTelaLeituraResponse>> livrosDoUsuarioParaTelaDeLeitura(@PathVariable Long id,
-            Pageable pageable) {
-        log.info("GET /livros/tela_de_leitura/usuario/{} - pagina {}", id, pageable.getPageNumber());
-        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getLivrosTelaDeLeituraDoUsuario(id, pageable));
+    @GetMapping("/tela_de_leitura")
+    public ResponseEntity<Page<LivroTelaLeituraResponse>> livrosDoUsuarioParaTelaDeLeitura(Pageable pageable) {
+        log.info("GET /livros/tela_de_leitura - pagina {}", pageable.getPageNumber());
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getLivrosTelaDeLeituraDoUsuario(pageable));
     }
 
-    @GetMapping("/detalhados/usuario/{id}")
-    public ResponseEntity<Page<LivroDetalhadoResponse>> getLivrosDetalhadosDoUsuario(@PathVariable Long id,
-            Pageable pageable) {
-        log.info("GET /livros/detalhados/usuario/{} - pagina {}", id, pageable.getPageNumber());
-        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getLivrosDoUsuario(id, pageable));
+    @GetMapping("/detalhados")
+    public ResponseEntity<Page<LivroDetalhadoResponse>> getLivrosDetalhadosDoUsuario(Pageable pageable) {
+        log.info("GET /livros/detalhados - pagina {}", pageable.getPageNumber());
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getLivrosDoUsuario(pageable));
     }
 }

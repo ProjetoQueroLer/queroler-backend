@@ -4,8 +4,6 @@ import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CredenciaisInvalidasException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioComPerfilInvalidoException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioNaoAutenticadoException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.repository.UserRepository;
@@ -47,9 +45,10 @@ public class LoginServiceImpl implements LoginService {
 	public User criar(UsuarioRequestDto dto, UsuarioProfile profile) {
 		log.info("LoginServiceImpl.criar - email={} profile={}", dto.email(), profile);
 		User user = new User();
+		Senhas.validar(dto.senha());
 		String senha = Senhas.gerar(dto.senha());
 		user.setUser(dto.email());
-		user.setSenha(passwordEncoder.encode(dto.senha()));
+		user.setSenha(senha);
 		user.setProfile(profile);
 		user = repository.save(user);
 		log.debug("User criado id={}", user.getId());
@@ -58,13 +57,11 @@ public class LoginServiceImpl implements LoginService {
 
 	@Override
 	public void login(LoginRequestDto dto, HttpServletResponse response) {
-		log.info("LoginServiceImpl.login - user={}", dto.user());
-
+		Senhas.validar(dto.senha());
 		User user = repository.findByUserIgnoreCase(dto.user())
 				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não cadastrado"));
-		if (!passwordEncoder.matches(dto.senha(), user.getSenha())) {
-			log.warn("Login falhou para user={}", dto.user());
-			throw new CredenciaisInvalidasException("E-mail ou senha inválida.");
+		if(!Senhas.validarSenhasIguais(dto.senha(), user.getSenha())){
+			throw new CredenciaisInvalidasException("Senha incorreta.");
 		}
 
 		String token = tokenService.generateToken(user);

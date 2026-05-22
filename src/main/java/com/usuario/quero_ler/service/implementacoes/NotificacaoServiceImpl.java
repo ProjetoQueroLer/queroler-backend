@@ -7,8 +7,8 @@ import com.usuario.quero_ler.models.Notificacao;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.NotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
+import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.service.NotificacaoService;
-import com.usuario.quero_ler.service.UsuarioService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +26,9 @@ import java.util.List;
 @Slf4j
 public class NotificacaoServiceImpl implements NotificacaoService {
     private final NotificacaoRepository repository;
-    private final UsuarioService usuarioService;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
     private final NotificacaoMapper mapper;
+    private final LoginService loginService;
 
     @Transactional
     @Override
@@ -38,15 +38,17 @@ public class NotificacaoServiceImpl implements NotificacaoService {
         notificacao = repository.save(notificacao);
         usuarioNotificacaoRepository.enviarParaTodosUsuarios(notificacao.getId());
         log.debug("Notificacao salva id={}", notificacao.getId());
+        log.info("NotificacaoServiceImpl.criar - concluído id={}", notificacao.getId());
         return mapper.toResponse(notificacao);
     }
 
     @Transactional
     @Override
-    public Page<NotificacaoResponseDto> naoLidas(Long idUsuario, Pageable pageable) {
-        log.info("NotificacaoServiceImpl.naoLidas - usuarioId={}", idUsuario);
+    public Page<NotificacaoResponseDto> naoLidas(Pageable pageable) {
         apagarNotificacoesComMaisDe30Dias();
-        Usuario usuario = usuarioService.getUsuario(idUsuario);
+        Long idUsuario = loginService.getUsuarioLogado().getUsuario().getId();
+        log.info("NotificacaoServiceImpl.naoLidas - iniciando idUsuario={} page={} size={}", idUsuario,
+                pageable.getPageNumber(), pageable.getPageSize());
         List<Notificacao> usuarioNotificacaos = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
         List<NotificacaoResponseDto> notificacoes = new ArrayList<>();
         for (Notificacao notificacao : usuarioNotificacaos) {
@@ -54,22 +56,26 @@ public class NotificacaoServiceImpl implements NotificacaoService {
                     notificacao.getDataDeCriacao()));
         }
         Page<NotificacaoResponseDto> page = new PageImpl<>(notificacoes, pageable, notificacoes.size());
+        log.info("NotificacaoServiceImpl.naoLidas - concluído idUsuario={} count={}", idUsuario, notificacoes.size());
         return page;
     }
 
     @Transactional
     @Override
-    public void marcarComoLidas(Long idUsuario) {
-        log.info("NotificacaoServiceImpl.marcarComoLidas - usuarioId={}", idUsuario);
+    public void marcarComoLidas() {
         apagarNotificacoesComMaisDe30Dias();
-        Usuario usuario = usuarioService.getUsuario(idUsuario);
+        Long idUsuario = loginService.getUsuarioLogado().getUsuario().getId();
+        log.info("NotificacaoServiceImpl.marcarComoLidas - iniciando idUsuario={}", idUsuario);
         usuarioNotificacaoRepository.marcarComoLidas(idUsuario);
+        log.info("NotificacaoServiceImpl.marcarComoLidas - concluído idUsuario={}", idUsuario);
     }
 
     @Transactional
     public void apagarNotificacoesComMaisDe30Dias() {
         LocalDateTime dataDeCorte = LocalDateTime.now().minusDays(30);
+        log.debug("NotificacaoServiceImpl.apagarNotificacoesComMaisDe30Dias - iniciando dataDeCorte={}", dataDeCorte);
         usuarioNotificacaoRepository.deleteByNotificacaoDataDeCriacaoBefore(dataDeCorte);
         repository.deleteByDataDeCriacaoBefore(dataDeCorte);
+        log.debug("NotificacaoServiceImpl.apagarNotificacoesComMaisDe30Dias - concluído dataDeCorte={}", dataDeCorte);
     }
 }

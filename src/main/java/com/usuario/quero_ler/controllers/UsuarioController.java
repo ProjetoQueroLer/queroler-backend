@@ -31,63 +31,71 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UsuarioDadosResponse> dadosDoUsuario(@PathVariable Long id) {
-        log.info("GET /usuarios/{} - dados do usuario", id);
-        return ResponseEntity.status(HttpStatus.OK).body(serviceI.getDadosDoUsuario(id));
+    @GetMapping
+    public ResponseEntity<UsuarioDadosResponse> dadosDoUsuario() {
+        log.info("GET /usuarios - dadosDoUsuario - iniciando");
+        UsuarioDadosResponse resp = serviceI.getDadosDoUsuario();
+        log.info("GET /usuarios - dadosDoUsuario - concluído");
+        return ResponseEntity.status(HttpStatus.OK).body(resp);
     }
 
-    @PutMapping("/{id}/dados-adicionais")
-    public ResponseEntity<Void> inserirDadosAdicionais(@PathVariable Long id,
-            @RequestBody @Valid UsuarioDadosComplementarRequest dto) {
-        log.info("PUT /usuarios/{}/dados-adicionais - inserir dados", id);
-        serviceI.adicionarDados(id, dto);
+    @PutMapping("/dados-adicionais")
+    public ResponseEntity<Void> inserirDadosAdicionais(@RequestBody @Valid UsuarioDadosComplementarRequest dto) {
+        log.info("PUT /usuarios/dados-adicionais - iniciando adição de dados complementares");
+        serviceI.adicionarDados(dto);
+        log.info("PUT /usuarios/dados-adicionais - dados adicionados");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping("/{id}/alterar-senha")
-    public ResponseEntity<Void> alterarSenha(@PathVariable Long id,
-            @RequestBody @Valid UsuarioAlterarSenhaRequest dto) {
-        log.info("PUT /usuarios/{}/alterar-senha", id);
-        serviceI.alterarSenha(id, dto);
+    @PutMapping("/alterar-senha")
+    public ResponseEntity<Void> alterarSenha(@RequestBody @Valid UsuarioAlterarSenhaRequest dto) {
+        log.info("PUT /usuarios/alterar-senha - iniciando alteração de senha");
+        serviceI.alterarSenha(dto);
+        log.info("PUT /usuarios/alterar-senha - senha alterada");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> alterar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoLeitorRequest dto) {
-        log.info("PUT /usuarios/{} - atualizar leitor", id);
-        serviceI.atualizar(id, dto);
+    @PutMapping
+    public ResponseEntity<Void> alterar(@RequestBody @Valid UsuarioAtualizadoLeitorRequest dto) {
+        log.info("PUT /usuarios - iniciar atualização (leitor)");
+        serviceI.atualizar(dto);
+        log.info("PUT /usuarios - atualização (leitor) concluída");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping("/{id}/administrador")
-    public ResponseEntity<Void> alterar(@PathVariable Long id,
-            @RequestBody @Valid UsuarioAtualizadoAdministradorRequest dto) {
-        log.info("PUT /usuarios/{} - atualizar administrador", id);
-        serviceI.atualizar(id, dto);
+    @PutMapping("/administrador")
+    public ResponseEntity<Void> alterar(@RequestBody @Valid UsuarioAtualizadoAdministradorRequest dto) {
+        log.info("PUT /usuarios/administrador - iniciar atualização (administrador)");
+        serviceI.atualizar(dto);
+        log.info("PUT /usuarios/administrador - atualização (administrador) concluída");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirPerfil(@PathVariable Long id) {
-        log.info("DELETE /usuarios/{} - excluir perfil", id);
-        serviceI.excluirPerfil(id);
+    @DeleteMapping
+    public ResponseEntity<Void> excluirPerfil() {
+        log.info("DELETE /usuarios - excluir perfil - iniciando");
+        serviceI.excluirPerfil();
+        log.info("DELETE /usuarios - excluir perfil - concluído");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PostMapping("/{id}/livro")
-    public ResponseEntity<Void> adicionarLivro(@PathVariable Long id,
-            @RequestParam Long idLivro,
+    @PostMapping("/livro")
+    public ResponseEntity<Void> adicionarLivro(@RequestParam Long idLivro,
             @RequestParam LivroStatus status) {
-        log.info("POST /usuarios/{}/livro - adicionar livro {} status={}", id, idLivro, status);
-        serviceI.adicionarLivro(id, idLivro, status);
+
+        log.info("POST /usuarios/livro - adicionar livro id={} status={}", idLivro, status);
+        serviceI.adicionarLivro(idLivro, status);
+        log.info("POST /usuarios/livro - livro adicionado");
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/foto")
     public ResponseEntity<byte[]> buscarFoto() {
+        log.info("GET /usuarios/foto - buscando foto do usuário");
+        byte[] foto = serviceI.buscarFoto();
+        log.info("GET /usuarios/foto - foto recuperada ({} bytes)", foto != null ? foto.length : 0);
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
-                .body(serviceI.buscarFoto());
+                .body(foto);
     }
 }

@@ -3,6 +3,7 @@ package com.usuario.quero_ler.models;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 @Setter
 @Builder
 @Entity
@@ -30,19 +32,15 @@ public class DiarioDeLeitura {
     private LocalDateTime terminoDaLeitura;
     private Integer paginasLidas;
 
-    @OneToMany(
-            mappedBy = "diarioDeLeitura",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "diarioDeLeitura", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AcompanhamentoDeLeitura> comentarios = new ArrayList<>();
-    private int nota;
+    private Integer nota;
     private String tituloDaResenha;
 
     @Column(columnDefinition = "TEXT")
     private String resenha;
 
-    public void adicionarComentario(AcompanhamentoDeLeitura comentario){
+    public void adicionarComentario(AcompanhamentoDeLeitura comentario) {
         comentarios.add(comentario);
     }
 }

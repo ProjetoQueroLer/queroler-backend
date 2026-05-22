@@ -234,11 +234,10 @@ class LivroControllerTest {
     void deveAlterarStatusDoLivro() throws Exception {
 
         Long idLivro = 1L;
-        Long idUsuario = 2L;
         LivroStatus status = LivroStatus.LIVROS_LIDOS;
 
         mockMvc.perform(
-                        put("/livros/{id}/usuario/{idUsuario}", idLivro, idUsuario)
+                        put("/livros/{id}/usuario", idLivro)
                                 .param("status", status.name())
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -246,29 +245,24 @@ class LivroControllerTest {
 
         verify(serviceI).alterarStatusDoLivroNoUsuario(
                 eq(idLivro),
-                eq(idUsuario),
                 eq(status)
         );
-        verify(serviceI).alterarStatusDoLivroNoUsuario(idLivro,idUsuario, status);
     }
 
     @Test
     @DisplayName("Deve retornar livros do usuário para tela de leitura com sucesso")
     void deveRetornarLivrosTelaDeLeituraDoUsuario() throws Exception {
 
-        Long idUsuario = 1L;
-
         LivroTelaLeituraResponse response = LivroFixture.responseTelaDeLeitura(LivroStatus.LIVROS_QUE_QUERO_LER);
         Page<LivroTelaLeituraResponse> page =
                 new PageImpl<>(List.of(response));
 
         when(serviceI.getLivrosTelaDeLeituraDoUsuario(
-                eq(idUsuario),
                 any(Pageable.class)
         )).thenReturn(page);
 
         mockMvc.perform(
-                        get("/livros/tela_de_leitura/usuario/{id}", idUsuario)
+                        get("/livros/tela_de_leitura")
                                 .param("page", "0")
                                 .param("size", "10")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -277,7 +271,6 @@ class LivroControllerTest {
                 .andExpect(jsonPath("$.content[0]").exists());
 
         verify(serviceI).getLivrosTelaDeLeituraDoUsuario(
-                eq(idUsuario),
                 any(Pageable.class)
         );
     }
@@ -286,18 +279,15 @@ class LivroControllerTest {
     @DisplayName("Deve retornar livros detalhado do usuário com sucesso")
     void deveRetornarLivrosDetalhadosDoUsuario() throws Exception {
 
-        Long idUsuario = 1L;
-
         LivroDetalhadoResponse response = LivroFixture.responseDetalhado(LivroStatus.LIVROS_QUE_QUERO_LER);
         Page<LivroDetalhadoResponse> page = new PageImpl<>(List.of(response));
 
         when(serviceI.getLivrosDoUsuario(
-                eq(idUsuario),
                 any(Pageable.class)
         )).thenReturn(page);
 
         mockMvc.perform(
-                        get("/livros/detalhados/usuario/{id}", idUsuario)
+                        get("/livros/detalhados")
                                 .param("page", "0")
                                 .param("size", "10")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -306,7 +296,6 @@ class LivroControllerTest {
                 .andExpect(jsonPath("$.content[0]").exists());
 
         verify(serviceI).getLivrosDoUsuario(
-                eq(idUsuario),
                 any(Pageable.class)
         );
     }

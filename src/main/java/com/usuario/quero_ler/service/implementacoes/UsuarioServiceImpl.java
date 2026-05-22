@@ -17,6 +17,9 @@ import com.usuario.quero_ler.utils.Senhas;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,20 +33,19 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class UsuarioServiceImpl implements UsuarioService {
-    private final LoginService loginService;
     private final UsuarioRepository repository;
     private final UserRepository userRepository;
     private final UsuarioMapper mapper;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
     private final UsuarioLivroRepository usuarioLivroRepository;
     private final LivroService livroService;
+    private final LoginService loginService;
 
     @Transactional
     @Override
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
-        log.info("UsuarioServiceImpl.criar - email={}", dto.email());
-
-        Senhas.validarIguais(dto.senha(), dto.confirmarSenha());
+        log.info("UsuarioServiceImpl.criar - iniciando email={}", dto.email());
+        Senhas.validarSenhasIguais(dto.senha(), dto.confirmarSenha());
         User user = loginService.criar(dto, UsuarioProfile.LEITOR);
         Usuario usuario = mapper.toEntity(dto);
 
@@ -58,75 +60,91 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setUser(user);
         usuario = repository.save(usuario);
         UsuarioResponseDto resp = mapper.toResponse(usuario);
-        log.info("Usuario criado id={}", usuario.getId());
+        log.info("UsuarioServiceImpl.criar - concluído id={}", usuario.getId());
         return resp;
     }
 
     @Override
-    public void adicionarDados(Long id, UsuarioDadosComplementarRequest dto) {
-        log.info("UsuarioServiceImpl.adicionarDados - id={}", id);
-        Usuario usuario = getUsuario(id);
+    public void adicionarDados(UsuarioDadosComplementarRequest dto) {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
+        log.info("UsuarioServiceImpl.adicionarDados - iniciando id={}", usuario.getId());
         usuario = mapper.complementarCadastro(usuario, dto);
         usuario = repository.save(usuario);
+        log.info("UsuarioServiceImpl.adicionarDados - concluído id={}", usuario.getId());
     }
 
     @Override
-    public UsuarioDadosResponse getDadosDoUsuario(Long id) {
-        log.debug("UsuarioServiceImpl.getDadosDoUsuario - id={}", id);
-        Usuario usuario = getUsuario(id);
-        return mapper.toResponseDados(usuario);
+    public UsuarioDadosResponse getDadosDoUsuario() {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
+        log.debug("UsuarioServiceImpl.getDadosDoUsuario - id={}", usuario.getId());
+        UsuarioDadosResponse resp = mapper.toResponseDados(usuario);
+        log.debug("UsuarioServiceImpl.getDadosDoUsuario - concluído id={}", usuario.getId());
+        return resp;
     }
 
     @Override
-    public void atualizar(Long id, UsuarioAtualizadoLeitorRequest dto) {
-        log.info("UsuarioServiceImpl.atualizar (leitor) - id={}", id);
-        Usuario usuario = getUsuario(id);
+    public void atualizar(UsuarioAtualizadoLeitorRequest dto) {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
+        log.info("UsuarioServiceImpl.atualizar (leitor) - iniciando id={}", usuario.getId());
         usuario = mapper.update(usuario, dto);
         usuario = repository.save(usuario);
+        log.info("UsuarioServiceImpl.atualizar (leitor) - concluído id={}", usuario.getId());
     }
 
     @Override
-    public void atualizar(Long id, UsuarioAtualizadoAdministradorRequest dto) {
-        log.info("UsuarioServiceImpl.atualizar (administrador) - id={}", id);
-        Usuario usuario = getUsuario(id);
+    public void atualizar(UsuarioAtualizadoAdministradorRequest dto) {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
+        log.info("UsuarioServiceImpl.atualizar (administrador) - iniciando id={}", usuario.getId());
         usuario = mapper.update(usuario, dto);
         repository.save(usuario);
+        log.info("UsuarioServiceImpl.atualizar (administrador) - concluído id={}", usuario.getId());
     }
 
     @Override
-    public void excluirPerfil(Long id) {
-        log.info("UsuarioServiceImpl.excluirPerfil - id={}", id);
-        Usuario usuario = getUsuario(id);
+    public void excluirPerfil() {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
+        log.info("UsuarioServiceImpl.excluirPerfil - iniciando id={}", usuario.getId());
         if (usuario.getUser().getProfile().equals(UsuarioProfile.LEITOR)) {
-            List<UsuarioNotificacao> notificacoes = usuarioNotificacaoRepository.findByUsuarioId(id);
+            List<UsuarioNotificacao> notificacoes = usuarioNotificacaoRepository.findByUsuarioId(usuario.getId());
             for (UsuarioNotificacao un : notificacoes) {
                 usuarioNotificacaoRepository.delete(un);
             }
             repository.delete(usuario);
+            log.info("UsuarioServiceImpl.excluirPerfil - concluído id={}", usuario.getId());
         } else {
+            log.warn("UsuarioServiceImpl.excluirPerfil - permissão negada id={}", usuario.getId());
             throw new UsuarioSemPermissaoParaAcaoException("Ação não permitida para este usuário.");
         }
     }
 
     @Override
-    public void alterarSenha(Long id, UsuarioAlterarSenhaRequest dto) {
-        log.info("UsuarioServiceImpl.alterarSenha - id={}", id);
+    public void alterarSenha(UsuarioAlterarSenhaRequest dto) {
+        log.info("UsuarioServiceImpl.alterarSenha - iniciando");
         Senhas.validar(dto.senhaNova());
-        Usuario usuario = getUsuario(id);
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
         User user = usuario.getUser();
+        if (!Senhas.validarSenhasIguais(dto.senhaAtual(), user.getSenha())) {
+            log.warn("UsuarioServiceImpl.alterarSenha - credenciais invalidas id={}", usuario.getId());
+            throw new CredenciaisInvalidasException("A senha digitada não corresponde a atual.");
+        }
         Senhas.validar(dto.senhaAtual(), user.getSenha());
         String novaSenha = Senhas.gerar(dto.senhaNova());
         user.setSenha(novaSenha);
-        user = userRepository.save(user);
+        userRepository.save(user);
+        log.info("UsuarioServiceImpl.alterarSenha - concluído id={}", usuario.getId());
     }
 
     @Override
-    public void adicionarLivro(Long id, Long idLivro, LivroStatus status) {
-        log.info("UsuarioServiceImpl.adicionarLivro - usuarioId={} livroId={} status={}", id, idLivro, status);
-        Usuario usuario = getUsuario(id);
+    public void adicionarLivro(Long idLivro, LivroStatus status) {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
+        log.info("UsuarioServiceImpl.adicionarLivro - iniciando idUsuario={} idLivro={} status={}", usuario.getId(),
+                idLivro, status);
 
-        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(id, idLivro);
+        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(usuario.getId(),
+                idLivro);
         if (usuarioLivro.isPresent()) {
+            log.warn("UsuarioServiceImpl.adicionarLivro - livro já presente idUsuario={} idLivro={}", usuario.getId(),
+                    idLivro);
             throw new UsuarioJaPossueOLivroException("O usuario já possue o livro na estante.");
         }
 
@@ -142,6 +160,17 @@ public class UsuarioServiceImpl implements UsuarioService {
         novoUsuarioLivro.setLivro(livro);
         novoUsuarioLivro.setStatus(status);
         usuarioLivroRepository.save(novoUsuarioLivro);
+        log.info("UsuarioServiceImpl.adicionarLivro - concluído idUsuario={} idLivro={}", usuario.getId(), idLivro);
+    }
+
+    public User getUsuarioLogado() {
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        User user = (User) authentication.getPrincipal();
+        log.debug("UsuarioServiceImpl.getUsuarioLogado - usuarioId={}", user.getId());
+        return user;
     }
 
     public Usuario getUsuario(Long id) {
@@ -154,22 +183,32 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public byte[] buscarFoto() {
         Usuario usuarioLogado = loginService.getUsuarioLogado().getUsuario();
+        log.info("UsuarioServiceImpl.buscarFoto - iniciando id={}", usuarioLogado.getId());
 
         if (usuarioLogado.getFoto() == null) {
+            log.warn("UsuarioServiceImpl.buscarFoto - foto nao cadastrada id={}", usuarioLogado.getId());
             throw new FotoNaoCadastradaException("Foto não cadastrada");
         } else {
-            return usuarioLogado.getFoto();
+            byte[] foto = usuarioLogado.getFoto();
+            log.info("UsuarioServiceImpl.buscarFoto - concluído id={} bytes={}", usuarioLogado.getId(), foto.length);
+            return foto;
         }
     }
 
     protected void validarFoto(MultipartFile foto) {
         try {
+            log.debug("validarFoto - iniciando size={} contentType={}",
+                    foto != null ? foto.getSize() : 0,
+                    foto != null ? foto.getContentType() : null);
+
             if (foto == null || foto.isEmpty()) {
+                log.debug("validarFoto - arquivo ausente ou vazio");
                 return;
             }
 
             long tamanhoMaximo = 10 * 1024 * 1024;
             if (foto.getSize() > tamanhoMaximo) {
+                log.warn("validarFoto - imagem muito grande size={}", foto.getSize());
                 throw new CapaForaDePadraoException("Imagem excede o tamanho máximo de 10MB");
             }
 
@@ -180,15 +219,20 @@ public class UsuarioServiceImpl implements UsuarioService {
 
             if (foto.getContentType() == null ||
                     !tiposPermitidos.contains(foto.getContentType())) {
+                log.warn("validarFoto - tipo inválido contentType={}", foto.getContentType());
                 throw new CapaForaDePadraoException("Formato inválido. Use JPG ou PNG");
             }
 
             BufferedImage imagem = ImageIO.read(foto.getInputStream());
             if (imagem == null) {
+                log.warn("validarFoto - arquivo não é uma imagem válida");
                 throw new CapaForaDePadraoException("Arquivo enviado não é uma imagem válida");
             }
 
+            log.debug("validarFoto - validação concluída");
+
         } catch (IOException e) {
+            log.error("validarFoto - erro ao processar imagem", e);
             throw new CapaForaDePadraoException("Erro ao processar imagem");
         }
     }

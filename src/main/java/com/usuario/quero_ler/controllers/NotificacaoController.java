@@ -17,16 +17,16 @@ import org.springframework.web.bind.annotation.*;
 public class NotificacaoController {
     private final NotificacaoService serviceI;
 
-    @GetMapping("/{id}/usuario")
-    public ResponseEntity<Page<NotificacaoResponseDto>> naoLidas(@PathVariable Long id, Pageable pageable) {
-        log.info("GET /notificacoes/{}/usuario - notificacoes nao lidas", id);
-        return ResponseEntity.status(HttpStatus.OK).body(serviceI.naoLidas(id, pageable));
+    @GetMapping
+    public ResponseEntity<Page<NotificacaoResponseDto>> naoLidas(Pageable pageable) {
+        log.info("GET /notificacoes - listar notificações não lidas. página: {}", pageable.getPageNumber());
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.naoLidas(pageable));
     }
 
-    @PutMapping("/{id}")
-    ResponseEntity<Void> marcarComoLidas(@PathVariable Long id) {
-        log.info("PUT /notificacoes/{} - marcar como lidas", id);
-        serviceI.marcarComoLidas(id);
+    @PutMapping
+    ResponseEntity<Void> marcarComoLidas() {
+        log.info("PUT /notificacoes - marcar como lidas");
+        serviceI.marcarComoLidas();
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

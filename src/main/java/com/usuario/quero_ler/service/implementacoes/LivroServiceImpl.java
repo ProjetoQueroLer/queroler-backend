@@ -12,6 +12,7 @@ import com.usuario.quero_ler.repository.LivroRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.service.AutorService;
 import com.usuario.quero_ler.service.LivroService;
+import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.utils.LivroFiltro;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,9 @@ public class LivroServiceImpl implements LivroService {
 
     private final LivroRepository repository;
     private final LivroMapper mapper;
-    private final AutorService AutorService;
+    private final AutorService autorService;
     private final UsuarioLivroRepository usuarioLivroRepository;
+    private final LoginService loginService;
 
     @Override
     public LivroResponse criar(LivroRequest dto, MultipartFile capaDoLivro) {
@@ -50,7 +52,7 @@ public class LivroServiceImpl implements LivroService {
 
         Livro livro = mapper.toEntity(dto);
         for (AutorRequest autorRequest : dto.autores()) {
-            Autor autor = AutorService.criar(autorRequest);
+            Autor autor = autorService.criar(autorRequest);
             livro.adicionarAutor(autor);
         }
         if (capaDoLivro != null && !capaDoLivro.isEmpty()) {
@@ -70,7 +72,10 @@ public class LivroServiceImpl implements LivroService {
 
     @Override
     public Page<LivroCardResponse> listar(Pageable pageable) {
+        log.info("LivroServiceImpl.listar - iniciando pagina={} size={}", pageable.getPageNumber(),
+                pageable.getPageSize());
         Page<LivroCardResponse> livros = repository.findAll(pageable).map(mapper::toCardResponse);
+        log.info("LivroServiceImpl.listar - concluído count={}", livros.getTotalElements());
         return livros;
     }
 
@@ -87,6 +92,7 @@ public class LivroServiceImpl implements LivroService {
 
     @Override
     public void inserirCapaDoLivro(Long id, MultipartFile capaDoLivro) {
+        log.info("LivroServiceImpl.inserirCapaDoLivro - iniciando id={}", id);
         validarCapaDoLivro(capaDoLivro);
         Livro livro = repository.findById(id)
                 .orElseThrow(() -> new LivroNaoEncontradoException("Livro não encontrado"));
@@ -99,6 +105,7 @@ public class LivroServiceImpl implements LivroService {
         }
 
         repository.save(livro);
+        log.info("LivroServiceImpl.inserirCapaDoLivro - concluído id={}", id);
     }
 
     @Override
@@ -135,12 +142,18 @@ public class LivroServiceImpl implements LivroService {
 
     protected void validarCapaDoLivro(MultipartFile capaDoLivro) {
         try {
+            log.debug("validarCapaDoLivro - iniciando size={} contentType={}",
+                    capaDoLivro != null ? capaDoLivro.getSize() : 0,
+                    capaDoLivro != null ? capaDoLivro.getContentType() : null);
+
             if (capaDoLivro == null || capaDoLivro.isEmpty()) {
+                log.debug("validarCapaDoLivro - arquivo ausente ou vazio");
                 return;
             }
 
             long tamanhoMaximo = 10 * 1024 * 1024;
             if (capaDoLivro.getSize() > tamanhoMaximo) {
+                log.warn("validarCapaDoLivro - imagem muito grande size={}", capaDoLivro.getSize());
                 throw new CapaForaDePadraoException("Imagem excede o tamanho máximo de 10MB");
             }
 
@@ -151,13 +164,17 @@ public class LivroServiceImpl implements LivroService {
 
             if (capaDoLivro.getContentType() == null ||
                     !tiposPermitidos.contains(capaDoLivro.getContentType())) {
+                log.warn("validarCapaDoLivro - tipo inválido contentType={}", capaDoLivro.getContentType());
                 throw new CapaForaDePadraoException("Formato inválido. Use JPG ou PNG");
             }
 
             BufferedImage imagem = ImageIO.read(capaDoLivro.getInputStream());
             if (imagem == null) {
+                log.warn("validarCapaDoLivro - arquivo não é uma imagem válida");
                 throw new CapaForaDePadraoException("Arquivo enviado não é uma imagem válida");
             }
+
+            log.debug("validarCapaDoLivro - validação concluída");
 
         } catch (IOException e) {
             log.error("Erro ao validar capa do livro", e);
@@ -173,15 +190,18 @@ public class LivroServiceImpl implements LivroService {
     }
 
     @Override
-    public Page<LivroDetalhadoResponse> getLivrosDoUsuario(Long id, Pageable pageable) {
-        log.info("LivroServiceImpl.getLivrosDoUsuario id={} page={}", id, pageable.getPageNumber());
+    public Page<LivroDetalhadoResponse> getLivrosDoUsuario(Pageable pageable) {
+        Long id = loginService.getUsuarioLogado().getUsuario().getId();
+        log.debug("LivroServiceImpl.getLivrosDoUsuario - iniciando id={}", id);
         Page<LivroDetalhadoResponse> livros = usuarioLivroRepository.findLivrosByUsuarioId(id, pageable)
                 .map(mapper::toLivroDetalhadoResponse);
+        log.debug("LivroServiceImpl.getLivrosDoUsuario - concluído id={} count={}", id, livros.getTotalElements());
         return livros;
     }
 
     @Override
-    public Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Long id, Pageable pageable) {
+    public Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Pageable pageable) {
+        Long id = loginService.getUsuarioLogado().getUsuario().getId();
         List<UsuarioLivro> usuarioLivros = usuarioLivroRepository.findAllByUsuarioId(id, pageable).stream().toList();
         List<LivroTelaLeituraResponse> resposta = new ArrayList<>();
 
@@ -195,14 +215,20 @@ public class LivroServiceImpl implements LivroService {
     }
 
     @Override
-    public void alterarStatusDoLivroNoUsuario(Long id, Long idUsuario, LivroStatus status) {
-        log.info("LivroServiceImpl.alterarStatusDoLivroNoUsuario livroId={} usuarioId={} status={}", id, idUsuario,
+    public void alterarStatusDoLivroNoUsuario(Long id, LivroStatus status) {
+        Long idUsuario = loginService.getUsuarioLogado().getUsuario().getId();
+        log.info("LivroServiceImpl.alterarStatusDoLivroNoUsuario - idLivro={} idUsuario={} status={}", id, idUsuario,
                 status);
         Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByLivro_IdAndUsuario_Id(id, idUsuario);
         if (usuarioLivro.isEmpty()) {
+            log.warn(
+                    "LivroServiceImpl.alterarStatusDoLivroNoUsuario - livro não encontrado na estante idLivro={} idUsuario={}",
+                    id, idUsuario);
             throw new LivroNaoEncontradoException("O usuario não possue o livro na estante.");
         }
         usuarioLivro.get().setStatus(status);
         usuarioLivroRepository.save(usuarioLivro.get());
+        log.info("LivroServiceImpl.alterarStatusDoLivroNoUsuario - status atualizado idLivro={} idUsuario={} status={}",
+                id, idUsuario, status);
     }
 }

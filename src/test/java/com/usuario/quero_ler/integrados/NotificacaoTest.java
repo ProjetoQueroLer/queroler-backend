@@ -45,15 +45,14 @@ public class NotificacaoTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Deve retornar as notificações de um usuario com sucesso!")
     public void deveRetornarAsNotificaçoesDeDeterminadoUsuarioComSucesso() {
-        Long id = 2L;
         LocalDateTime agora = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
 
         ResponseEntity<PageResponse<NotificacaoResponseDto>> resposta = template.exchange(
-                "/notificacoes/{id}/usuario",
+                "/notificacoes",
                 HttpMethod.GET,
             new HttpEntity<>(authHeaders),
                 new ParameterizedTypeReference<PageResponse<NotificacaoResponseDto>>() {
-                }, id
+                }
         );
         assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(resposta.getBody().content().size()).isEqualTo(1);
@@ -62,14 +61,12 @@ public class NotificacaoTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Deve marcar as notificações de um usuario como lidas!")
     public void deveMarcarAsNotificaçoesDeDeterminadoUsuarioComoLidas() {
-        Long id = 2L;
         LocalDateTime agora = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
 
         ResponseEntity<Void> resposta = template.exchange(
-                "/notificacoes/{id}",
+                "/notificacoes",
                 HttpMethod.PUT,
             new HttpEntity<>(authHeaders), Void.class
-                , id
         );
         assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
