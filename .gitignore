@@ -34,6 +34,3 @@ build/
 .vscode/
 ### Local env ###
 .env
-
-### GitHub ###
-.github/
