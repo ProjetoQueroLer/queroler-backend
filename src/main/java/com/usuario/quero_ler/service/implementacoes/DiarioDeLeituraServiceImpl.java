@@ -3,6 +3,7 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
+import com.usuario.quero_ler.mappers.DiarioLeituraMapper;
 import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -14,6 +15,8 @@ import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
 import com.usuario.quero_ler.repository.UsuarioLivroRepository;
 import com.usuario.quero_ler.service.DiarioDeLeituraService;
 import com.usuario.quero_ler.service.LoginService;
+
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
     private final DiarioDeLeituraRepository repository;
     private final UsuarioLivroRepository usuarioLivroRepository;
     private final LoginService loginService;
+		private final DiarioLeituraMapper diarioLeituraMapper;
 
     @Transactional
     @Override
@@ -45,6 +49,7 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
                 .nota(dto.nota())
                 .tituloDaResenha(dto.tituloDaResenha())
                 .resenha(dto.resenha())
+								.spoiler(dto.spoiler())
                 .build();
 
         if (repository.existsByUsuarioLivro(usuarioLivro)) {
@@ -55,15 +60,12 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
     }
 		public DiarioDeLeituraResponseDto buscarLeituraPorLivroEUsuario (Long livroId){
 
-			Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId()
+			Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
 
-			Optional <DiarioDeLeitura> diario = repository.findByUsuarioIdAndLivroId(usuarioId, livroId);
-			if (diario.isEmpty()){
+			DiarioDeLeitura diario = repository.findByUsuarioIdAndLivroId(usuarioId, livroId)
+			.orElseThrow(() -> new EntityNotFoundException("Diario não encontrado!"));
 				
-			}
-
-
-			return dto;
+			return diarioLeituraMapper.toResponse(diario);
 
 		}
 
