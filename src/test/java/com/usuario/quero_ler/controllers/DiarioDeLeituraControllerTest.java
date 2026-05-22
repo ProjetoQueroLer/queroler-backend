@@ -2,6 +2,7 @@ package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
+import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
 import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
 import com.usuario.quero_ler.fixtures.DiarioLeituraFixtures;
 import com.usuario.quero_ler.repository.UserRepository;
@@ -20,7 +21,10 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 
 @WebMvcTest(DiarioDeLeituraController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -70,5 +74,76 @@ class DiarioDeLeituraControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
                                 .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("PUT /leituras/{id} deve retornar 204 quando atualizar com sucesso")
+        void putAtualizarSucesso() throws Exception {
+                DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
+
+                DiarioDeLeituraAtualizadoRequest updateDto = new DiarioDeLeituraAtualizadoRequest(
+                                requestDto.inicioDaLeitura(),
+                                requestDto.terminoDaLeitura(),
+                                requestDto.paginasLidas(),
+                                requestDto.nota(),
+                                requestDto.tituloDaResenha(),
+                                requestDto.resenha());
+
+                String json = objectMapper.writeValueAsString(updateDto);
+
+                doNothing().when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
+
+                mockMvc.perform(put("/leituras/1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isNoContent());
+        }
+
+        @Test
+        @DisplayName("PUT /leituras/{id} deve retornar 404 quando diário não existir")
+        void putAtualizarNotFound() throws Exception {
+                DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
+
+                DiarioDeLeituraAtualizadoRequest atualizadoDto = new DiarioDeLeituraAtualizadoRequest(
+                                requestDto.inicioDaLeitura(),
+                                requestDto.terminoDaLeitura(),
+                                requestDto.paginasLidas(),
+                                requestDto.nota(),
+                                requestDto.tituloDaResenha(),
+                                requestDto.resenha());
+
+                String json = objectMapper.writeValueAsString(atualizadoDto);
+
+                doThrow(new DiarioNaoEncontradoException("Não encontrado"))
+                                .when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
+
+                mockMvc.perform(put("/leituras/1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("PUT /leituras/{id} deve retornar 409 quando usuário não tiver permissão")
+        void putAtualizarSemPermissao() throws Exception {
+                DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
+
+                DiarioDeLeituraAtualizadoRequest atualizadoDto = new DiarioDeLeituraAtualizadoRequest(
+                                requestDto.inicioDaLeitura(),
+                                requestDto.terminoDaLeitura(),
+                                requestDto.paginasLidas(),
+                                requestDto.nota(),
+                                requestDto.tituloDaResenha(),
+                                requestDto.resenha());
+
+                String json = objectMapper.writeValueAsString(atualizadoDto);
+
+                doThrow(new UsuarioSemPermissaoParaAcaoException("Sem permissão"))
+                                .when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
+
+                mockMvc.perform(put("/leituras/1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isConflict());
         }
 }

@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
+import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
 import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.models.User;
@@ -18,6 +19,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
+import com.usuario.quero_ler.models.DiarioDeLeitura;
+import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -166,6 +170,116 @@ class DiarioDeLeituraServiceImplTest {
 
                 assertThrows(DadosDiarioInvalidoException.class, () -> service.criar(dto));
 
+                verify(repository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Deve atualizar diario quando existir e pertencer ao usuario")
+        void deveAtualizarQuandoExistirEProprio() {
+                DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
+                                LocalDateTime.now().minusDays(2),
+                                LocalDateTime.now().minusDays(1),
+                                20,
+                                4,
+                                "Título atualizado",
+                                "resenha atualizada");
+
+                DiarioDeLeitura diario = new DiarioDeLeitura();
+                UsuarioLivroId id = new UsuarioLivroId();
+                id.setUsuarioId(1L);
+                id.setLivroId(2L);
+
+                UsuarioLivro usuarioLivro = new UsuarioLivro();
+                usuarioLivro.setId(id);
+                Usuario dono = new Usuario();
+                dono.setId(1L);
+                usuarioLivro.setUsuario(dono);
+
+                diario.setUsuarioLivro(usuarioLivro);
+
+                User user = new User();
+                Usuario usuario = new Usuario();
+                usuario.setId(1L);
+                user.setUsuario(usuario);
+                when(loginService.getUsuarioLogado()).thenReturn(user);
+
+                when(repository.findById(1L)).thenReturn(Optional.of(diario));
+
+                service.atualizar(1L, dto);
+
+                verify(repository).save(any(DiarioDeLeitura.class));
+        }
+
+        @Test
+        @DisplayName("Deve lançar DiarioNaoEncontradoException quando não existir")
+        void deveLancarQuandoDiarioNaoExistir() {
+                DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
+                                LocalDateTime.now().minusDays(2),
+                                LocalDateTime.now().minusDays(1),
+                                20,
+                                4,
+                                "Título",
+                                "resenha");
+
+                when(repository.findById(1L)).thenReturn(Optional.empty());
+
+                assertThrows(DiarioNaoEncontradoException.class, () -> service.atualizar(1L, dto));
+
+                verify(repository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar UsuarioSemPermissaoParaAcaoException quando diário não pertencer ao usuário")
+        void deveLancarQuandoNaoForDono() {
+                DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
+                                LocalDateTime.now().minusDays(2),
+                                LocalDateTime.now().minusDays(1),
+                                20,
+                                4,
+                                "Título",
+                                "resenha");
+
+                DiarioDeLeitura diario = new DiarioDeLeitura();
+                UsuarioLivroId id = new UsuarioLivroId();
+                id.setUsuarioId(2L);
+                id.setLivroId(2L);
+
+                UsuarioLivro usuarioLivro = new UsuarioLivro();
+                usuarioLivro.setId(id);
+                Usuario dono = new Usuario();
+                dono.setId(2L);
+                usuarioLivro.setUsuario(dono);
+
+                diario.setUsuarioLivro(usuarioLivro);
+
+                User user = new User();
+                Usuario usuario = new Usuario();
+                usuario.setId(1L);
+                user.setUsuario(usuario);
+                when(loginService.getUsuarioLogado()).thenReturn(user);
+
+                when(repository.findById(1L)).thenReturn(Optional.of(diario));
+
+                assertThrows(UsuarioSemPermissaoParaAcaoException.class, () -> service.atualizar(1L, dto));
+
+                verify(repository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar DadosDiarioInvalidoException quando payload for inválido")
+
+        void deveLancarQuandoPayloadInvalido() {
+                DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
+                                LocalDateTime.now().plusDays(1),
+                                null,
+                                0,
+                                3,
+                                "Título",
+                                "resenha");
+
+                assertThrows(DadosDiarioInvalidoException.class, () -> service.atualizar(1L, dto));
+
+                verify(repository, never()).findById(any());
                 verify(repository, never()).save(any());
         }
 }

@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.controllers;
 
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
+import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
 import jakarta.validation.Valid;
 import com.usuario.quero_ler.service.DiarioDeLeituraService;
 import lombok.RequiredArgsConstructor;
@@ -19,5 +20,11 @@ public class DiarioDeLeituraController {
     public ResponseEntity<Void> criar(@RequestBody @Valid DiarioDeLeituraRequestDto dto) {
         service.criar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> atualizar(@PathVariable Long id, @RequestBody DiarioDeLeituraAtualizadoRequest dto) {
+        service.atualizar(id, dto);
+        return ResponseEntity.noContent().build();
     }
 }
