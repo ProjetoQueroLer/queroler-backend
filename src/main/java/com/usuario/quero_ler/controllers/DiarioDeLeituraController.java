@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 
 @RequiredArgsConstructor
 @RestController
@@ -20,4 +21,10 @@ public class DiarioDeLeituraController {
         service.criar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+		@GetMapping
+		public ResponseEntity<DiarioDeLeituraResponseDto> buscarDiarioDeLeitura(@RequestParam Long livroId){
+			DiarioDeLeituraResponseDto response = service.buscarLeituraPorLivroEUsuario(livroId);
+			return ResponseEntity.status(HttpStatus.OK).body(response);
+		}
 }

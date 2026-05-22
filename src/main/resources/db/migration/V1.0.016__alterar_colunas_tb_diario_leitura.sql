@@ -1,2 +1,5 @@
-ALTER TABLE tb_diario_leitura MODIFY COLUMN  nota FLOAT;
-ALTER TABLE tb_diario_leitura ADD spoiler BOOLEAN;
+ALTER TABLE tb_diario_leitura 
+    ALTER COLUMN nota TYPE FLOAT;
+
+ALTER TABLE tb_diario_leitura 
+    ADD COLUMN spoiler BOOLEAN;
