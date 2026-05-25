@@ -59,7 +59,7 @@ class UsuarioMapperTest {
         Usuario usuario = UserFixture.entidadeCompleta(user);
         UsuarioAtualizadoLeitorRequest atualizacoes = new UsuarioAtualizadoLeitorRequest(
                 "nome atualizado","email atualizado", null,"cabralha",
-                "Bahia",null,null);
+                "Bahia",null);
 
         Usuario resposta = mapper.update(usuario,atualizacoes);
 

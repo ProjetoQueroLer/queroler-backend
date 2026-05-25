@@ -176,8 +176,34 @@ class UsuarioServiceImplTest {
         when(mapper.complementarCadastro(usuarioComDadosBasicos, dto)).thenReturn(usuarioComDadosCompletos);
         when(repository.save(usuarioComDadosCompletos)).thenReturn(usuarioComDadosCompletos);
 
-        service.adicionarDados(dto);
+        service.adicionarDados(dto,null);
 
+        verify(loginService).getUsuarioLogado();
+    }
+
+    @Test
+    @DisplayName("Deve complementar o cadastro do usuario incluindo foto;")
+    void deveAdicionarDadosComplementaresIncluindoFoto() {
+        UsuarioDadosComplementarRequest dto = UserFixture.requestDadosComplementares();
+        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
+        Usuario usuarioComDadosBasicos = UserFixture.entidadePrincipal(user);
+        Usuario usuarioComDadosCompletos = UserFixture.entidadeCompleta(user);
+        user.setUsuario(usuarioComDadosBasicos);
+        byte[] imagem = UserFixture.entidadeCompleta().getFoto();
+        MockMultipartFile foto = new MockMultipartFile(
+                "file",
+                "usuario.jpg",
+                "image/jpeg",
+                imagem
+        );
+        when(loginService.getUsuarioLogado()).thenReturn(user);
+        when(mapper.complementarCadastro(usuarioComDadosBasicos, dto)).thenReturn(usuarioComDadosCompletos);
+        when(repository.save(usuarioComDadosCompletos)).thenReturn(usuarioComDadosCompletos);
+
+        service.adicionarDados(dto,foto);
+
+        verify(mapper).complementarCadastro(usuarioComDadosBasicos,dto);
+        verify(repository).save(usuarioComDadosCompletos);
         verify(loginService).getUsuarioLogado();
     }
 
@@ -211,7 +237,7 @@ class UsuarioServiceImplTest {
         user.setUsuario(usuario);
         UsuarioAtualizadoLeitorRequest atualizacoes = new UsuarioAtualizadoLeitorRequest(
                 "Nome atualizado", "emailAtual@gmail.com", LocalDate.of(1978, 9, 12),
-                null, "cidade atualizada", null, null
+                null, "cidade atualizada", null
         );
 
         Usuario usuarioAtualizado = UserFixture.atualizar(usuario, atualizacoes);
@@ -220,28 +246,35 @@ class UsuarioServiceImplTest {
         when(mapper.update(usuario, atualizacoes)).thenReturn(usuarioAtualizado);
         when(repository.save(usuarioAtualizado)).thenReturn(usuarioAtualizado);
 
-        service.atualizar(atualizacoes);
+        service.atualizar(atualizacoes,null);
 
         verify(mapper).update(usuario, atualizacoes);
         verify(repository).save(usuarioAtualizado);
     }
 
     @Test
-    @DisplayName("Deve atualizar um perfil de administrador ou moderador .")
+    @DisplayName("Deve atualizar um perfil de administrador ou moderador, adicionar foto .")
     void deveAtualizarUmPerfilAdministradorOuModerador() {
         User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
         Usuario usuario = UserFixture.entidadeCompleta(user);
         user.setUsuario(usuario);
         UsuarioAtualizadoAdministradorRequest atualizacoes = new UsuarioAtualizadoAdministradorRequest(
-                LocalDate.of(1978, 9, 12), null, "cidade atualizada", null, null
+                LocalDate.of(1978, 9, 12), null, "cidade atualizada", null
         );
         Usuario usuarioAtualizado = UserFixture.atualizar(usuario, atualizacoes);
+        byte[] imagem = UserFixture.entidadeCompleta().getFoto();
+        MockMultipartFile foto = new MockMultipartFile(
+                "file",
+                "usuario.jpg",
+                "image/jpeg",
+                imagem
+        );
 
         when(loginService.getUsuarioLogado()).thenReturn(user);
         when(mapper.update(usuario, atualizacoes)).thenReturn(usuarioAtualizado);
         when(repository.save(usuarioAtualizado)).thenReturn(usuarioAtualizado);
 
-        service.atualizar(atualizacoes);
+        service.atualizar(atualizacoes,foto);
 
         verify(mapper).update(usuario, atualizacoes);
         verify(repository).save(usuarioAtualizado);
