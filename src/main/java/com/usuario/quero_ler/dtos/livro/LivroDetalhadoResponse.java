@@ -14,6 +14,6 @@ public record LivroDetalhadoResponse(
         String idioma,
         String isbn,
         String sinopse,
-        LocalDateTime dataDeCadstro,
+        LocalDateTime dataDeCadastro,
         List<AutorResponse> autores
 ){}
