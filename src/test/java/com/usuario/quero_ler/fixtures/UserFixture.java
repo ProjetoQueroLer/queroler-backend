@@ -23,6 +23,7 @@ public class UserFixture {
     private static final String CIDADE= "Valinhos";
     private static final String ESTADO = "São paulo";
     private static final String PAIS = "Brasil";
+    private static final Boolean senhaTrocada = false;
     private static final byte[] FOTO = carregarImagem();
 
     public static UsuarioRequestDto  requestDto(){
@@ -46,12 +47,11 @@ public class UserFixture {
 
     public static User userEntity(UsuarioProfile profile){
         String senhaHash = BCrypt.hashpw(SENHA, BCrypt.gensalt());
-        boolean senhaTrocada;
+        boolean senhaTrocada = false;
         if(profile.equals(UsuarioProfile.LEITOR)){
             senhaTrocada = true;
-        } else{
-            senhaTrocada = false;
         }
+
         return new User(2L,EMAIL,senhaHash,senhaTrocada,profile,null);
     }
 
