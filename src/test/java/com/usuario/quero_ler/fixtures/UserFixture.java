@@ -46,7 +46,13 @@ public class UserFixture {
 
     public static User userEntity(UsuarioProfile profile){
         String senhaHash = BCrypt.hashpw(SENHA, BCrypt.gensalt());
-        return new User(2L,EMAIL,senhaHash,profile,null);
+        boolean senhaTrocada;
+        if(profile.equals(UsuarioProfile.LEITOR)){
+            senhaTrocada = true;
+        } else{
+            senhaTrocada = false;
+        }
+        return new User(2L,EMAIL,senhaHash,senhaTrocada,profile,null);
     }
 
     public static Usuario entidadePrincipal(User user){

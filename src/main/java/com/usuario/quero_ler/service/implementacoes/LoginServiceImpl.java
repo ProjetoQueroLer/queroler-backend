@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
+import com.usuario.quero_ler.dtos.login.LoginResponseDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CredenciaisInvalidasException;
@@ -44,6 +45,9 @@ public class LoginServiceImpl implements LoginService {
 	@Override
 	public User criar(UsuarioRequestDto dto, UsuarioProfile profile) {
 		User user = new User();
+		if(profile.equals(UsuarioProfile.LEITOR)){
+			user.setSenhaTrocada(true);
+		}
 		Senhas.validar(dto.senha());
 		String senha = Senhas.gerar(dto.senha());
 		user.setUser(dto.email());
@@ -54,7 +58,7 @@ public class LoginServiceImpl implements LoginService {
 	}
 
 	@Override
-	public void login(LoginRequestDto dto, HttpServletResponse response) {
+	public LoginResponseDto login(LoginRequestDto dto, HttpServletResponse response) {
 		Senhas.validar(dto.senha());
 		User user = repository.findByUserIgnoreCase(dto.user())
 				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não cadastrado"));
@@ -74,6 +78,13 @@ public class LoginServiceImpl implements LoginService {
 
 		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
+		if(user.getProfile().equals(UsuarioProfile.ADMINISTRADOR) ||
+				user.getProfile().equals(UsuarioProfile.MODERADOR)){
+			if(user.getSenhaTrocada() == false){
+				return new LoginResponseDto(true);
+			}
+		}
+		return new LoginResponseDto(false);
 	}
 
 	@Override

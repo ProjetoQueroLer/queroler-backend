@@ -43,6 +43,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
         Senhas.validarSenhasIguais(dto.senha(), dto.confirmarSenha());
         User user = loginService.criar(dto, UsuarioProfile.LEITOR);
+
         Usuario usuario = mapper.toEntity(dto);
 
         if (foto != null && !foto.isEmpty()) {
@@ -102,15 +103,19 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public void alterarSenha(UsuarioAlterarSenhaRequest dto) {
         Senhas.validar(dto.senhaNova());
-        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
-        User user = usuario.getUser();
-        if (!Senhas.validarSenhasIguais(dto.senhaAtual(),user.getSenha())){
+        User user = loginService.getUsuarioLogado();
+        if (!Senhas.validarSenhasIguais(dto.senhaAtual(), user.getSenha())){
             throw new CredenciaisInvalidasException("A senha digitada não corresponde a atual.");
         }
         Senhas.validar(dto.senhaAtual(), user.getSenha());
         String novaSenha = Senhas.gerar(dto.senhaNova());
+        if (user.getProfile().equals(UsuarioProfile.ADMINISTRADOR) || user.getProfile().equals(UsuarioProfile.MODERADOR)){
+            if(user.getSenhaTrocada() == false){
+                user.setSenhaTrocada(true);
+            }
+        }
         user.setSenha(novaSenha);
-        user = userRepository.save(user);
+        userRepository.save(user);
     }
 
     @Override

@@ -303,7 +303,7 @@ class UsuarioServiceImplTest {
     void deveAlterarSenhaComSucesso() {
         String token = "token-valido";
         String novaSenha = "Alterado253$";
-        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
+        User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
         Usuario usuario = UserFixture.entidadeCompleta(user);
         user.setUsuario(usuario);
         UsuarioAlterarSenhaRequest dto = new UsuarioAlterarSenhaRequest("Teste123&", novaSenha);
