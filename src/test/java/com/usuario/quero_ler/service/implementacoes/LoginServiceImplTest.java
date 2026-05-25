@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
+import com.usuario.quero_ler.dtos.login.LoginResponseDto;
 import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CredenciaisInvalidasException;
@@ -73,7 +74,24 @@ class LoginServiceImplTest {
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
         when(tokenService.generateToken(user)).thenReturn(token);
 
-        service.login(dto, response);
+        LoginResponseDto retorno = service.login(dto, response);
+
+        verify(tokenService).generateToken(user);
+    }
+
+    @Test
+    @DisplayName("Deve validar retornar primeiro login para administrador ou moderador")
+    void deveRerornarPrimeiroLogin() {
+        User user = UserFixture.userEntity(UsuarioProfile.ADMINISTRADOR);
+        LoginRequestDto dto = LoginFixture.requestDto();
+        String token = "token.mock";
+
+        when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
+        when(tokenService.generateToken(user)).thenReturn(token);
+
+        LoginResponseDto retorno = service.login(dto, response);
+
+        assertEquals(true,retorno.primeiroLogin());
 
         verify(tokenService).generateToken(user);
     }
