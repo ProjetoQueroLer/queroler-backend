@@ -75,6 +75,7 @@ class DiarioDeLeituraControllerTest {
 		doThrow(new UsuarioLivroNaoEncontradoException("Não encontrado"))
 				.when(service).criar(any(DiarioDeLeituraRequestDto.class));
 
+<<<<<<< HEAD
 		mockMvc.perform(post("/leituras")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(json))

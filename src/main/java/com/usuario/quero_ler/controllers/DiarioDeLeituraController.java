@@ -23,11 +23,12 @@ public class DiarioDeLeituraController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-		@GetMapping
-		public ResponseEntity<DiarioDeLeituraResponseDto> buscarDiarioDeLeitura(@RequestParam Long livroId){
-			DiarioDeLeituraResponseDto response = service.buscarLeituraPorLivroEUsuario(livroId);
-			return ResponseEntity.status(HttpStatus.OK).body(response);
-		}
+	@GetMapping
+	public ResponseEntity<DiarioDeLeituraResponseDto> buscarDiarioDeLeitura(@RequestParam Long livroId){
+		DiarioDeLeituraResponseDto response = service.buscarLeituraPorLivroEUsuario(livroId);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
     @PutMapping("/{id}")
     public ResponseEntity<Void> atualizar(@PathVariable Long id, @RequestBody DiarioDeLeituraAtualizadoRequest dto) {
         service.atualizar(id, dto);

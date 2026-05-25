@@ -189,6 +189,7 @@ class DiarioDeLeituraServiceImplTest {
 				"resenha",
 				true);
 
+<<<<<<< HEAD
 		assertThrows(DadosDiarioInvalidoException.class, () -> service.criar(dto));
 
 		verify(repository, never()).save(any());
