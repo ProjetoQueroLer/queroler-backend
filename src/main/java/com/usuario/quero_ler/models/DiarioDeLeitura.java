@@ -13,7 +13,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@Getter
 @Builder
 @Entity
 @Table(name = "tb_diario_leitura")
@@ -36,7 +35,8 @@ public class DiarioDeLeitura {
     @OneToMany(mappedBy = "diarioDeLeitura", cascade = CascadeType.ALL, orphanRemoval = true)
 		@Builder.Default
     private List<AcompanhamentoDeLeitura> comentarios = new ArrayList<>();
-    private double nota;
+		@Builder.Default
+    private Double nota = 0.0;
     private String tituloDaResenha;
 
 		@Builder.Default

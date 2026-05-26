@@ -24,10 +24,10 @@ public class DiarioLeituraMapper {
         diario.setInicioDaLeitura(dto.inicioDaLeitura());
 				diario.setTerminoDaLeitura(dto.terminoDaLeitura());
         diario.setPaginasLidas(dto.paginasLidas());
-        diario.setNota(dto.nota());
+        diario.setNota(dto.nota() != null ? dto.nota(): 0.0 );
         diario.setTituloDaResenha(dto.tituloDaResenha());
         diario.setResenha(dto.resenha());
-				diario.setSpoiler(dto.spoiler());
+				diario.setSpoiler(dto.spoiler() != null ? dto.spoiler(): false);
         return diario;
     }
 		public DiarioDeLeituraResponseDto toResponse(DiarioDeLeitura diario){
@@ -45,10 +45,10 @@ public class DiarioLeituraMapper {
 					diario.getInicioDaLeitura(),
 					diario.getTerminoDaLeitura(),
 					acompanhamentos,
-					diario.getNota(),
+					diario.getNota() != null ? diario.getNota(): 0.0,
 					diario.getTituloDaResenha(),
 					diario.getResenha(),
-					diario.isSpoiler()
+					diario.getSpoiler() != null ? diario.getSpoiler(): false
 					);
 			
 		}

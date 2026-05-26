@@ -46,10 +46,10 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
                 .inicioDaLeitura(dto.inicioDaLeitura())
                 .terminoDaLeitura(dto.terminoDaLeitura())
                 .paginasLidas(dto.paginasLidas())
-                .nota(dto.nota())
+                .nota(dto.nota() != null ? dto.nota():0.0)
                 .tituloDaResenha(dto.tituloDaResenha())
                 .resenha(dto.resenha())
-								.spoiler(dto.spoiler())
+								.spoiler(dto.spoiler() != null ? dto.spoiler():false)
                 .build();
 
         if (repository.existsByUsuarioLivro(usuarioLivro)) {
@@ -58,6 +58,7 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 
         repository.save(diario);
     }
+		@Override
 		public DiarioDeLeituraResponseDto buscarLeituraPorLivroEUsuario (Long livroId){
 
 			Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
