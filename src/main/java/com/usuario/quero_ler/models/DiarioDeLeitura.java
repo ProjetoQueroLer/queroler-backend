@@ -40,7 +40,7 @@ public class DiarioDeLeitura {
     private String tituloDaResenha;
 
 		@Builder.Default
-		boolean spoiler = true;
+		private Boolean spoiler = true;
 
     @Column(columnDefinition = "TEXT")
     private String resenha;
