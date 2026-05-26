@@ -43,6 +43,10 @@ public class User implements UserDetails {
     @Column(name = "senha", nullable = false)
     private String senha;
 
+    @Builder.Default
+    @Column(name = "senha_trocada", nullable = false)
+    private Boolean senhaTrocada= false;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "perfil", nullable = false)
     private UsuarioProfile profile;
