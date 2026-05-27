@@ -195,8 +195,6 @@ jobs:
             # Cleanup any existing containers and volumes
             sudo docker rm -f postgres-queroler-${{ matrix.target }} 2>/dev/null || true
             sudo docker rm -f api-queroler-${{ matrix.target }} 2>/dev/null || true
-            sudo docker volume rm -f postgres_data_${{ matrix.target }} 2>/dev/null || true
-
             mkdir -p ~/queroler-deploy-${{ matrix.target }}
             cd ~/queroler-deploy-${{ matrix.target }}
 
