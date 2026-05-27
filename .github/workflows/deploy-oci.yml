@@ -71,6 +71,7 @@ jobs:
     environment: ${{ matrix.target }}
 
     env:
+      TF_WORKSPACE: queroler-backend-${{ matrix.target }}
       DB_NAME: ${{ matrix.target == 'production' && 'db_quero_ler_v2' || format('db_quero_ler_{0}', matrix.target) }}
       TF_VAR_name: ${{ vars.TF_VAR_NAME }}-${{ matrix.target }}
       TF_VAR_how_many_nodes: ${{ matrix.target == 'production' && vars.TF_VAR_PROD_NODES || vars.TF_VAR_DEV_NODES }}
@@ -102,7 +103,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: terraform-infra
-        run: terraform init -input=false -backend-config="workspaces={name=\"queroler-backend-${{ matrix.target }}\"}"
+        run: terraform init -input=false
         env:
           TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
           TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
