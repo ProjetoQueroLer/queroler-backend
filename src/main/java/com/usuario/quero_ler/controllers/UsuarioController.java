@@ -1,8 +1,10 @@
 package com.usuario.quero_ler.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.exceptions.especies.AusenciaDeDadosException;
 import com.usuario.quero_ler.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +26,10 @@ public class UsuarioController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UsuarioResponseDto> criar(@RequestPart(value = "imagem", required = false) MultipartFile foto,
             @RequestPart("dados") String dadosJson) throws Exception {
+        log.info("POST /usuarios - criar - iniciando");
         UsuarioRequestDto dto = mapper.readValue(dadosJson, UsuarioRequestDto.class);
-        log.info("POST /usuarios - criar usuario: {}", dto.email());
         UsuarioResponseDto resp = serviceI.criar(dto, foto);
-        log.info("Usuario criado: id={}", resp != null ? resp.id() : null);
+        log.info("POST /usuarios - criar - concluído para usuarioId={}", resp.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
@@ -39,11 +41,23 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.OK).body(resp);
     }
 
-    @PutMapping("/dados-adicionais")
-    public ResponseEntity<Void> inserirDadosAdicionais(@RequestBody @Valid UsuarioDadosComplementarRequest dto) {
-        log.info("PUT /usuarios/dados-adicionais - iniciando adição de dados complementares");
-        serviceI.adicionarDados(dto);
-        log.info("PUT /usuarios/dados-adicionais - dados adicionados");
+    @PutMapping(value = "/dados-adicionais", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> inserirDadosAdicionais(@RequestPart(value = "dados", required = false) String dados,
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem) throws JsonProcessingException {
+
+        UsuarioDadosComplementarRequest dto = null;
+
+        if (dados == null && (imagem == null || imagem.isEmpty())) {
+            throw new AusenciaDeDadosException("É necessário enviar dados ou imagem.");
+        }
+
+        if (dados != null) {
+            dto = mapper.readValue(dados, UsuarioDadosComplementarRequest.class);
+        }
+
+        log.info("PUT /usuarios/dados-adicionais - iniciando");
+        serviceI.adicionarDados(dto, imagem);
+        log.info("PUT /usuarios/dados-adicionais - concluído");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -55,19 +69,43 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping
-    public ResponseEntity<Void> alterar(@RequestBody @Valid UsuarioAtualizadoLeitorRequest dto) {
-        log.info("PUT /usuarios - iniciar atualização (leitor)");
-        serviceI.atualizar(dto);
-        log.info("PUT /usuarios - atualização (leitor) concluída");
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> alterar(@RequestPart(value = "dados", required = false) String dados,
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem) throws JsonProcessingException {
+
+        UsuarioAtualizadoLeitorRequest dto = null;
+
+        if (dados == null && (imagem == null || imagem.isEmpty())) {
+            throw new AusenciaDeDadosException("É necessário enviar dados ou imagem.");
+        }
+
+        if (dados != null) {
+            dto = mapper.readValue(dados, UsuarioAtualizadoLeitorRequest.class);
+        }
+
+        log.info("PUT /usuarios - atualizar - iniciando");
+        serviceI.atualizar(dto, imagem);
+        log.info("PUT /usuarios - atualizar - concluído");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping("/administrador")
-    public ResponseEntity<Void> alterar(@RequestBody @Valid UsuarioAtualizadoAdministradorRequest dto) {
-        log.info("PUT /usuarios/administrador - iniciar atualização (administrador)");
-        serviceI.atualizar(dto);
-        log.info("PUT /usuarios/administrador - atualização (administrador) concluída");
+    @PutMapping(value = "/administrador", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> alterarAdministrador(@RequestPart(value = "dados", required = false) String dados,
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem) throws JsonProcessingException {
+
+        UsuarioAtualizadoAdministradorRequest dto = null;
+
+        if (dados == null && (imagem == null || imagem.isEmpty())) {
+            throw new AusenciaDeDadosException("É necessário enviar dados ou imagem.");
+        }
+
+        if (dados != null) {
+            dto = mapper.readValue(dados, UsuarioAtualizadoAdministradorRequest.class);
+        }
+
+        log.info("PUT /usuarios/administrador - iniciando");
+        serviceI.atualizar(dto, imagem);
+        log.info("PUT /usuarios/administrador - concluído");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -82,18 +120,17 @@ public class UsuarioController {
     @PostMapping("/livro")
     public ResponseEntity<Void> adicionarLivro(@RequestParam Long idLivro,
             @RequestParam LivroStatus status) {
-
-        log.info("POST /usuarios/livro - adicionar livro id={} status={}", idLivro, status);
+        log.info("POST /usuarios/livro - iniciando adicionarLivro usuarioId=?, livroId={}", idLivro);
         serviceI.adicionarLivro(idLivro, status);
-        log.info("POST /usuarios/livro - livro adicionado");
+        log.info("POST /usuarios/livro - concluído livroId={}", idLivro);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/foto")
     public ResponseEntity<byte[]> buscarFoto() {
-        log.info("GET /usuarios/foto - buscando foto do usuário");
+        log.info("GET /usuarios/foto - iniciando");
         byte[] foto = serviceI.buscarFoto();
-        log.info("GET /usuarios/foto - foto recuperada ({} bytes)", foto != null ? foto.length : 0);
+        log.info("GET /usuarios/foto - concluído tamanho={}", foto != null ? foto.length : 0);
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(foto);

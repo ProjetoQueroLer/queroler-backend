@@ -47,16 +47,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         log.info("UsuarioServiceImpl.criar - iniciando email={}", dto.email());
         Senhas.validarSenhasIguais(dto.senha(), dto.confirmarSenha());
         User user = loginService.criar(dto, UsuarioProfile.LEITOR);
-        Usuario usuario = mapper.toEntity(dto);
 
-        if (foto != null && !foto.isEmpty()) {
-            validarFoto(foto);
-            try {
-                usuario.setFoto(foto.getBytes());
-            } catch (IOException e) {
-                throw new CapaForaDePadraoException("Erro ao ler imagem" + e);
-            }
-        }
+        Usuario usuario = mapper.toEntity(dto);
+        usuario = validarFoto(usuario, foto);
+
         usuario.setUser(user);
         usuario = repository.save(usuario);
         UsuarioResponseDto resp = mapper.toResponse(usuario);
@@ -65,10 +59,10 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void adicionarDados(UsuarioDadosComplementarRequest dto) {
+    public void adicionarDados(UsuarioDadosComplementarRequest dto, MultipartFile foto) {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
-        log.info("UsuarioServiceImpl.adicionarDados - iniciando id={}", usuario.getId());
-        usuario = mapper.complementarCadastro(usuario, dto);
+        usuario = validarFoto(usuario, foto);
+        usuario = dto != null ? mapper.complementarCadastro(usuario, dto) : usuario;
         usuario = repository.save(usuario);
         log.info("UsuarioServiceImpl.adicionarDados - concluído id={}", usuario.getId());
     }
@@ -83,19 +77,19 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void atualizar(UsuarioAtualizadoLeitorRequest dto) {
+    public void atualizar(UsuarioAtualizadoLeitorRequest dto, MultipartFile foto) {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
-        log.info("UsuarioServiceImpl.atualizar (leitor) - iniciando id={}", usuario.getId());
-        usuario = mapper.update(usuario, dto);
+        usuario = validarFoto(usuario, foto);
+        usuario = (dto != null ? mapper.update(usuario, dto) : usuario);
         usuario = repository.save(usuario);
         log.info("UsuarioServiceImpl.atualizar (leitor) - concluído id={}", usuario.getId());
     }
 
     @Override
-    public void atualizar(UsuarioAtualizadoAdministradorRequest dto) {
+    public void atualizar(UsuarioAtualizadoAdministradorRequest dto, MultipartFile foto) {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
-        log.info("UsuarioServiceImpl.atualizar (administrador) - iniciando id={}", usuario.getId());
-        usuario = mapper.update(usuario, dto);
+        usuario = validarFoto(usuario, foto);
+        usuario = dto != null ? mapper.update(usuario, dto) : usuario;
         repository.save(usuario);
         log.info("UsuarioServiceImpl.atualizar (administrador) - concluído id={}", usuario.getId());
     }
@@ -121,17 +115,20 @@ public class UsuarioServiceImpl implements UsuarioService {
     public void alterarSenha(UsuarioAlterarSenhaRequest dto) {
         log.info("UsuarioServiceImpl.alterarSenha - iniciando");
         Senhas.validar(dto.senhaNova());
-        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
-        User user = usuario.getUser();
+        User user = loginService.getUsuarioLogado();
         if (!Senhas.validarSenhasIguais(dto.senhaAtual(), user.getSenha())) {
-            log.warn("UsuarioServiceImpl.alterarSenha - credenciais invalidas id={}", usuario.getId());
             throw new CredenciaisInvalidasException("A senha digitada não corresponde a atual.");
         }
         Senhas.validar(dto.senhaAtual(), user.getSenha());
         String novaSenha = Senhas.gerar(dto.senhaNova());
+        if (user.getProfile().equals(UsuarioProfile.ADMINISTRADOR)
+                || user.getProfile().equals(UsuarioProfile.MODERADOR)) {
+            if (user.getSenhaTrocada() == false) {
+                user.setSenhaTrocada(true);
+            }
+        }
         user.setSenha(novaSenha);
         userRepository.save(user);
-        log.info("UsuarioServiceImpl.alterarSenha - concluído id={}", usuario.getId());
     }
 
     @Override
@@ -193,6 +190,18 @@ public class UsuarioServiceImpl implements UsuarioService {
             log.info("UsuarioServiceImpl.buscarFoto - concluído id={} bytes={}", usuarioLogado.getId(), foto.length);
             return foto;
         }
+    }
+
+    protected Usuario validarFoto(Usuario usuario, MultipartFile foto) {
+        if (foto != null && !foto.isEmpty()) {
+            validarFoto(foto);
+            try {
+                usuario.setFoto(foto.getBytes());
+            } catch (IOException e) {
+                throw new CapaForaDePadraoException("Erro ao ler imagem" + e);
+            }
+        }
+        return usuario;
     }
 
     protected void validarFoto(MultipartFile foto) {

@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.controllers;
 
 import com.usuario.quero_ler.dtos.login.LoginRequestDto;
+import com.usuario.quero_ler.dtos.login.LoginResponseDto;
 import com.usuario.quero_ler.service.LoginService;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,11 +22,11 @@ public class LoginController {
     private final LoginService serviceI;
 
     @PostMapping
-    public ResponseEntity<Void> login(@RequestBody @Valid LoginRequestDto autenticacaoDto,
+    public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid LoginRequestDto autenticacaoDto,
             HttpServletResponse response) {
         log.info("POST /logins - login user={}", autenticacaoDto.user());
-        serviceI.login(autenticacaoDto, response);
+        LoginResponseDto resposta = serviceI.login(autenticacaoDto, response);
         log.info("Login realizado: user={}", autenticacaoDto.user());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(resposta);
     }
 }

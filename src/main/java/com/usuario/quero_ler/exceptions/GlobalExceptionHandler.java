@@ -149,6 +149,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
+    @ExceptionHandler(AusenciaDeDadosException.class)
+    public ResponseEntity<Object> handlerAusenciaDeDadosException(AusenciaDeDadosException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
     @ExceptionHandler(DocumentoNaoPodeSerDeletadoException.class)
     public ResponseEntity<Object> handlerDocumentoNaoPodeSerDeletadoException(DocumentoNaoPodeSerDeletadoException ex) {
         log.error("DocumentoNaoPodeSerDeletadoException: {}", ex.getMessage());
