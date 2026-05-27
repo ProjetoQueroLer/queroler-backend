@@ -8,8 +8,13 @@ import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.repository.AcompanhamentoDeLeituraRepository;
 import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
 import com.usuario.quero_ler.service.AcompanhamentoDeLeituraService;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -20,10 +25,10 @@ public class AcompanhamentoDeLeituraServiceImpl implements AcompanhamentoDeLeitu
     private final AcompanhamentoDeLeituraRepository acompanhamentoRepository;
 
     @Override
-    public java.util.List<AcompanhamentoResponseDto> listarPorLivro(Long livroId) {
-        java.util.List<AcompanhamentoDeLeitura> lista = acompanhamentoRepository
-                .findByDiarioDeLeitura_UsuarioLivro_Livro_Id(livroId);
-        java.util.List<AcompanhamentoResponseDto> resp = new java.util.ArrayList<>();
+    @Transactional
+    public List<AcompanhamentoResponseDto> listarPorLivro(Long livroId) {
+        List<AcompanhamentoDeLeitura> lista = acompanhamentoRepository.findByLivroIdWithJoins(livroId);
+        List<AcompanhamentoResponseDto> resp = new ArrayList<>();
         for (AcompanhamentoDeLeitura a : lista) {
             Long usuarioId = null;
             if (a.getDiarioDeLeitura() != null && a.getDiarioDeLeitura().getUsuarioLivro() != null
@@ -38,10 +43,10 @@ public class AcompanhamentoDeLeituraServiceImpl implements AcompanhamentoDeLeitu
     }
 
     @Override
-    public java.util.List<AcompanhamentoResponseDto> listarPorUsuario(Long usuarioId) {
-        java.util.List<AcompanhamentoDeLeitura> lista = acompanhamentoRepository
-                .findByDiarioDeLeitura_UsuarioLivro_Usuario_Id(usuarioId);
-        java.util.List<AcompanhamentoResponseDto> resp = new java.util.ArrayList<>();
+    @Transactional
+    public List<AcompanhamentoResponseDto> listarPorUsuario(Long usuarioId) {
+        List<AcompanhamentoDeLeitura> lista = acompanhamentoRepository.findByUsuarioIdWithJoins(usuarioId);
+        List<AcompanhamentoResponseDto> resp = new ArrayList<>();
         for (AcompanhamentoDeLeitura a : lista) {
             Long uId = null;
             if (a.getDiarioDeLeitura() != null && a.getDiarioDeLeitura().getUsuarioLivro() != null

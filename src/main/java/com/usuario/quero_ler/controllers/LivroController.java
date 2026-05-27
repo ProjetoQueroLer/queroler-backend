@@ -88,10 +88,6 @@ public class LivroController {
 
     @GetMapping("/{id}/comentarios")
     public ResponseEntity<List<AcompanhamentoResponseDto>> listarComentariosPorLivro(@PathVariable Long id) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoService.listarPorLivro(id));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoService.listarPorLivro(id));
     }
 }
