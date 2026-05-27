@@ -75,10 +75,7 @@ jobs:
       DB_NAME: ${{ matrix.target == 'production' && 'db_quero_ler_v2' || format('db_quero_ler_{0}', matrix.target) }}
       TF_VAR_name: ${{ vars.TF_VAR_NAME }}-${{ matrix.target }}
       TF_VAR_how_many_nodes: ${{ matrix.target == 'production' && vars.TF_VAR_PROD_NODES || vars.TF_VAR_DEV_NODES }}
-      TF_VAR_shape: ${{ vars.TF_VAR_SHAPE }}
       TF_VAR_availability_domain: ${{ vars.TF_VAR_AVAILABILITY_DOMAIN }}
-      TF_VAR_ocpus_per_node: ${{ matrix.target == 'production' && vars.TF_VAR_PROD_OCPUS || vars.TF_VAR_DEV_OCPUS }}
-      TF_VAR_memory_in_gbs_per_node: ${{ matrix.target == 'production' && vars.TF_VAR_PROD_MEMORY || vars.TF_VAR_DEV_MEMORY }}
       TF_TOKEN_app_terraform_io: ${{ secrets.TF_CLOUD_TOKEN }}
 
     steps:
