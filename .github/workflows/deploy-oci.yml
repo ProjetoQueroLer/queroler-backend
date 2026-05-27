@@ -100,6 +100,27 @@ jobs:
           echo "${{ secrets.OCI_TF_PRIVATE_KEY }}" > ~/.oci/oci_tf_private_key.pem
           chmod 600 ~/.oci/oci_tf_private_key.pem
 
+      - name: Ensure Terraform Workspace
+        env:
+          TF_CLOUD_TOKEN: ${{ secrets.TF_CLOUD_TOKEN }}
+        run: |
+          WS="queroler-backend-${{ matrix.target }}"
+          ORG="minhas-apis"
+          API="https://app.terraform.io/api/v2"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $TF_CLOUD_TOKEN" \
+            -H "Content-Type: application/vnd.api+json" \
+            "$API/organizations/$ORG/workspaces/$WS")
+          if [ "$HTTP_CODE" = "404" ]; then
+            echo "Creating workspace $WS..."
+            curl -s -X POST \
+              -H "Authorization: Bearer $TF_CLOUD_TOKEN" \
+              -H "Content-Type: application/vnd.api+json" \
+              -d "{\"data\":{\"type\":\"workspaces\",\"attributes\":{\"name\":\"$WS\",\"tag_names\":[\"queroler-backend\"]}}}" \
+              "$API/organizations/$ORG/workspaces"
+          fi
+          echo "TF_WORKSPACE=$WS" >> "$GITHUB_ENV"
+
       - name: Terraform Init
         working-directory: terraform-infra
         run: terraform init -input=false
