@@ -78,6 +78,13 @@ jobs:
       TF_VAR_availability_domain: ${{ vars.TF_VAR_AVAILABILITY_DOMAIN }}
       TF_TOKEN_app_terraform_io: ${{ secrets.TF_CLOUD_TOKEN }}
 
+      # OCI credentials (shared across all terraform steps)
+      TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
+      TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
+      TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
+      TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
+      TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
+
     steps:
       # ==========================================
       # Terraform - Infrastructure Provisioning
@@ -101,32 +108,40 @@ jobs:
       - name: Terraform Init
         working-directory: terraform-infra
         run: terraform init -input=false
-        env:
-          TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
-          TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
-          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
-          TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
-          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
 
-      - name: Terraform Plan
+      - name: Terraform Plan (Staging / Production)
+        if: matrix.target != 'tst'
         working-directory: terraform-infra
         run: terraform plan -input=false
-        env:
-          TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
-          TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
-          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
-          TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
-          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+      - name: Terraform Plan (Tst - shared VCN)
+        if: matrix.target == 'tst'
         working-directory: terraform-infra
-        env:
-          TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
-          TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
-          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
-          TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
-          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
+        run: |
+          VCN_ID=$(TF_WORKSPACE=queroler-backend-staging terraform output -raw vcn_id)
+          COMP_ID=$(TF_WORKSPACE=queroler-backend-staging terraform output -raw compartment_id)
+          echo "VCN_ID=$VCN_ID" >> $GITHUB_ENV
+          echo "COMP_ID=$COMP_ID" >> $GITHUB_ENV
+          terraform plan -input=false \
+            -var="create_network=false" \
+            -var="vcn_id=$VCN_ID" \
+            -var="vcn_compartment_id=$COMP_ID" \
+            -var="subnet_cidr=10.0.1.0/24"
+
+      - name: Terraform Apply (Staging / Production)
+        if: matrix.target != 'tst'
+        working-directory: terraform-infra
+        run: terraform apply -auto-approve -input=false
+
+      - name: Terraform Apply (Tst - shared VCN)
+        if: matrix.target == 'tst'
+        working-directory: terraform-infra
+        run: |
+          terraform apply -auto-approve -input=false \
+            -var="create_network=false" \
+            -var="vcn_id=$VCN_ID" \
+            -var="vcn_compartment_id=$COMP_ID" \
+            -var="subnet_cidr=10.0.1.0/24"
 
       - name: Get Instance IP
         id: instance_ip
@@ -231,7 +246,7 @@ jobs:
       - name: Show Deployment URL
         run: |
           IP="${{ steps.instance_ip.outputs.public_ip }}"
-          echo "## :rocket: Deploy concluído com sucesso!" >> $GITHUB_STEP_SUMMARY
+          echo "## Deploy concluído!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Ambiente | URL |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-----|" >> $GITHUB_STEP_SUMMARY
