@@ -11,6 +11,6 @@ public record LivroCardResponse (
         String editora,
         String anoDePublicacao,
         Integer numeroDePaginas,
-        LocalDateTime dataDeCadstro,
+        LocalDateTime dataDeCadastro,
         List<AutorResponse> autores
 ){}

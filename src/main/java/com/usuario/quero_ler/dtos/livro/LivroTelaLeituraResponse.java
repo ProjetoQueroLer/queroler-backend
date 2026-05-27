@@ -8,6 +8,6 @@ public record LivroTelaLeituraResponse(
         String titulo,
         LivroStatus status,
         String urlCapa,
-        LocalDateTime dataDeCadstro
+        LocalDateTime dataDeCadastro
 ) {
 }

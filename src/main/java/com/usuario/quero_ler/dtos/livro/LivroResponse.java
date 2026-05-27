@@ -16,7 +16,7 @@ public record LivroResponse(
         LivroIdioma idioma,
         String sinopse,
         String capaUrl,
-        LocalDateTime dataDeCadstro,
+        LocalDateTime dataDeCadastro,
         List<AutorResponse> autores
 
 ) {
