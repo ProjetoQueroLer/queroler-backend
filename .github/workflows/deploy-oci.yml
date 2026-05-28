@@ -151,8 +151,7 @@ jobs:
         id: instance_ip
         working-directory: terraform-infra
         run: |
-          terraform refresh > /dev/null
-          IP=$(terraform output -raw ssh-with-ubuntu-user | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1)
+          IP=$(terraform output -raw public_ip)
           echo "public_ip=$IP" >> $GITHUB_OUTPUT
 
       - name: Get SSH Key
