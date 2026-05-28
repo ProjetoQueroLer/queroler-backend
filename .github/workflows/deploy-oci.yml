@@ -85,6 +85,10 @@ jobs:
       TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
       TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
 
+      # Duck DNS (configurável por ambiente)
+      TF_VAR_duck_dns_domain: ${{ vars.DUCK_DNS_DOMAIN }}
+      TF_VAR_duck_dns_token: ${{ secrets.DUCK_DNS_TOKEN }}
+
     steps:
       # ==========================================
       # Terraform - Infrastructure Provisioning
@@ -147,6 +151,7 @@ jobs:
         id: instance_ip
         working-directory: terraform-infra
         run: |
+          terraform refresh > /dev/null
           IP=$(terraform output -raw ssh-with-ubuntu-user | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1)
           echo "public_ip=$IP" >> $GITHUB_OUTPUT
 
@@ -244,10 +249,18 @@ jobs:
       - name: Show Deployment URL
         run: |
           IP="${{ steps.instance_ip.outputs.public_ip }}"
+          DOMAIN="${{ vars.DUCK_DNS_DOMAIN }}"
           echo "## Deploy concluído!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Ambiente | URL |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-----|" >> $GITHUB_STEP_SUMMARY
-          echo "| **${{ matrix.target }}** | http://$IP:8080 |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Swagger: http://$IP:8080/swagger-ui/index.html" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$DOMAIN" ]; then
+            echo "| **${{ matrix.target }}** | http://$DOMAIN:8080 |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "DNS: http://$DOMAIN:8080" >> $GITHUB_STEP_SUMMARY
+            echo "Swagger: http://$DOMAIN:8080/swagger-ui/index.html" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| **${{ matrix.target }}** | http://$IP:8080 |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Swagger: http://$IP:8080/swagger-ui/index.html" >> $GITHUB_STEP_SUMMARY
+          fi
