@@ -153,6 +153,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
+    @ExceptionHandler(DataInvalidaException.class)
+    public ResponseEntity<Object> handlerDataInvalidaException(DataInvalidaException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
     @ExceptionHandler(DiarioJaExisteException.class)
     public ResponseEntity<Object> handlerDiarioJaExiste(
             DiarioJaExisteException ex) {
