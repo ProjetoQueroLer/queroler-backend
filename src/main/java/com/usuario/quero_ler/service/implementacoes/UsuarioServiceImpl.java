@@ -42,6 +42,11 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
         Senhas.validarSenhasIguais(dto.senha(), dto.confirmarSenha());
+
+        if (repository.existsByEmail(dto.email())) {
+            throw new EmailJaCadastradoException("O email '" + dto.email() + "' já está cadastrado.");
+        }
+        
         User user = loginService.criar(dto, UsuarioProfile.LEITOR);
 
         Usuario usuario = mapper.toEntity(dto);
