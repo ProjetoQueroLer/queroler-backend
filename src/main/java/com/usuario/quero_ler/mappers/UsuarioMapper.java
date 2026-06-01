@@ -1,7 +1,7 @@
 package com.usuario.quero_ler.mappers;
 
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.models.Livro;
+import com.usuario.quero_ler.utils.Cpf;
 import com.usuario.quero_ler.models.Usuario;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,12 @@ public class UsuarioMapper {
         Usuario usuario = new Usuario();
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
-        usuario.setCpf(dto.cpf());
+        if (dto.cpf() != null) {
+            Cpf.validateOrThrow(dto.cpf());
+            usuario.setCpf(Cpf.normalize(dto.cpf()));
+        } else {
+            usuario.setCpf(null);
+        }
         usuario.setDataDeNascimento(dto.dataDeNascimento());
         usuario.setAceitarTermos(dto.checkTermo());
         return usuario;
@@ -26,13 +31,14 @@ public class UsuarioMapper {
     }
 
     public Usuario update(Usuario usuario, UsuarioAtualizadoLeitorRequest dto) {
-        usuario.setNome(dto.nome() != null ? dto.nome() :   usuario.getNome());
+        usuario.setNome(dto.nome() != null ? dto.nome() : usuario.getNome());
         usuario.setEmail(dto.email() != null ? dto.email() : usuario.getEmail());
-        usuario.setDataDeNascimento(dto.dataDeNascimento() != null ? dto.dataDeNascimento(): usuario.getDataDeNascimento());
-        usuario.setCidade(dto.cidade()!=null ? dto.cidade() : usuario.getCidade());
-        usuario.setEstado(dto.estado()!=null? dto.estado() : usuario.getEstado());
-        usuario.setPais(dto.pais() !=null? dto.pais() : usuario.getPais());
-        usuario.setPais(dto.pais() != null ? dto.pais(): usuario.getPais());
+        usuario.setDataDeNascimento(
+                dto.dataDeNascimento() != null ? dto.dataDeNascimento() : usuario.getDataDeNascimento());
+        usuario.setCidade(dto.cidade() != null ? dto.cidade() : usuario.getCidade());
+        usuario.setEstado(dto.estado() != null ? dto.estado() : usuario.getEstado());
+        usuario.setPais(dto.pais() != null ? dto.pais() : usuario.getPais());
+        usuario.setPais(dto.pais() != null ? dto.pais() : usuario.getPais());
         return usuario;
     }
 
@@ -64,8 +70,7 @@ public class UsuarioMapper {
                 usuario.getCidade(),
                 usuario.getEstado(),
                 usuario.getPais(),
-                getUrlFoto(usuario)
-        );
+                getUrlFoto(usuario));
     }
 
     public UsuarioDadosResponse toResponseDados(Usuario usuario) {
@@ -76,13 +81,12 @@ public class UsuarioMapper {
                 usuario.getCidade(),
                 usuario.getEstado(),
                 usuario.getPais(),
-                usuario.getFoto()
-        );
+                usuario.getFoto());
     }
 
-    protected String getUrlFoto(Usuario usuario){
-        String urlCapa= "Foto não encontrada.";
-        if(usuario.getFoto()!=null){
+    protected String getUrlFoto(Usuario usuario) {
+        String urlCapa = "Foto não encontrada.";
+        if (usuario.getFoto() != null) {
             urlCapa = "/usuarios/foto";
         }
         return urlCapa;
