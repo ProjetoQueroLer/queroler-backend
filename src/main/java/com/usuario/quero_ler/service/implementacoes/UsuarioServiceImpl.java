@@ -43,13 +43,16 @@ public class UsuarioServiceImpl implements UsuarioService {
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
         Senhas.validarSenhasIguais(dto.senha(), dto.confirmarSenha());
 
-        if (repository.existsByEmail(dto.email())) {
-            throw new EmailJaCadastradoException("O email '" + dto.email() + "' já está cadastrado.");
+        String emailNormalizado = dto.email().trim().toLowerCase();
+
+        if (repository.existsByEmailIgnoreCase(emailNormalizado)) {
+            throw new EmailJaCadastradoException("O email '" + emailNormalizado + "' já está cadastrado.");
         }
         
         User user = loginService.criar(dto, UsuarioProfile.LEITOR);
 
         Usuario usuario = mapper.toEntity(dto);
+        usuario.setEmail(emailNormalizado);
         usuario = validarFoto(usuario, foto);
 
         usuario.setUser(user);
