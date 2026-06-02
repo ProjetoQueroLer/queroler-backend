@@ -190,6 +190,8 @@ jobs:
           host: ${{ steps.instance_ip.outputs.public_ip }}
           username: ubuntu
           key: ${{ steps.decode_key.outputs.ssh_key }}
+          timeout: 120s
+          command_timeout: 10m
           script: |
             sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
