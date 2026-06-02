@@ -4,6 +4,7 @@ import com.usuario.quero_ler.dtos.autor.AutorResponse;
 import com.usuario.quero_ler.enums.LivroIdioma;
 
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.List;
 
 public record LivroResponse(
@@ -11,7 +12,7 @@ public record LivroResponse(
         String titulo,
         String isbn,
         String editora,
-        String anoDePublicacao,
+        Year anoDePublicacao,
         Integer numeroDePaginas,
         LivroIdioma idioma,
         String sinopse,
