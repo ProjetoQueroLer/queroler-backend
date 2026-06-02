@@ -44,13 +44,11 @@ public class UsuarioServiceImpl implements UsuarioService {
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
         Senhas.validarSenhasIguais(dto.senha(), dto.confirmarSenha());
 
-        if (dto.cpf() != null) {
-            Cpf.validateOrThrow(dto.cpf());
-        }
+        Cpf.validateOrThrow(dto.cpf());
 
-        String normalizedCpf = dto.cpf() != null ? Cpf.normalize(dto.cpf()) : null;
+        String normalizedCpf = Cpf.normalize(dto.cpf());
 
-        if (normalizedCpf != null && repository.existsByCpf(normalizedCpf)) {
+        if (repository.existsByCpf(normalizedCpf)) {
             throw new CpfJaCadastradoException("CPF já cadastrado.");
         }
 
@@ -119,7 +117,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         String novaSenha = Senhas.gerar(dto.senhaNova());
         if (user.getProfile().equals(UsuarioProfile.ADMINISTRADOR)
                 || user.getProfile().equals(UsuarioProfile.MODERADOR)) {
-            if (user.getSenhaTrocada() == false) {
+            if (Boolean.FALSE.equals(user.getSenhaTrocada())) {
                 user.setSenhaTrocada(true);
             }
         }

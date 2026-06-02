@@ -92,11 +92,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-    @ExceptionHandler(CpfJaCadastradoException.class)
-    public ResponseEntity<Object> handlerCpfJaCadastradoException(CpfJaCadastradoException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
-
     @ExceptionHandler(CpfInvalidoException.class)
     public ResponseEntity<Object> handlerCpfInvalidoException(CpfInvalidoException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -110,6 +105,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(LerImagemException.class)
     public ResponseEntity<Object> handlerLerImagemException(LerImagemException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CpfJaCadastradoException.class)
+    public ResponseEntity<Object> handlerCpfJaCadastradoException(CpfJaCadastradoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(UsuarioSemPermissaoParaAcaoException.class)

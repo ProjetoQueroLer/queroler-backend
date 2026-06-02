@@ -12,12 +12,8 @@ public class UsuarioMapper {
         Usuario usuario = new Usuario();
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
-        if (dto.cpf() != null) {
-            Cpf.validateOrThrow(dto.cpf());
-            usuario.setCpf(Cpf.normalize(dto.cpf()));
-        } else {
-            usuario.setCpf(null);
-        }
+        Cpf.validateOrThrow(dto.cpf());
+        usuario.setCpf(Cpf.normalize(dto.cpf()));
         usuario.setDataDeNascimento(dto.dataDeNascimento());
         usuario.setAceitarTermos(dto.checkTermo());
         return usuario;
@@ -33,11 +29,9 @@ public class UsuarioMapper {
     public Usuario update(Usuario usuario, UsuarioAtualizadoLeitorRequest dto) {
         usuario.setNome(dto.nome() != null ? dto.nome() : usuario.getNome());
         usuario.setEmail(dto.email() != null ? dto.email() : usuario.getEmail());
-        usuario.setDataDeNascimento(
-                dto.dataDeNascimento() != null ? dto.dataDeNascimento() : usuario.getDataDeNascimento());
+        usuario.setDataDeNascimento(dto.dataDeNascimento() != null ? dto.dataDeNascimento() : usuario.getDataDeNascimento());
         usuario.setCidade(dto.cidade() != null ? dto.cidade() : usuario.getCidade());
         usuario.setEstado(dto.estado() != null ? dto.estado() : usuario.getEstado());
-        usuario.setPais(dto.pais() != null ? dto.pais() : usuario.getPais());
         usuario.setPais(dto.pais() != null ? dto.pais() : usuario.getPais());
         return usuario;
     }
