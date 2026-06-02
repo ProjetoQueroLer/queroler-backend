@@ -214,7 +214,7 @@ jobs:
                 ports:
                   - "5432:5432"
                 volumes:
-                  - postgres_data_${{ matrix.target }}:/var/lib/postgresql/data
+                  - /mnt/postgres-data:/var/lib/postgresql/data
                 healthcheck:
                   test: ["CMD-SHELL", "pg_isready -U postgres -d ${{ env.DB_NAME }}"]
                   interval: 10s
@@ -237,10 +237,9 @@ jobs:
                   - SPRING_PROFILES_ACTIVE=${{ matrix.target == 'production' && 'prod' || 'dev' }}
                   - API_SECURITY_TOKEN_SECRET=${{ secrets.API_SECURITY_TOKEN_SECRET }}
 
-            volumes:
-              postgres_data_${{ matrix.target }}:
             EOF
 
+            sudo /usr/local/bin/format-mount-volume.sh
             sudo docker compose pull
             sudo docker compose up -d || (sudo docker logs postgres-queroler-${{ matrix.target }} && exit 1)
             sudo docker image prune -f
