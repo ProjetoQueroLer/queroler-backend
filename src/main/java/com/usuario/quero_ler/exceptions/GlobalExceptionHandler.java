@@ -1,6 +1,10 @@
 package com.usuario.quero_ler.exceptions;
 
 import com.usuario.quero_ler.exceptions.especies.*;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -167,6 +171,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handlerDiarioJaExiste(
             DiarioJaExisteException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Object> handleConstraintViolationException(
+            ConstraintViolationException ex) {
+        String mensagemAmigavel = ex.getConstraintViolations()
+                .stream()
+                .map(ConstraintViolation::getMessage)
+                .findFirst()
+                .orElse("Erro de validação nos dados enviados.");
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensagemAmigavel);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

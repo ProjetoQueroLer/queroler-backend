@@ -13,10 +13,10 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
-public class LivroMapper{
+public class LivroMapper {
     private final AutorMapper autorMapper;
 
-    public Livro toEntity(LivroRequest dto){
+    public Livro toEntity(LivroRequest dto) {
         Livro livro = new Livro();
         livro.setTitulo(dto.titulo());
         livro.setIsbn(dto.isbn());
@@ -28,7 +28,7 @@ public class LivroMapper{
         return livro;
     }
 
-    public LivroResponse toResponse(Livro livro){
+    public LivroResponse toResponse(Livro livro) {
         return new LivroResponse(
                 livro.getId(),
                 livro.getTitulo(),
@@ -45,7 +45,7 @@ public class LivroMapper{
         );
     }
 
-    public LivroCardResponse toCardResponse(Livro livro){
+    public LivroCardResponse toCardResponse(Livro livro) {
         return new LivroCardResponse(
                 getUrlFoto(livro),
                 livro.getTitulo(),
@@ -53,20 +53,18 @@ public class LivroMapper{
                 livro.getAnoDePublicacao(),
                 livro.getNumeroDePaginas(),
                 livro.getDataDeCadastro(),
-                getAutoresResponse(livro)
-        );
+                getAutoresResponse(livro));
     }
 
-    public LivroTelaLeituraResponse toLivroTelaLeituraResponse(Livro livro, LivroStatus status){
-         return new LivroTelaLeituraResponse(
+    public LivroTelaLeituraResponse toLivroTelaLeituraResponse(Livro livro, LivroStatus status) {
+        return new LivroTelaLeituraResponse(
                 livro.getTitulo(),
                 status,
                 getUrlFoto(livro),
-                 livro.getDataDeCadastro()
-        );
+                livro.getDataDeCadastro());
     }
 
-    public LivroDetalhadoResponse toLivroDetalhadoResponse(Livro livro){
+    public LivroDetalhadoResponse toLivroDetalhadoResponse(Livro livro) {
         return new LivroDetalhadoResponse(
                 getUrlFoto(livro),
                 livro.getTitulo(),
@@ -77,21 +75,20 @@ public class LivroMapper{
                 livro.getIsbn(),
                 livro.getSinopse(),
                 livro.getDataDeCadastro(),
-                getAutoresResponse(livro)
-        );
+                getAutoresResponse(livro));
     }
 
-    protected String getUrlFoto(Livro livro){
-        String urlCapa= "Capa não cadastrada.";
-        if(livro.getCapaDoLivro()!=null){
-            urlCapa = "/livros/"+ livro.getId() + "/capa";
+    protected String getUrlFoto(Livro livro) {
+        String urlCapa = "Capa não cadastrada.";
+        if (livro.getCapaDoLivro() != null) {
+            urlCapa = "/livros/" + livro.getId() + "/capa";
         }
         return urlCapa;
     }
 
-    protected List<AutorResponse> getAutoresResponse(Livro livro){
+    protected List<AutorResponse> getAutoresResponse(Livro livro) {
         List<AutorResponse> autorResponses = new ArrayList<>();
-        for(Autor autor : livro.getAutores()){
+        for (Autor autor : livro.getAutores()) {
             autorResponses.add(autorMapper.autorResponse(autor));
         }
         return autorResponses;
