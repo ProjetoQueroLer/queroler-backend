@@ -11,6 +11,7 @@ import com.usuario.quero_ler.models.UsuarioLivro;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class LivroFixture {
     private static final String TITULO = "Clean Code";
     private static final String ISBN = "9780132350884";
     private static final String EDITORA = "Prentice Hall";
-    private static final String ANODEPUBLICACAO = "2008";
+    private static final Year ANODEPUBLICACAO = Year.of(2008);
     private static final Integer NUMERODEPAGINAS = 464;
     private static final LivroIdioma IDIOMA = LivroIdioma.PORTUGUES;
     private static final String SINOPSE = "Um guia sobre boas práticas de programação e escrita de código limpo.";

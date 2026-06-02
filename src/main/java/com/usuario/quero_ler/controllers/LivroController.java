@@ -4,7 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.livro.*;
 import com.usuario.quero_ler.enums.LivroStatus;
 import com.usuario.quero_ler.service.LivroService;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -17,15 +24,25 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/livros")
 public class LivroController {
+
     private final LivroService serviceI;
     private final ObjectMapper mapper;
+    private final Validator validator;
+    
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> cadastrar(
             @RequestPart(value = "imagem", required = false) MultipartFile capaDoLivro,
             @RequestPart("dados") String dadosJson) throws Exception {
 
         LivroRequest dto = mapper.readValue(dadosJson, LivroRequest.class);
+
+        Set<ConstraintViolation<LivroRequest>> violations = validator.validate(dto);
+        
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+
         serviceI.criar(dto, capaDoLivro);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

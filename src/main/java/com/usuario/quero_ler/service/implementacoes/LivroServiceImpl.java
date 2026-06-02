@@ -35,7 +35,7 @@ public class LivroServiceImpl implements LivroService {
 
     private final LivroRepository repository;
     private final LivroMapper mapper;
-    private final AutorService AutorService;
+    private final AutorService autorService;
     private final UsuarioLivroRepository usuarioLivroRepository;
     private final LoginService loginService;
 
@@ -49,7 +49,7 @@ public class LivroServiceImpl implements LivroService {
 
         Livro livro = mapper.toEntity(dto);
         for (AutorRequest autorRequest : dto.autores()){
-            Autor autor = AutorService.criar(autorRequest);
+            Autor autor = autorService.criar(autorRequest);
             livro.adicionarAutor(autor);
         }
         if (capaDoLivro != null && !capaDoLivro.isEmpty()){

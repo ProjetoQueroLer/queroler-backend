@@ -4,13 +4,14 @@ import com.usuario.quero_ler.dtos.autor.AutorResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.List;
 
 public record LivroDetalhadoResponse(
         String urlCapaDoLivro,
         String titulo,
         String editora,
-        String anoDePublicacao,
+        Year anoDePublicacao,
         Integer numeroDePaginas,
         String idioma,
         String isbn,
