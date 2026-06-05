@@ -18,7 +18,8 @@ public class UserFixture {
     private static final String SENHA = "Teste123&";
     private static final String CONFIRMAR_SENHA = "Teste123&";
     private static final String CPF = "49618203000";
-    private static final LocalDate DATA_DE_NASCIMENTO = LocalDate.of(2000, 12, 05);
+    private static final LocalDate DATA_DE_NASCIMENTO = LocalDate.of(2000, 12, 5);
+
     private static final Boolean CHECK_TERMO = true;
     private static final String CIDADE = "Valinhos";
     private static final String ESTADO = "São paulo";
@@ -29,38 +30,35 @@ public class UserFixture {
     public static UsuarioRequestDto requestDto() {
         return new UsuarioRequestDto(
                 NOME, EMAIL, CONFIRMAR_EMAIL, SENHA, CONFIRMAR_SENHA, CPF,
-                DATA_DE_NASCIMENTO, CHECK_TERMO
-        );
+                DATA_DE_NASCIMENTO, CHECK_TERMO);
     }
-    public static UsuarioRequestDto  requestDto(String senha){
+
+    public static UsuarioRequestDto requestDto(String senha) {
         return new UsuarioRequestDto(
-                NOME,EMAIL,CONFIRMAR_EMAIL,senha,senha,CPF,
-                DATA_DE_NASCIMENTO,CHECK_TERMO
-        );
+                NOME, EMAIL, CONFIRMAR_EMAIL, senha, senha, CPF,
+                DATA_DE_NASCIMENTO, CHECK_TERMO);
     }
 
     public static String requestDtoString() {
-        return
-                """
-                        {
-                         "nome":"%s",
-                         "email":"%s",
-                         "confirmarEmail":"%s",
-                         "senha":"%s",
-                         "confirmarSenha":"%s",
-                         "cpf":"%s",
-                         "dataDeNascimento":"%s",
-                         "Boolean checkTermo":"%s"
-                        }
-                        """.formatted(
-                        NOME, EMAIL, CONFIRMAR_EMAIL, SENHA, CONFIRMAR_SENHA, CPF,
-                        DATA_DE_NASCIMENTO, CHECK_TERMO);
+        return """
+                {
+                 "nome":"%s",
+                 "email":"%s",
+                 "confirmarEmail":"%s",
+                 "senha":"%s",
+                 "confirmarSenha":"%s",
+                 "cpf":"%s",
+                 "dataDeNascimento":"%s",
+                 "checkTermo": %s
+                }
+                """.formatted(
+                NOME, EMAIL, CONFIRMAR_EMAIL, SENHA, CONFIRMAR_SENHA, CPF,
+                DATA_DE_NASCIMENTO.toString(), CHECK_TERMO);
     }
 
     public static UsuarioDadosComplementarRequest requestDadosComplementares() {
         return new UsuarioDadosComplementarRequest(
-                CIDADE, ESTADO, PAIS
-        );
+                CIDADE, ESTADO, PAIS);
     }
 
     public static String requestDadosComplementaresEmString() {
@@ -73,15 +71,14 @@ public class UserFixture {
                 """.formatted(CIDADE, ESTADO, PAIS);
     }
 
-
     public static User userEntity(UsuarioProfile profile) {
         String senhaHash = BCrypt.hashpw(SENHA, BCrypt.gensalt());
         boolean senhaTrocada = false;
-        if(profile.equals(UsuarioProfile.LEITOR)){
+        if (profile.equals(UsuarioProfile.LEITOR)) {
             senhaTrocada = true;
         }
 
-        return new User(2L,EMAIL,senhaHash,senhaTrocada,profile,null);
+        return new User(2L, EMAIL, senhaHash, senhaTrocada, profile, null);
     }
 
     public static Usuario entidadePrincipal(User user) {
@@ -114,19 +111,18 @@ public class UserFixture {
         return new UsuarioResponseDto(
                 user.getId(), user.getNome(), user.getEmail(), user.getCpf(),
                 user.getUser().getProfile(), user.getDataDeNascimento(), user.getAceitarTermos(),
-                user.getCidade(), user.getEstado(), user.getPais(), "/usuarios/foto"
-        );
+                user.getCidade(), user.getEstado(), user.getPais(), "/usuarios/foto");
     }
 
     public static UsuarioDadosResponse responseDados(Usuario user) {
         return new UsuarioDadosResponse(
                 user.getNome(), user.getEmail(), user.getDataDeNascimento(),
-                user.getCidade(), user.getEstado(), user.getPais(), user.getFoto()
-        );
+                user.getCidade(), user.getEstado(), user.getPais(), user.getFoto());
     }
 
     public static Usuario atualizar(Usuario usuario, UsuarioAtualizadoAdministradorRequest atualizacoes) {
-        usuario.setDataDeNascimento(atualizacoes.dataDeNascimento() != null ? atualizacoes.dataDeNascimento() : usuario.getDataDeNascimento());
+        usuario.setDataDeNascimento(atualizacoes.dataDeNascimento() != null ? atualizacoes.dataDeNascimento()
+                : usuario.getDataDeNascimento());
         usuario.setCidade(atualizacoes != null ? atualizacoes.cidade() : usuario.getCidade());
         usuario.setEstado(atualizacoes.estado() != null ? atualizacoes.estado() : usuario.getEstado());
         usuario.setPais(atualizacoes.pais() != null ? atualizacoes.pais() : usuario.getPais());
@@ -136,7 +132,8 @@ public class UserFixture {
     public static Usuario atualizar(Usuario usuario, UsuarioAtualizadoLeitorRequest atualizacoes) {
         usuario.setNome(atualizacoes.nome() != null ? atualizacoes.nome() : usuario.getNome());
         usuario.setEmail(atualizacoes.email() != null ? atualizacoes.email() : usuario.getEmail());
-        usuario.setDataDeNascimento(atualizacoes.dataDeNascimento() != null ? atualizacoes.dataDeNascimento() : usuario.getDataDeNascimento());
+        usuario.setDataDeNascimento(atualizacoes.dataDeNascimento() != null ? atualizacoes.dataDeNascimento()
+                : usuario.getDataDeNascimento());
         usuario.setCidade(atualizacoes.cidade() != null ? atualizacoes.cidade() : usuario.getCidade());
         usuario.setEstado(atualizacoes.estado() != null ? atualizacoes.estado() : usuario.getEstado());
         usuario.setPais(atualizacoes.pais() != null ? atualizacoes.pais() : usuario.getPais());

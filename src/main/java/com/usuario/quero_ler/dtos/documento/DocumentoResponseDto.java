@@ -19,7 +19,7 @@ public record DocumentoResponseDto(
         @Schema(description = "Conteúdo do documento",example = "Este documento descreve as políticas de segurança...")
         String conteudo,
 
-        @Schema(description = "Data e hora da última alteração do documento", example = "2026-03-08T11:30:00")
+        @Schema(description = "Data e hora da última alteração do documento", example = "08/03/2026 11:30:00")
         LocalDateTime ultimaAlteracao
 ) {
 }

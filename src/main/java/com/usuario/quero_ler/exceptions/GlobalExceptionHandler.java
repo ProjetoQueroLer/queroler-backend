@@ -1,5 +1,6 @@
 package com.usuario.quero_ler.exceptions;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.usuario.quero_ler.exceptions.especies.*;
 
 import jakarta.validation.ConstraintViolation;
@@ -167,6 +168,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
+    @ExceptionHandler(DataInvalidaException.class)
+    public ResponseEntity<Object> handlerDataInvalidaException(DataInvalidaException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
     @ExceptionHandler(DiarioJaExisteException.class)
     public ResponseEntity<Object> handlerDiarioJaExiste(
             DiarioJaExisteException ex) {
@@ -187,17 +193,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Object> handleEnumError(HttpMessageNotReadableException ex) {
+        if (ex.getCause() instanceof InvalidFormatException e) {
+            return handleInvalidFormatException(e);
+        }
+        
+        return ResponseEntity.badRequest().body("Erro ao interpretar JSON: ");
+    }
 
-        if (ex.getCause() instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException e
-                && e.getTargetType().isEnum()) {
-
-            Object[] valores = e.getTargetType().getEnumConstants();
-
+    @ExceptionHandler(InvalidFormatException.class)
+    public ResponseEntity<Object> handleInvalidFormatException(InvalidFormatException ex) {
+        if (ex.getTargetType().isEnum()) {
+            Object[] valores = ex.getTargetType().getEnumConstants();
             String mensagem = "Valor inválido. Valores permitidos: " + Arrays.toString(valores);
-
             return ResponseEntity.badRequest().body(mensagem);
         }
 
-        return ResponseEntity.badRequest().body("Erro ao interpretar JSON.");
+        if (ex.getTargetType().equals(java.time.LocalDate.class) ||
+                ex.getTargetType().equals(java.time.LocalDateTime.class)) {
+
+            String campo = ex.getPath().isEmpty() ? "data" : ex.getPath().get(0).getFieldName();
+            String mensagem = String
+                    .format("O campo '%s' está com um formato de data inválido. Use o padrão DD/MM/YYYY.", campo);
+            return ResponseEntity.badRequest().body(mensagem);
+        }
+
+        return ResponseEntity.badRequest().body("Erro na formatação dos dados enviados: " + ex.getOriginalMessage());
     }
 }
