@@ -216,7 +216,7 @@ jobs:
                 ports:
                   - "5432:5432"
                 volumes:
-                  - /mnt/postgres-data:/var/lib/postgresql/data
+                  - /mnt/postgres-data/pgdata:/var/lib/postgresql/data
                 healthcheck:
                   test: ["CMD-SHELL", "pg_isready -U postgres -d ${{ env.DB_NAME }}"]
                   interval: 10s
@@ -242,6 +242,7 @@ jobs:
             EOF
 
             sudo /usr/local/bin/format-mount-volume.sh
+            sudo mkdir -p /mnt/postgres-data/pgdata
             sudo docker compose pull
             sudo docker compose up -d || (sudo docker logs postgres-queroler-${{ matrix.target }} && exit 1)
             sudo docker image prune -f
