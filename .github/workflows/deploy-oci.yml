@@ -151,7 +151,7 @@ jobs:
         id: instance_ip
         working-directory: terraform-infra
         run: |
-          IP=$(terraform output -raw public_ip)
+          IP=$(terraform output -json ssh-with-ubuntu-user | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1)
           echo "public_ip=$IP" >> $GITHUB_OUTPUT
 
       - name: Get SSH Key
@@ -190,6 +190,8 @@ jobs:
           host: ${{ steps.instance_ip.outputs.public_ip }}
           username: ubuntu
           key: ${{ steps.decode_key.outputs.ssh_key }}
+          timeout: 120s
+          command_timeout: 10m
           script: |
             sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
@@ -214,7 +216,7 @@ jobs:
                 ports:
                   - "5432:5432"
                 volumes:
-                  - postgres_data_${{ matrix.target }}:/var/lib/postgresql/data
+                  - /mnt/postgres-data:/var/lib/postgresql/data
                 healthcheck:
                   test: ["CMD-SHELL", "pg_isready -U postgres -d ${{ env.DB_NAME }}"]
                   interval: 10s
@@ -237,10 +239,9 @@ jobs:
                   - SPRING_PROFILES_ACTIVE=${{ matrix.target == 'production' && 'prod' || 'dev' }}
                   - API_SECURITY_TOKEN_SECRET=${{ secrets.API_SECURITY_TOKEN_SECRET }}
 
-            volumes:
-              postgres_data_${{ matrix.target }}:
             EOF
 
+            sudo /usr/local/bin/format-mount-volume.sh
             sudo docker compose pull
             sudo docker compose up -d || (sudo docker logs postgres-queroler-${{ matrix.target }} && exit 1)
             sudo docker image prune -f
