@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class Livro {
     @Column(name = "editora", nullable = false)
     private String editora;
     @Column(name = "ano_de_publicacao", nullable = false)
-    private String anoDePublicacao;
+    private Year anoDePublicacao;
     @Column(name = "numero_de_paginas", nullable = false)
     private Integer numeroDePaginas;
     @Enumerated(EnumType.STRING)
@@ -40,31 +41,25 @@ public class Livro {
     private byte[] capaDoLivro;
 
     @ManyToMany
-    @JoinTable(
-            name = "tb_livro_autor",
-            joinColumns = @JoinColumn(name = "livro_id"),
-            inverseJoinColumns = @JoinColumn(name = "autor_id")
-    )
-    private List<Autor>autores = new ArrayList<>();
+    @JoinTable(name = "tb_livro_autor", joinColumns = @JoinColumn(name = "livro_id"), inverseJoinColumns = @JoinColumn(name = "autor_id"))
+    private List<Autor> autores = new ArrayList<>();
 
     @OneToMany(mappedBy = "livro", fetch = FetchType.LAZY)
     private List<UsuarioLivro> usuarios = new ArrayList<>();
 
-
     @Setter(AccessLevel.NONE)
-    @Column(name = "data_de_cadastro",nullable = false)
+    @Column(name = "data_de_cadastro", nullable = false)
     private LocalDateTime dataDeCadastro = LocalDateTime.now();
 
     @Setter(AccessLevel.NONE)
     @Column(name = "quantidade_de_uso")
     private Integer quantidadeDeUso;
 
-
-    public void adicionarAutor(Autor autor){
+    public void adicionarAutor(Autor autor) {
         autores.add(autor);
     }
 
-    public void computarAdicao(){
+    public void computarAdicao() {
         quantidadeDeUso++;
     }
 }

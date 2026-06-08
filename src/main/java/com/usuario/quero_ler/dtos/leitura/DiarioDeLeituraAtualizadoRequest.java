@@ -6,7 +6,7 @@ public record DiarioDeLeituraAtualizadoRequest(
         LocalDateTime inicioDaLeitura,
         LocalDateTime terminoDaLeitura,
         Integer paginasLidas,
-        Integer nota,
+        Double nota,
         String tituloDaResenha,
         String resenha) {
 }

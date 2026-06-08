@@ -35,303 +35,281 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(UsuarioController.class)
 class UsuarioControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockitoBean
-    private UsuarioService service;
+        @MockitoBean
+        private UsuarioService service;
 
-    @MockitoBean
-    private TokenService tokenService;
+        @MockitoBean
+        private TokenService tokenService;
 
-    @MockitoBean
-    private UserRepository userRepository;
+        @MockitoBean
+        private UserRepository userRepository;
 
-    @Mock
-    private ObjectMapper objectMapperMock;
+        @Mock
+        private ObjectMapper objectMapperMock;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @Test
-    @DisplayName("Deve criar um Usuário com sucesso")
-    void deveCriarUmUsuarioComSucesso() throws Exception {
+        @Test
+        @DisplayName("Deve criar um Usuário com sucesso")
+        void deveCriarUmUsuarioComSucesso() throws Exception {
 
-        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
-        UsuarioRequestDto request = UserFixture.requestDto();
-        Usuario usuario = UserFixture.entidadeCompleta(user);
-        UsuarioResponseDto response = UserFixture.response(usuario);
-        String json = UserFixture.requestDtoString();
+                User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
+                UsuarioRequestDto request = UserFixture.requestDto();
+                Usuario usuario = UserFixture.entidadeCompleta(user);
+                UsuarioResponseDto response = UserFixture.response(usuario);
+                String json = UserFixture.requestDtoString();
 
-        MockMultipartFile dados =
-                new MockMultipartFile(
-                        "dados",
-                        "",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        json.getBytes()
-                );
+                MockMultipartFile dados = new MockMultipartFile(
+                                "dados",
+                                "",
+                                MediaType.APPLICATION_JSON_VALUE,
+                                json.getBytes());
 
-        MockMultipartFile imagem = new MockMultipartFile(
-                "imagem",
-                "foto.jpg",
-                MediaType.IMAGE_JPEG_VALUE,
-                "imagem fake".getBytes()
-        );
+                MockMultipartFile imagem = new MockMultipartFile(
+                                "imagem",
+                                "foto.jpg",
+                                MediaType.IMAGE_JPEG_VALUE,
+                                "imagem fake".getBytes());
 
-        when(service.criar(any(UsuarioRequestDto.class), any(MultipartFile.class)))
-                .thenReturn(response);
+                when(service.criar(any(UsuarioRequestDto.class), any(MultipartFile.class)))
+                                .thenReturn(response);
 
-        mockMvc.perform(multipart("/usuarios")
-                        .file(dados)
-                        .file(imagem)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(response.id()))
-                .andExpect(jsonPath("$.nome").value(response.nome()))
-                .andExpect(jsonPath("$.email").value(response.email()))
-                .andExpect(jsonPath("$.cpf").value(response.cpf()))
-                .andExpect(jsonPath("$.dataDeNascimento")
-                        .value(response.dataDeNascimento().toString()))
-                .andExpect(jsonPath("$.cidade").value(response.cidade()))
-                .andExpect(jsonPath("$.estado").value(response.estado()))
-                .andExpect(jsonPath("$.pais").value(response.pais()));
-
-        verify(service).criar(any(UsuarioRequestDto.class), any(MultipartFile.class));
-    }
-
-    @Test
-    @DisplayName("Deve retornar dados do usuário")
-    void deveRetornarDadosDoUsuario() throws Exception {
-        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
-        Usuario usuario = UserFixture.entidadeCompleta(user);
-        UsuarioDadosResponse response = UserFixture.responseDados(usuario);
-
-        when(service.getDadosDoUsuario()).thenReturn(response);
-
-        mockMvc.perform(get("/usuarios"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nome").value(response.nome()))
-                .andExpect(jsonPath("$.email").value(response.email()))
-                .andExpect(jsonPath("$.cidade").value(response.cidade()))
-                .andExpect(jsonPath("$.estado").value(response.estado()))
-                .andExpect(jsonPath("$.pais").value(response.pais()))
-                .andExpect(jsonPath("$.foto").exists());
-
-        verify(service).getDadosDoUsuario();
-    }
-
-    @Test
-    @DisplayName("Deve inserir dados adicionais com sucesso")
-    void deveInserirDadosAdicionaisComSucesso() throws Exception {
-
-        String json = UserFixture.requestDadosComplementaresEmString();
-
-        UsuarioDadosComplementarRequest dto = UserFixture.requestDadosComplementares();
-
-        MockMultipartFile dados =
-                new MockMultipartFile(
-                        "dados",
-                        "",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        json.getBytes()
-                );
-
-        MockMultipartFile imagem =
-                new MockMultipartFile(
-                        "imagem",
-                        "foto.jpg",
-                        MediaType.IMAGE_JPEG_VALUE,
-                        "imagem fake".getBytes()
-                );
-
-        when(objectMapperMock.readValue(json, UsuarioDadosComplementarRequest.class))
-                .thenReturn(dto);
-
-        mockMvc.perform(
-                        multipart("/usuarios/dados-adicionais")
+                mockMvc.perform(multipart("/usuarios")
                                 .file(dados)
                                 .file(imagem)
-                                .with(request -> {
-                                    request.setMethod("PUT");
-                                    return request;
-                                })
-                )
-                .andExpect(status().isNoContent());
+                                .contentType(MediaType.MULTIPART_FORM_DATA))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.id").value(response.id()))
+                                .andExpect(jsonPath("$.nome").value(response.nome()))
+                                .andExpect(jsonPath("$.email").value(response.email()))
+                                .andExpect(jsonPath("$.cpf").value(response.cpf()))
+                                .andExpect(jsonPath("$.dataDeNascimento")
+                                                .value(response.dataDeNascimento().toString()))
+                                .andExpect(jsonPath("$.cidade").value(response.cidade()))
+                                .andExpect(jsonPath("$.estado").value(response.estado()))
+                                .andExpect(jsonPath("$.pais").value(response.pais()));
 
-        verify(service).adicionarDados(dto, imagem);
-    }
+                verify(service).criar(any(UsuarioRequestDto.class), any(MultipartFile.class));
+        }
 
-    @Test
-    @DisplayName("Deve alterar a senha do usuário com sucesso")
-    void deveAlterarASenhaDoUsuarioComSucesso() throws Exception {
-        UsuarioAlterarSenhaRequest request = new UsuarioAlterarSenhaRequest("Teste123&", "Senha1232@");
+        @Test
+        @DisplayName("Deve retornar dados do usuário")
+        void deveRetornarDadosDoUsuario() throws Exception {
+                User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
+                Usuario usuario = UserFixture.entidadeCompleta(user);
+                UsuarioDadosResponse response = UserFixture.responseDados(usuario);
 
-        mockMvc.perform(put("/usuarios/alterar-senha")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNoContent());
+                when(service.getDadosDoUsuario()).thenReturn(response);
 
-        verify(service).alterarSenha(request);
-    }
+                mockMvc.perform(get("/usuarios"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.nome").value(response.nome()))
+                                .andExpect(jsonPath("$.email").value(response.email()))
+                                .andExpect(jsonPath("$.cidade").value(response.cidade()))
+                                .andExpect(jsonPath("$.estado").value(response.estado()))
+                                .andExpect(jsonPath("$.pais").value(response.pais()))
+                                .andExpect(jsonPath("$.foto").exists());
 
-    @Test
-    @DisplayName("Deve atualizar usuário leitor com sucesso (sem foto)")
-    void deveAtualizarUsuarioLeitorComSucesso() throws Exception {
-        UsuarioAtualizadoLeitorRequest request = new UsuarioAtualizadoLeitorRequest("Nome atualizado",
-                null, null, null, null, null);
-        String json = """
-                {
-                "nome":"%s"
-                }""".formatted(request.nome());
-        MockMultipartFile dados =
-                new MockMultipartFile(
-                        "dados",
-                        "",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        json.getBytes()
-                );
-        mockMvc.perform(
-                        multipart("/usuarios")
-                                .file(dados)
-                                .with(requestX -> {
-                                    requestX.setMethod("PUT");
-                                    return requestX;
-                                })
-                )
-                .andExpect(status().isNoContent());
+                verify(service).getDadosDoUsuario();
+        }
 
-        verify(service).atualizar(request,null);
-    }
+        @Test
+        @DisplayName("Deve inserir dados adicionais com sucesso")
+        void deveInserirDadosAdicionaisComSucesso() throws Exception {
 
-    @Test
-    @DisplayName("Deve atualizar usuário leitor com sucesso (inserindo foto)")
-    void deveAtualizarUsuarioLeitorInserindoFotoComSucesso() throws Exception {
-        UsuarioAtualizadoLeitorRequest request = new UsuarioAtualizadoLeitorRequest("Nome atualizado",
-                null, null, null, null, null);
-        String json = """
-                {
-                "nome":"%s"
-                }""".formatted(request.nome());
-        MockMultipartFile dados =
-                new MockMultipartFile(
-                        "dados",
-                        "",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        json.getBytes()
-                );
-        MockMultipartFile imagem =
-                new MockMultipartFile(
-                        "imagem",
-                        "foto.jpg",
-                        MediaType.IMAGE_JPEG_VALUE,
-                        "imagem fake".getBytes()
-                );
-        mockMvc.perform(
-                        multipart("/usuarios")
-                                .file(dados)
-                                .file(imagem)
-                                .with(requestX -> {
-                                    requestX.setMethod("PUT");
-                                    return requestX;
-                                })
-                )
-                .andExpect(status().isNoContent());
+                String json = UserFixture.requestDadosComplementaresEmString();
 
-        verify(service).atualizar(request,imagem);
-    }
+                UsuarioDadosComplementarRequest dto = UserFixture.requestDadosComplementares();
 
-    @Test
-    @DisplayName("Deve atualizar usuário administrador com sucesso (sem foto)")
-    void deveAtualizarUsuarioAdministradorComSucesso() throws Exception {
-        UsuarioAtualizadoAdministradorRequest request = new UsuarioAtualizadoAdministradorRequest(LocalDate.of(
-                2015, 06, 03),null, null, null);
+                MockMultipartFile dados = new MockMultipartFile(
+                                "dados",
+                                "",
+                                MediaType.APPLICATION_JSON_VALUE,
+                                json.getBytes());
 
-        String json = """
-                {
-                "dataDeNascimento":"%s"
-                }""".formatted(request.dataDeNascimento());
-        MockMultipartFile dados =
-                new MockMultipartFile(
-                        "dados",
-                        "",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        json.getBytes()
-                );
-        mockMvc.perform(
-                        multipart("/usuarios/administrador")
-                                .file(dados)
-                                .with(requestX -> {
-                                    requestX.setMethod("PUT");
-                                    return requestX;
-                                })
-                )
-                .andExpect(status().isNoContent());
+                MockMultipartFile imagem = new MockMultipartFile(
+                                "imagem",
+                                "foto.jpg",
+                                MediaType.IMAGE_JPEG_VALUE,
+                                "imagem fake".getBytes());
 
-        verify(service).atualizar(request,null);
-    }
+                when(objectMapperMock.readValue(json, UsuarioDadosComplementarRequest.class))
+                                .thenReturn(dto);
 
-    @Test
-    @DisplayName("Deve atualizar usuário administrador com sucesso (incluindo foto)")
-    void deveAtualizarUsuarioAdministradorInserindoFotoComSucesso() throws Exception {
-        UsuarioAtualizadoAdministradorRequest request = new UsuarioAtualizadoAdministradorRequest(LocalDate.of(
-                2015, 06, 03),null, null, null);
+                mockMvc.perform(
+                                multipart("/usuarios/dados-adicionais")
+                                                .file(dados)
+                                                .file(imagem)
+                                                .with(request -> {
+                                                        request.setMethod("PUT");
+                                                        return request;
+                                                }))
+                                .andExpect(status().isNoContent());
 
-        String json = """
-                {
-                "dataDeNascimento":"%s"
-                }""".formatted(request.dataDeNascimento());
-        MockMultipartFile dados =
-                new MockMultipartFile(
-                        "dados",
-                        "",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        json.getBytes()
-                );
-        MockMultipartFile imagem =
-                new MockMultipartFile(
-                        "imagem",
-                        "foto.jpg",
-                        MediaType.IMAGE_JPEG_VALUE,
-                        "imagem fake".getBytes()
-                );
-        mockMvc.perform(
-                        multipart("/usuarios/administrador")
-                                .file(dados)
-                                .file(imagem)
-                                .with(requestX -> {
-                                    requestX.setMethod("PUT");
-                                    return requestX;
-                                })
-                )
-                .andExpect(status().isNoContent());
+                verify(service).adicionarDados(dto, imagem);
+        }
 
-        verify(service).atualizar(request,imagem);
-    }
+        @Test
+        @DisplayName("Deve alterar a senha do usuário com sucesso")
+        void deveAlterarASenhaDoUsuarioComSucesso() throws Exception {
+                UsuarioAlterarSenhaRequest request = new UsuarioAlterarSenhaRequest("Teste123&", "Senha1232@");
 
-    @Test
-    @DisplayName("Deve apagar um perfil com sucesso")
-    void deveApagarUmPerfilComSucesso() throws Exception {
+                mockMvc.perform(put("/usuarios/alterar-senha")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isNoContent());
 
-        mockMvc.perform(delete("/usuarios")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
+                verify(service).alterarSenha(request);
+        }
 
-        verify(service).excluirPerfil();
-    }
+        @Test
+        @DisplayName("Deve atualizar usuário leitor com sucesso (sem foto)")
+        void deveAtualizarUsuarioLeitorComSucesso() throws Exception {
+                UsuarioAtualizadoLeitorRequest request = new UsuarioAtualizadoLeitorRequest("Nome atualizado",
+                                null, null, null, null, null);
+                String json = """
+                                {
+                                "nome":"%s"
+                                }""".formatted(request.nome());
+                MockMultipartFile dados = new MockMultipartFile(
+                                "dados",
+                                "",
+                                MediaType.APPLICATION_JSON_VALUE,
+                                json.getBytes());
+                mockMvc.perform(
+                                multipart("/usuarios")
+                                                .file(dados)
+                                                .with(requestX -> {
+                                                        requestX.setMethod("PUT");
+                                                        return requestX;
+                                                }))
+                                .andExpect(status().isNoContent());
 
-    @Test
-    @DisplayName("Deve adicionar um livro na estante do usuario.")
-    void deveAdicionarUmLivroNaEstanteDoUsuario() throws Exception {
-        Long idLivro = 10L;
-        LivroStatus status = LivroStatus.LIVROS_QUE_QUERO_LER;
+                verify(service).atualizar(request, null);
+        }
 
-        mockMvc.perform(post("/usuarios/livro")
-                        .param("idLivro", idLivro.toString())
-                        .param("status", String.valueOf(status))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
+        @Test
+        @DisplayName("Deve atualizar usuário leitor com sucesso (inserindo foto)")
+        void deveAtualizarUsuarioLeitorInserindoFotoComSucesso() throws Exception {
+                UsuarioAtualizadoLeitorRequest request = new UsuarioAtualizadoLeitorRequest("Nome atualizado",
+                                null, null, null, null, null);
+                String json = """
+                                {
+                                "nome":"%s"
+                                }""".formatted(request.nome());
+                MockMultipartFile dados = new MockMultipartFile(
+                                "dados",
+                                "",
+                                MediaType.APPLICATION_JSON_VALUE,
+                                json.getBytes());
+                MockMultipartFile imagem = new MockMultipartFile(
+                                "imagem",
+                                "foto.jpg",
+                                MediaType.IMAGE_JPEG_VALUE,
+                                "imagem fake".getBytes());
+                mockMvc.perform(
+                                multipart("/usuarios")
+                                                .file(dados)
+                                                .file(imagem)
+                                                .with(requestX -> {
+                                                        requestX.setMethod("PUT");
+                                                        return requestX;
+                                                }))
+                                .andExpect(status().isNoContent());
 
-        verify(service).adicionarLivro(idLivro, status);
-    }
+                verify(service).atualizar(request, imagem);
+        }
+
+        @Test
+        @DisplayName("Deve atualizar usuário administrador com sucesso (sem foto)")
+        void deveAtualizarUsuarioAdministradorComSucesso() throws Exception {
+                UsuarioAtualizadoAdministradorRequest request = new UsuarioAtualizadoAdministradorRequest(LocalDate.of(
+                                2015, 06, 03), null, null, null);
+
+                String json = """
+                                {
+                                "dataDeNascimento":"%s"
+                                }""".formatted(
+                                request.dataDeNascimento().toString());
+                MockMultipartFile dados = new MockMultipartFile(
+                                "dados",
+                                "",
+                                MediaType.APPLICATION_JSON_VALUE,
+                                json.getBytes());
+                mockMvc.perform(
+                                multipart("/usuarios/administrador")
+                                                .file(dados)
+                                                .with(requestX -> {
+                                                        requestX.setMethod("PUT");
+                                                        return requestX;
+                                                }))
+                                .andExpect(status().isNoContent());
+
+                verify(service).atualizar(request, null);
+        }
+
+        @Test
+        @DisplayName("Deve atualizar usuário administrador com sucesso (incluindo foto)")
+        void deveAtualizarUsuarioAdministradorInserindoFotoComSucesso() throws Exception {
+                UsuarioAtualizadoAdministradorRequest request = new UsuarioAtualizadoAdministradorRequest(LocalDate.of(
+                                2015, 06, 03), null, null, null);
+
+                String json = """
+                                {
+                                "dataDeNascimento":"%s"
+                                }""".formatted(
+                                request.dataDeNascimento().toString());
+                MockMultipartFile dados = new MockMultipartFile(
+                                "dados",
+                                "",
+                                MediaType.APPLICATION_JSON_VALUE,
+                                json.getBytes());
+                MockMultipartFile imagem = new MockMultipartFile(
+                                "imagem",
+                                "foto.jpg",
+                                MediaType.IMAGE_JPEG_VALUE,
+                                "imagem fake".getBytes());
+                mockMvc.perform(
+                                multipart("/usuarios/administrador")
+                                                .file(dados)
+                                                .file(imagem)
+                                                .with(requestX -> {
+                                                        requestX.setMethod("PUT");
+                                                        return requestX;
+                                                }))
+                                .andExpect(status().isNoContent());
+
+                verify(service).atualizar(request, imagem);
+        }
+
+        @Test
+        @DisplayName("Deve apagar um perfil com sucesso")
+        void deveApagarUmPerfilComSucesso() throws Exception {
+
+                mockMvc.perform(delete("/usuarios")
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isNoContent());
+
+                verify(service).excluirPerfil();
+        }
+
+        @Test
+        @DisplayName("Deve adicionar um livro na estante do usuario.")
+        void deveAdicionarUmLivroNaEstanteDoUsuario() throws Exception {
+                Long idLivro = 10L;
+                LivroStatus status = LivroStatus.LIVROS_QUE_QUERO_LER;
+
+                mockMvc.perform(post("/usuarios/livro")
+                                .param("idLivro", idLivro.toString())
+                                .param("status", String.valueOf(status))
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isCreated());
+
+                verify(service).adicionarLivro(idLivro, status);
+        }
 
 }

@@ -33,9 +33,14 @@ public class DiarioDeLeitura {
     private Integer paginasLidas;
 
     @OneToMany(mappedBy = "diarioDeLeitura", cascade = CascadeType.ALL, orphanRemoval = true)
+		@Builder.Default
     private List<AcompanhamentoDeLeitura> comentarios = new ArrayList<>();
-    private Integer nota;
+		@Builder.Default
+    private Double nota = 0.0;
     private String tituloDaResenha;
+
+		@Builder.Default
+		private Boolean spoiler = true;
 
     @Column(columnDefinition = "TEXT")
     private String resenha;

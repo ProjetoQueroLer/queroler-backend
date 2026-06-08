@@ -14,6 +14,7 @@ import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.service.UsuarioService;
 import com.usuario.quero_ler.utils.Senhas;
+import com.usuario.quero_ler.utils.Cpf;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -42,6 +43,15 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
         Senhas.validarSenhasIguais(dto.senha(), dto.confirmarSenha());
+
+        Cpf.validateOrThrow(dto.cpf());
+
+        String normalizedCpf = Cpf.normalize(dto.cpf());
+
+        if (repository.existsByCpf(normalizedCpf)) {
+            throw new CpfJaCadastradoException("CPF já cadastrado.");
+        }
+
         User user = loginService.criar(dto, UsuarioProfile.LEITOR);
 
         Usuario usuario = mapper.toEntity(dto);
@@ -100,13 +110,14 @@ public class UsuarioServiceImpl implements UsuarioService {
     public void alterarSenha(UsuarioAlterarSenhaRequest dto) {
         Senhas.validar(dto.senhaNova());
         User user = loginService.getUsuarioLogado();
-        if (!Senhas.validarSenhasIguais(dto.senhaAtual(), user.getSenha())){
+        if (!Senhas.validarSenhasIguais(dto.senhaAtual(), user.getSenha())) {
             throw new CredenciaisInvalidasException("A senha digitada não corresponde a atual.");
         }
         Senhas.validar(dto.senhaAtual(), user.getSenha());
         String novaSenha = Senhas.gerar(dto.senhaNova());
-        if (user.getProfile().equals(UsuarioProfile.ADMINISTRADOR) || user.getProfile().equals(UsuarioProfile.MODERADOR)){
-            if(user.getSenhaTrocada() == false){
+        if (user.getProfile().equals(UsuarioProfile.ADMINISTRADOR)
+                || user.getProfile().equals(UsuarioProfile.MODERADOR)) {
+            if (Boolean.FALSE.equals(user.getSenhaTrocada())) {
                 user.setSenhaTrocada(true);
             }
         }
@@ -118,7 +129,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     public void adicionarLivro(Long idLivro, LivroStatus status) {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
 
-        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(usuario.getId(), idLivro);
+        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(usuario.getId(),
+                idLivro);
         if (usuarioLivro.isPresent()) {
             throw new UsuarioJaPossueOLivroException("O usuario já possue o livro na estante.");
         }
@@ -137,7 +149,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioLivroRepository.save(novoUsuarioLivro);
     }
 
-
     public User getUsuarioLogado() {
         Authentication authentication = SecurityContextHolder
                 .getContext()
@@ -149,8 +160,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     public Usuario getUsuario(Long id) {
         return repository.findById(id).orElseThrow(
                 () -> new UsuarioNaoEncontradoException("Não foi encontrado nenhum usuário" +
-                        " com ID: '" + id + "'.")
-        );
+                        " com ID: '" + id + "'."));
     }
 
     @Override
@@ -190,8 +200,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             List<String> tiposPermitidos = List.of(
                     "image/jpeg",
                     "image/jpg",
-                    "image/png"
-            );
+                    "image/png");
 
             if (foto.getContentType() == null ||
                     !tiposPermitidos.contains(foto.getContentType())) {

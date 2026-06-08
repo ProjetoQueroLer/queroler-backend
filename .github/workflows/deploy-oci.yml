@@ -9,8 +9,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
-  DB_NAME: ${{ github.ref_name == 'main' && 'db_quero_ler_v2' || 'db_quero_ler_dev' }}
 
 jobs:
   build-and-push:
@@ -62,26 +60,39 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy-infrastructure:
-    name: Deploy OCI Infrastructure (${{ github.ref_name }})
+  deploy:
+    name: Deploy (${{ matrix.target }})
     needs: build-and-push
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
-
-    outputs:
-      public_ip: ${{ steps.instance_ip.outputs.public_ip }}
-      ssh_key: ${{ steps.ssh_key.outputs.ssh_key }}
+    strategy:
+      max-parallel: 1
+      matrix:
+        target: ${{ fromJSON(github.ref_name == 'main' && '["production"]' || '["staging", "tst"]') }}
+    environment: ${{ matrix.target }}
 
     env:
-      TF_VAR_name: ${{ vars.TF_VAR_NAME }}-${{ github.ref_name }}
-      TF_VAR_how_many_nodes: ${{ github.ref_name == 'main' && vars.TF_VAR_PROD_NODES || vars.TF_VAR_DEV_NODES }}
-      TF_VAR_shape: ${{ vars.TF_VAR_SHAPE }}
+      TF_WORKSPACE: queroler-backend-${{ matrix.target }}
+      DB_NAME: ${{ matrix.target == 'production' && 'db_quero_ler_v2' || format('db_quero_ler_{0}', matrix.target) }}
+      TF_VAR_name: ${{ vars.TF_VAR_NAME }}-${{ matrix.target }}
+      TF_VAR_how_many_nodes: ${{ matrix.target == 'production' && vars.TF_VAR_PROD_NODES || vars.TF_VAR_DEV_NODES }}
       TF_VAR_availability_domain: ${{ vars.TF_VAR_AVAILABILITY_DOMAIN }}
-      TF_VAR_ocpus_per_node: ${{ github.ref_name == 'main' && vars.TF_VAR_PROD_OCPUS || vars.TF_VAR_DEV_OCPUS }}
-      TF_VAR_memory_in_gbs_per_node: ${{ github.ref_name == 'main' && vars.TF_VAR_PROD_MEMORY || vars.TF_VAR_DEV_MEMORY }}
       TF_TOKEN_app_terraform_io: ${{ secrets.TF_CLOUD_TOKEN }}
 
+      # OCI credentials (shared across all terraform steps)
+      TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
+      TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
+      TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
+      TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
+      TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
+
+      # Duck DNS (configurável por ambiente)
+      TF_VAR_duck_dns_domain: ${{ vars.DUCK_DNS_DOMAIN }}
+      TF_VAR_duck_dns_token: ${{ secrets.DUCK_DNS_TOKEN }}
+
     steps:
+      # ==========================================
+      # Terraform - Infrastructure Provisioning
+      # ==========================================
       - name: Checkout Terraform Project
         uses: actions/checkout@v4
         with:
@@ -101,38 +112,46 @@ jobs:
       - name: Terraform Init
         working-directory: terraform-infra
         run: terraform init -input=false
-        env:
-          TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
-          TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
-          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
-          TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
-          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
 
-      - name: Terraform Plan
+      - name: Terraform Plan (Staging / Production)
+        if: matrix.target != 'tst'
         working-directory: terraform-infra
         run: terraform plan -input=false
-        env:
-          TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
-          TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
-          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
-          TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
-          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+      - name: Terraform Plan (Tst - shared VCN)
+        if: matrix.target == 'tst'
         working-directory: terraform-infra
-        env:
-          TF_VAR_user_ocid: ${{ secrets.TF_VAR_USER_OCID }}
-          TF_VAR_fingerprint: ${{ secrets.TF_VAR_FINGERPRINT }}
-          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
-          TF_VAR_region: ${{ secrets.TF_VAR_REGION }}
-          TF_VAR_private_key: ${{ secrets.OCI_TF_PRIVATE_KEY }}
+        run: |
+          VCN_ID=$(TF_WORKSPACE=queroler-backend-staging terraform output -raw vcn_id)
+          COMP_ID=$(TF_WORKSPACE=queroler-backend-staging terraform output -raw compartment_id)
+          echo "VCN_ID=$VCN_ID" >> $GITHUB_ENV
+          echo "COMP_ID=$COMP_ID" >> $GITHUB_ENV
+          terraform plan -input=false \
+            -var="create_network=false" \
+            -var="vcn_id=$VCN_ID" \
+            -var="vcn_compartment_id=$COMP_ID" \
+            -var="subnet_cidr=10.0.1.0/24"
+
+      - name: Terraform Apply (Staging / Production)
+        if: matrix.target != 'tst'
+        working-directory: terraform-infra
+        run: terraform apply -auto-approve -input=false
+
+      - name: Terraform Apply (Tst - shared VCN)
+        if: matrix.target == 'tst'
+        working-directory: terraform-infra
+        run: |
+          terraform apply -auto-approve -input=false \
+            -var="create_network=false" \
+            -var="vcn_id=$VCN_ID" \
+            -var="vcn_compartment_id=$COMP_ID" \
+            -var="subnet_cidr=10.0.1.0/24"
 
       - name: Get Instance IP
         id: instance_ip
         working-directory: terraform-infra
         run: |
-          IP=$(terraform output -raw ssh-with-ubuntu-user | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1)
+          IP=$(terraform output -json ssh-with-ubuntu-user | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1)
           echo "public_ip=$IP" >> $GITHUB_OUTPUT
 
       - name: Get SSH Key
@@ -152,17 +171,13 @@ jobs:
             sleep 10
           done
 
-  deploy-application:
-    name: Deploy Application (${{ github.ref_name }})
-    needs: [build-and-push, deploy-infrastructure]
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
-
-    steps:
+      # ==========================================
+      # Application Deployment via SSH
+      # ==========================================
       - name: Decode SSH Key
         id: decode_key
         run: |
-          DECODED=$(echo '${{ needs.deploy-infrastructure.outputs.ssh_key }}' | base64 -d)
+          DECODED=$(echo '${{ steps.ssh_key.outputs.ssh_key }}' | base64 -d)
           {
             echo "ssh_key<<ENDOFKEY"
             echo "$DECODED"
@@ -172,9 +187,11 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ needs.deploy-infrastructure.outputs.public_ip }}
+          host: ${{ steps.instance_ip.outputs.public_ip }}
           username: ubuntu
           key: ${{ steps.decode_key.outputs.ssh_key }}
+          timeout: 120s
+          command_timeout: 10m
           script: |
             sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
@@ -182,26 +199,24 @@ jobs:
             sudo systemctl restart docker
 
             # Cleanup any existing containers and volumes
-            sudo docker rm -f postgres-queroler-${{ github.ref_name }} 2>/dev/null || true
-            sudo docker rm -f api-queroler-${{ github.ref_name }} 2>/dev/null || true
-            sudo docker volume rm -f postgres_data_${{ github.ref_name }} 2>/dev/null || true
-
-            mkdir -p ~/queroler-deploy-${{ github.ref_name }}
-            cd ~/queroler-deploy-${{ github.ref_name }}
+            sudo docker rm -f postgres-queroler-${{ matrix.target }} 2>/dev/null || true
+            sudo docker rm -f api-queroler-${{ matrix.target }} 2>/dev/null || true
+            mkdir -p ~/queroler-deploy-${{ matrix.target }}
+            cd ~/queroler-deploy-${{ matrix.target }}
 
             cat > docker-compose.yml << 'EOF'
             services:
               db:
                 image: postgres:17
-                container_name: postgres-queroler-${{ github.ref_name }}
+                container_name: postgres-queroler-${{ matrix.target }}
                 environment:
                   POSTGRES_DB: ${{ env.DB_NAME }}
                   POSTGRES_USER: postgres
-                  POSTGRES_PASSWORD: ${{ github.ref_name == 'main' && secrets.DB_PASSWORD_PROD || secrets.DB_PASSWORD_DEV }}
+                  POSTGRES_PASSWORD: ${{ matrix.target == 'production' && secrets.DB_PASSWORD_PROD || (matrix.target == 'staging' && secrets.DB_PASSWORD_DEV || secrets.DB_PASSWORD_TST) }}
                 ports:
                   - "5432:5432"
                 volumes:
-                  - postgres_data_${{ github.ref_name }}:/var/lib/postgresql/data
+                  - /mnt/postgres-data:/var/lib/postgresql/data
                 healthcheck:
                   test: ["CMD-SHELL", "pg_isready -U postgres -d ${{ env.DB_NAME }}"]
                   interval: 10s
@@ -210,7 +225,7 @@ jobs:
 
               api:
                 image: ${{ needs.build-and-push.outputs.image_tag }}
-                container_name: api-queroler-${{ github.ref_name }}
+                container_name: api-queroler-${{ matrix.target }}
                 ports:
                   - "8080:8080"
                 depends_on:
@@ -219,26 +234,33 @@ jobs:
                 environment:
                   - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${{ env.DB_NAME }}
                   - SPRING_DATASOURCE_USERNAME=postgres
-                  - SPRING_DATASOURCE_PASSWORD=${{ github.ref_name == 'main' && secrets.DB_PASSWORD_PROD || secrets.DB_PASSWORD_DEV }}
+                  - SPRING_DATASOURCE_PASSWORD=${{ matrix.target == 'production' && secrets.DB_PASSWORD_PROD || (matrix.target == 'staging' && secrets.DB_PASSWORD_DEV || secrets.DB_PASSWORD_TST) }}
                   - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-                  - SPRING_PROFILES_ACTIVE=${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+                  - SPRING_PROFILES_ACTIVE=${{ matrix.target == 'production' && 'prod' || 'dev' }}
                   - API_SECURITY_TOKEN_SECRET=${{ secrets.API_SECURITY_TOKEN_SECRET }}
 
-            volumes:
-              postgres_data_${{ github.ref_name }}:
             EOF
 
+            sudo /usr/local/bin/format-mount-volume.sh
             sudo docker compose pull
-            sudo docker compose up -d || (sudo docker logs postgres-queroler-${{ github.ref_name }} && exit 1)
+            sudo docker compose up -d || (sudo docker logs postgres-queroler-${{ matrix.target }} && exit 1)
             sudo docker image prune -f
 
       - name: Show Deployment URL
         run: |
-          IP="${{ needs.deploy-infrastructure.outputs.public_ip }}"
-          echo "## :rocket: Deploy concluído com sucesso!" >> $GITHUB_STEP_SUMMARY
+          IP="${{ steps.instance_ip.outputs.public_ip }}"
+          DOMAIN="${{ vars.DUCK_DNS_DOMAIN }}"
+          echo "## Deploy concluído!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Ambiente | URL |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-----|" >> $GITHUB_STEP_SUMMARY
-          echo "| **${{ github.ref_name }}** | http://$IP:8080 |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Swagger: http://$IP:8080/swagger-ui/index.html" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$DOMAIN" ]; then
+            echo "| **${{ matrix.target }}** | http://$DOMAIN:8080 |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "DNS: http://$DOMAIN:8080" >> $GITHUB_STEP_SUMMARY
+            echo "Swagger: http://$DOMAIN:8080/swagger-ui/index.html" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| **${{ matrix.target }}** | http://$IP:8080 |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Swagger: http://$IP:8080/swagger-ui/index.html" >> $GITHUB_STEP_SUMMARY
+          fi

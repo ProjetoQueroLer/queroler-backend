@@ -1,6 +1,11 @@
 package com.usuario.quero_ler.exceptions;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.usuario.quero_ler.exceptions.especies.*;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -92,6 +97,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
+    @ExceptionHandler(CpfInvalidoException.class)
+    public ResponseEntity<Object> handlerCpfInvalidoException(CpfInvalidoException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
     @ExceptionHandler(GerarTokenException.class)
     public ResponseEntity<Object> handlerGerarTokenException(GerarTokenException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
@@ -100,6 +110,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(LerImagemException.class)
     public ResponseEntity<Object> handlerLerImagemException(LerImagemException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CpfJaCadastradoException.class)
+    public ResponseEntity<Object> handlerCpfJaCadastradoException(CpfJaCadastradoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(UsuarioSemPermissaoParaAcaoException.class)
@@ -153,25 +168,55 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-    @ExceptionHandler(com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException.class)
+    @ExceptionHandler(DataInvalidaException.class)
+    public ResponseEntity<Object> handlerDataInvalidaException(DataInvalidaException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(DiarioJaExisteException.class)
     public ResponseEntity<Object> handlerDiarioJaExiste(
-            com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException ex) {
+            DiarioJaExisteException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Object> handleConstraintViolationException(
+            ConstraintViolationException ex) {
+        String mensagemAmigavel = ex.getConstraintViolations()
+                .stream()
+                .map(ConstraintViolation::getMessage)
+                .findFirst()
+                .orElse("Erro de validação nos dados enviados.");
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensagemAmigavel);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Object> handleEnumError(HttpMessageNotReadableException ex) {
+        if (ex.getCause() instanceof InvalidFormatException e) {
+            return handleInvalidFormatException(e);
+        }
+        
+        return ResponseEntity.badRequest().body("Erro ao interpretar JSON: ");
+    }
 
-        if (ex.getCause() instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException e
-                && e.getTargetType().isEnum()) {
-
-            Object[] valores = e.getTargetType().getEnumConstants();
-
+    @ExceptionHandler(InvalidFormatException.class)
+    public ResponseEntity<Object> handleInvalidFormatException(InvalidFormatException ex) {
+        if (ex.getTargetType().isEnum()) {
+            Object[] valores = ex.getTargetType().getEnumConstants();
             String mensagem = "Valor inválido. Valores permitidos: " + Arrays.toString(valores);
-
             return ResponseEntity.badRequest().body(mensagem);
         }
 
-        return ResponseEntity.badRequest().body("Erro ao interpretar JSON.");
+        if (ex.getTargetType().equals(java.time.LocalDate.class) ||
+                ex.getTargetType().equals(java.time.LocalDateTime.class)) {
+
+            String campo = ex.getPath().isEmpty() ? "data" : ex.getPath().get(0).getFieldName();
+            String mensagem = String
+                    .format("O campo '%s' está com um formato de data inválido. Use o padrão DD/MM/YYYY.", campo);
+            return ResponseEntity.badRequest().body(mensagem);
+        }
+
+        return ResponseEntity.badRequest().body("Erro na formatação dos dados enviados: " + ex.getOriginalMessage());
     }
 }
