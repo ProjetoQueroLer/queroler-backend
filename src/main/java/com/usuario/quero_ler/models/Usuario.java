@@ -35,7 +35,7 @@ public class Usuario {
     @Column(name = "cpf", nullable = false, unique = true, length = 14)
     private String cpf;
 
-    @Past
+    @Past(message = "A data de nascimento deve ser no passado")
     @Column(name = "data_nascimento")
     private LocalDate dataDeNascimento;
 
