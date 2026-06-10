@@ -92,11 +92,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-    @ExceptionHandler(EmailJaCadastradoException.class)
-    public ResponseEntity<Object> handlerEmailJaCadastradoException(EmailJaCadastradoException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
-
     @ExceptionHandler(CpfInvalidoException.class)
     public ResponseEntity<Object> handlerCpfInvalidoException(CpfInvalidoException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -114,6 +109,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CpfJaCadastradoException.class)
     public ResponseEntity<Object> handlerCpfJaCadastradoException(CpfJaCadastradoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(EmailJaCadastradoException.class)
+    public ResponseEntity<Object> handlerEmailJaCadastradoException(EmailJaCadastradoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
@@ -196,7 +196,7 @@ public class GlobalExceptionHandler {
         if (ex.getCause() instanceof InvalidFormatException e) {
             return handleInvalidFormatException(e);
         }
-        
+
         return ResponseEntity.badRequest().body("Erro ao interpretar JSON: ");
     }
 

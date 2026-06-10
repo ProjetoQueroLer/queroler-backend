@@ -49,7 +49,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (repository.existsByEmailIgnoreCase(emailNormalizado)) {
             throw new EmailJaCadastradoException("O email '" + emailNormalizado + "' já está cadastrado.");
         }
-        
+
         Cpf.validateOrThrow(dto.cpf());
 
         String normalizedCpf = Cpf.normalize(dto.cpf());
@@ -86,9 +86,19 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public void atualizar(UsuarioAtualizadoLeitorRequest dto, MultipartFile foto) {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
+
+        String novoEmail = dto.email().trim().toLowerCase();
+
+        Optional<Usuario> usuarioComEmail = repository.findByEmailIgnoreCase(novoEmail);
+
+        if (usuarioComEmail.isPresent()
+                && !usuarioComEmail.get().getId().equals(usuario.getId())) {
+            throw new EmailJaCadastradoException("O email '" + novoEmail + "' já está cadastrado.");
+        }
+
         usuario = validarFoto(usuario, foto);
-        usuario = (dto != null ? mapper.update(usuario, dto) : usuario);
-        usuario = repository.save(usuario);
+        usuario = mapper.update(usuario, dto);
+        repository.save(usuario);
     }
 
     @Override
