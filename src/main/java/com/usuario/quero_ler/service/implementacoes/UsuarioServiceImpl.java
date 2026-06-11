@@ -42,7 +42,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Transactional
     @Override
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
-        Senhas.validarSenhasIguais(dto.senha(), dto.confirmarSenha());
 
         String emailNormalizado = dto.email().trim().toLowerCase();
 

@@ -29,14 +29,12 @@ public class UserFixture {
 
     public static UsuarioRequestDto requestDto() {
         return new UsuarioRequestDto(
-                NOME, EMAIL, CONFIRMAR_EMAIL, SENHA, CONFIRMAR_SENHA, CPF,
-                DATA_DE_NASCIMENTO, CHECK_TERMO);
+                NOME, EMAIL, SENHA, CPF, DATA_DE_NASCIMENTO, CHECK_TERMO);
     }
 
     public static UsuarioRequestDto requestDto(String senha) {
         return new UsuarioRequestDto(
-                NOME, EMAIL, CONFIRMAR_EMAIL, senha, senha, CPF,
-                DATA_DE_NASCIMENTO, CHECK_TERMO);
+                NOME, EMAIL, senha, CPF, DATA_DE_NASCIMENTO, CHECK_TERMO);
     }
 
     public static String requestDtoString() {
