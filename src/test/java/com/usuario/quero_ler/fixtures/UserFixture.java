@@ -114,12 +114,6 @@ public class UserFixture {
                 user.getCidade(), user.getEstado(), user.getPais(), "/usuarios/foto");
     }
 
-    public static UsuarioDadosResponse responseDados(Usuario user) {
-        return new UsuarioDadosResponse(
-                user.getNome(), user.getEmail(), user.getDataDeNascimento(),
-                user.getCidade(), user.getEstado(), user.getPais(), user.getFoto());
-    }
-
     public static Usuario atualizar(Usuario usuario, UsuarioAtualizadoAdministradorRequest atualizacoes) {
         usuario.setDataDeNascimento(atualizacoes.dataDeNascimento() != null ? atualizacoes.dataDeNascimento()
                 : usuario.getDataDeNascimento());

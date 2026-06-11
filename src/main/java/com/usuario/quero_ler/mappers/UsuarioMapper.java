@@ -1,8 +1,8 @@
 package com.usuario.quero_ler.mappers;
 
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.utils.Cpf;
 import com.usuario.quero_ler.models.Usuario;
+import com.usuario.quero_ler.utils.Cpf;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -65,17 +65,6 @@ public class UsuarioMapper {
                 usuario.getEstado(),
                 usuario.getPais(),
                 getUrlFoto(usuario));
-    }
-
-    public UsuarioDadosResponse toResponseDados(Usuario usuario) {
-        return new UsuarioDadosResponse(
-                usuario.getNome(),
-                usuario.getEmail(),
-                usuario.getDataDeNascimento(),
-                usuario.getCidade(),
-                usuario.getEstado(),
-                usuario.getPais(),
-                usuario.getFoto());
     }
 
     protected String getUrlFoto(Usuario usuario) {

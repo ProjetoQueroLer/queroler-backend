@@ -78,9 +78,9 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public UsuarioDadosResponse getDadosDoUsuario() {
+    public UsuarioResponseDto getDadosDoUsuario() {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
-        return mapper.toResponseDados(usuario);
+        return mapper.toResponse(usuario);
     }
 
     @Override
