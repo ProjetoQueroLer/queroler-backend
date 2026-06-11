@@ -40,13 +40,17 @@ public class Livro {
     @Column(name = "capa")
     private byte[] capaDoLivro;
 
+
+		@Builder.Default
     @ManyToMany
     @JoinTable(name = "tb_livro_autor", joinColumns = @JoinColumn(name = "livro_id"), inverseJoinColumns = @JoinColumn(name = "autor_id"))
     private List<Autor> autores = new ArrayList<>();
 
+		@Builder.Default
     @OneToMany(mappedBy = "livro", fetch = FetchType.LAZY)
     private List<UsuarioLivro> usuarios = new ArrayList<>();
 
+		@Builder.Default
     @Setter(AccessLevel.NONE)
     @Column(name = "data_de_cadastro", nullable = false)
     private LocalDateTime dataDeCadastro = LocalDateTime.now();
