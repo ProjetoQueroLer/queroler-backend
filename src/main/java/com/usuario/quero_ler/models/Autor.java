@@ -23,6 +23,7 @@ public class Autor {
     @Column(name = "nome", nullable = false, length = 80)
     private String nome;
 
+		@Builder.Default
     @ManyToMany(mappedBy = "autores")
     List<Livro> livros = new ArrayList<>();
 }

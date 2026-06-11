@@ -1,32 +1,6 @@
 package com.usuario.quero_ler.service.implementacoes;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import com.usuario.quero_ler.utils.Senhas;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
-
-import com.usuario.quero_ler.dtos.usuario.UsuarioAlterarSenhaRequest;
-import com.usuario.quero_ler.dtos.usuario.UsuarioAtualizadoAdministradorRequest;
-import com.usuario.quero_ler.dtos.usuario.UsuarioAtualizadoLeitorRequest;
-import com.usuario.quero_ler.dtos.usuario.UsuarioDadosComplementarRequest;
-import com.usuario.quero_ler.dtos.usuario.UsuarioDadosResponse;
-import com.usuario.quero_ler.dtos.usuario.UsuarioRequestDto;
-import com.usuario.quero_ler.dtos.usuario.UsuarioResponseDto;
+import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.FotoNaoCadastradaException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioNaoEncontradoException;
@@ -42,6 +16,22 @@ import com.usuario.quero_ler.repository.UsuarioRepository;
 import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.service.LoginService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UsuarioServiceImplTest {
@@ -63,8 +53,6 @@ class UsuarioServiceImplTest {
 
     @Mock
     private TokenService tokenService;
-
-
 
     @Mock
     private UsuarioNotificacaoRepository usuarioNotificacaoRepository;
@@ -130,7 +118,7 @@ class UsuarioServiceImplTest {
 
     @Test
     @DisplayName("Deve buscar a foto no perfil do usuario logado")
-    void deveBuscarAFotoNoPerfilDoUsuarioLogado(){
+    void deveBuscarAFotoNoPerfilDoUsuarioLogado() {
         Usuario usuario = UserFixture.entidadeCompleta();
         User user = new User();
         user.setUsuario(usuario);
@@ -147,7 +135,7 @@ class UsuarioServiceImplTest {
 
     @Test
     @DisplayName("Deve lançar excessão ao buscar a foto no perfil sem foto")
-    void deveLancarExcessaoAoBuscarAFotoDePerfilSemFof(){
+    void deveLancarExcessaoAoBuscarAFotoDePerfilSemFof() {
         Usuario usuario = UserFixture.entidadeCompleta();
         usuario.setFoto(null);
         User user = new User();
@@ -156,9 +144,9 @@ class UsuarioServiceImplTest {
         when(loginService.getUsuarioLogado()).thenReturn(user);
 
         FotoNaoCadastradaException exception = assertThrows(FotoNaoCadastradaException.class,
-                ()-> service.buscarFoto());
+                () -> service.buscarFoto());
 
-        assertEquals("Foto não cadastrada",exception.getMessage());
+        assertEquals("Foto não cadastrada", exception.getMessage());
 
         verify(loginService).getUsuarioLogado();
     }
@@ -176,7 +164,7 @@ class UsuarioServiceImplTest {
         when(mapper.complementarCadastro(usuarioComDadosBasicos, dto)).thenReturn(usuarioComDadosCompletos);
         when(repository.save(usuarioComDadosCompletos)).thenReturn(usuarioComDadosCompletos);
 
-        service.adicionarDados(dto,null);
+        service.adicionarDados(dto, null);
 
         verify(loginService).getUsuarioLogado();
     }
@@ -200,9 +188,9 @@ class UsuarioServiceImplTest {
         when(mapper.complementarCadastro(usuarioComDadosBasicos, dto)).thenReturn(usuarioComDadosCompletos);
         when(repository.save(usuarioComDadosCompletos)).thenReturn(usuarioComDadosCompletos);
 
-        service.adicionarDados(dto,foto);
+        service.adicionarDados(dto, foto);
 
-        verify(mapper).complementarCadastro(usuarioComDadosBasicos,dto);
+        verify(mapper).complementarCadastro(usuarioComDadosBasicos, dto);
         verify(repository).save(usuarioComDadosCompletos);
         verify(loginService).getUsuarioLogado();
     }
@@ -213,20 +201,21 @@ class UsuarioServiceImplTest {
         User user = UserFixture.userEntity(UsuarioProfile.MODERADOR);
         Usuario usuario = UserFixture.entidadeCompleta(user);
         user.setUsuario(usuario);
-        UsuarioDadosResponse response = UserFixture.responseDados(usuario);
+        UsuarioResponseDto response = UserFixture.response(usuario);
 
         when(loginService.getUsuarioLogado()).thenReturn(user);
-        when(mapper.toResponseDados(usuario)).thenReturn(response);
+        when(mapper.toResponse(usuario)).thenReturn(response);
 
-        UsuarioDadosResponse resposta = service.getDadosDoUsuario();
+        UsuarioResponseDto resposta = service.getDadosDoUsuario();
 
         assertEquals(usuario.getNome(), resposta.nome());
         assertEquals(usuario.getEmail(), resposta.email());
+        assertEquals(usuario.getCpf(), resposta.cpf());
         assertEquals(usuario.getDataDeNascimento(), resposta.dataDeNascimento());
         assertEquals(usuario.getCidade(), resposta.cidade());
         assertEquals(usuario.getEstado(), resposta.estado());
         assertEquals(usuario.getPais(), resposta.pais());
-        assertEquals(usuario.getFoto(), resposta.foto());
+        assertNotNull(resposta.fotoUrl());
     }
 
     @Test
@@ -246,7 +235,7 @@ class UsuarioServiceImplTest {
         when(mapper.update(usuario, atualizacoes)).thenReturn(usuarioAtualizado);
         when(repository.save(usuarioAtualizado)).thenReturn(usuarioAtualizado);
 
-        service.atualizar(atualizacoes,null);
+        service.atualizar(atualizacoes, null);
 
         verify(mapper).update(usuario, atualizacoes);
         verify(repository).save(usuarioAtualizado);
@@ -274,7 +263,7 @@ class UsuarioServiceImplTest {
         when(mapper.update(usuario, atualizacoes)).thenReturn(usuarioAtualizado);
         when(repository.save(usuarioAtualizado)).thenReturn(usuarioAtualizado);
 
-        service.atualizar(atualizacoes,foto);
+        service.atualizar(atualizacoes, foto);
 
         verify(mapper).update(usuario, atualizacoes);
         verify(repository).save(usuarioAtualizado);

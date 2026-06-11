@@ -29,14 +29,12 @@ public class UserFixture {
 
     public static UsuarioRequestDto requestDto() {
         return new UsuarioRequestDto(
-                NOME, EMAIL, CONFIRMAR_EMAIL, SENHA, CONFIRMAR_SENHA, CPF,
-                DATA_DE_NASCIMENTO, CHECK_TERMO);
+                NOME, EMAIL, SENHA, CPF, DATA_DE_NASCIMENTO, CHECK_TERMO);
     }
 
     public static UsuarioRequestDto requestDto(String senha) {
         return new UsuarioRequestDto(
-                NOME, EMAIL, CONFIRMAR_EMAIL, senha, senha, CPF,
-                DATA_DE_NASCIMENTO, CHECK_TERMO);
+                NOME, EMAIL, senha, CPF, DATA_DE_NASCIMENTO, CHECK_TERMO);
     }
 
     public static String requestDtoString() {
@@ -112,12 +110,6 @@ public class UserFixture {
                 user.getId(), user.getNome(), user.getEmail(), user.getCpf(),
                 user.getUser().getProfile(), user.getDataDeNascimento(), user.getAceitarTermos(),
                 user.getCidade(), user.getEstado(), user.getPais(), "/usuarios/foto");
-    }
-
-    public static UsuarioDadosResponse responseDados(Usuario user) {
-        return new UsuarioDadosResponse(
-                user.getNome(), user.getEmail(), user.getDataDeNascimento(),
-                user.getCidade(), user.getEstado(), user.getPais(), user.getFoto());
     }
 
     public static Usuario atualizar(Usuario usuario, UsuarioAtualizadoAdministradorRequest atualizacoes) {
