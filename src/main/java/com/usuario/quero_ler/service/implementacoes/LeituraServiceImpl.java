@@ -1,11 +1,11 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.livro.LivroTelaLeituraResponse;
-import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.mappers.LivroMapper;
-import com.usuario.quero_ler.models.UsuarioLivro;
-import com.usuario.quero_ler.repository.UsuarioLivroRepository;
-import com.usuario.quero_ler.service.EstanteDoUsuarioService;
+import com.usuario.quero_ler.models.Leitura;
+import com.usuario.quero_ler.repository.LeituraRepository;
+import com.usuario.quero_ler.service.LeituraService;
 import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +19,10 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class EstanteDoUsuarioServiceImpl implements EstanteDoUsuarioService {
+public class LeituraServiceImpl implements LeituraService {
     private final LivroService livroService;
     private final UsuarioService usuarioService;
-    private final UsuarioLivroRepository repository;
+    private final LeituraRepository repository;
     private final LivroMapper livroMapper;
 
     @Override
@@ -33,15 +33,15 @@ public class EstanteDoUsuarioServiceImpl implements EstanteDoUsuarioService {
     @Override
     public Page<LivroTelaLeituraResponse> lista(Long id, Pageable pageable) {
 
-        Page<UsuarioLivro> pageUsuarioLivros = repository.findAllByUsuarioId(id, pageable);
+        Page<Leitura> pageUsuarioLivros = repository.findAllByUsuarioId(id, pageable);
 
         List<LivroTelaLeituraResponse> resposta = new ArrayList<>();
 
-        for (UsuarioLivro usuarioLivro : pageUsuarioLivros.getContent()) {
+        for (Leitura leitura : pageUsuarioLivros.getContent()) {
             resposta.add(
                     livroMapper.toLivroTelaLeituraResponse(
-                            usuarioLivro.getLivro(),
-                            usuarioLivro.getStatus()
+                            leitura.getLivro(),
+                            leitura.getStatus()
                     )
             );
         }
@@ -50,6 +50,6 @@ public class EstanteDoUsuarioServiceImpl implements EstanteDoUsuarioService {
     }
 
     @Override
-    public void mudarStatus(Long idUsuario, String isbn, LivroStatus status) {
+    public void mudarStatus(Long idUsuario, String isbn, LeituraStatus status) {
     }
 }

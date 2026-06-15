@@ -31,9 +31,9 @@ public class AcompanhamentoDeLeituraServiceImpl implements AcompanhamentoDeLeitu
         List<AcompanhamentoResponseDto> resp = new ArrayList<>();
         for (AcompanhamentoDeLeitura a : lista) {
             Long usuarioId = null;
-            if (a.getDiarioDeLeitura() != null && a.getDiarioDeLeitura().getUsuarioLivro() != null
-                    && a.getDiarioDeLeitura().getUsuarioLivro().getUsuario() != null) {
-                usuarioId = a.getDiarioDeLeitura().getUsuarioLivro().getUsuario().getId();
+            if (a.getDiarioDeLeitura() != null && a.getDiarioDeLeitura().getLeitura() != null
+                    && a.getDiarioDeLeitura().getLeitura().getUsuario() != null) {
+                usuarioId = a.getDiarioDeLeitura().getLeitura().getUsuario().getId();
             }
             Long diarioId = a.getDiarioDeLeitura() != null ? a.getDiarioDeLeitura().getId() : null;
             resp.add(new AcompanhamentoResponseDto(a.getId(), a.getPaginaInicial(), a.getPaginaFinal(),
@@ -49,9 +49,9 @@ public class AcompanhamentoDeLeituraServiceImpl implements AcompanhamentoDeLeitu
         List<AcompanhamentoResponseDto> resp = new ArrayList<>();
         for (AcompanhamentoDeLeitura a : lista) {
             Long uId = null;
-            if (a.getDiarioDeLeitura() != null && a.getDiarioDeLeitura().getUsuarioLivro() != null
-                    && a.getDiarioDeLeitura().getUsuarioLivro().getUsuario() != null) {
-                uId = a.getDiarioDeLeitura().getUsuarioLivro().getUsuario().getId();
+            if (a.getDiarioDeLeitura() != null && a.getDiarioDeLeitura().getLeitura() != null
+                    && a.getDiarioDeLeitura().getLeitura().getUsuario() != null) {
+                uId = a.getDiarioDeLeitura().getLeitura().getUsuario().getId();
             }
             Long diarioId = a.getDiarioDeLeitura() != null ? a.getDiarioDeLeitura().getId() : null;
             resp.add(new AcompanhamentoResponseDto(a.getId(), a.getPaginaInicial(), a.getPaginaFinal(),

@@ -41,7 +41,7 @@ class AcompanhamentoDeLeituraServiceImplListarTest {
                 .diarioDeLeitura(diario)
                 .build();
 
-        when(acompanhamentoRepository.findByDiarioDeLeitura_UsuarioLivro_Livro_Id(livroId))
+        when(acompanhamentoRepository.findByDiarioDeLeitura_Leitura_Livro_Id(livroId))
                 .thenReturn(List.of(acomp));
 
         List<AcompanhamentoResponseDto> resp = service.listarPorLivro(livroId);
@@ -68,7 +68,7 @@ class AcompanhamentoDeLeituraServiceImplListarTest {
                 .diarioDeLeitura(diario)
                 .build();
 
-        when(acompanhamentoRepository.findByDiarioDeLeitura_UsuarioLivro_Usuario_Id(usuarioId))
+        when(acompanhamentoRepository.findByDiarioDeLeitura_Leitura_Usuario_Id(usuarioId))
                 .thenReturn(List.of(acomp));
 
         List<AcompanhamentoResponseDto> resp = service.listarPorUsuario(usuarioId);

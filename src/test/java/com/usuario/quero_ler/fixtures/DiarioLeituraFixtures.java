@@ -9,7 +9,7 @@ import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.Usuario;
-import com.usuario.quero_ler.models.UsuarioLivro;
+import com.usuario.quero_ler.models.Leitura;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.dtos.livro.LivroResumoResponseDto;
 
@@ -37,13 +37,13 @@ public final class DiarioLeituraFixtures {
         Usuario usuario = new Usuario();
         usuario.setId(usuarioId);
 
-        UsuarioLivro usuarioLivro = new UsuarioLivro();
-        usuarioLivro.setLivro(livro);
-        usuarioLivro.setUsuario(usuario);
+        Leitura leitura = new Leitura();
+        leitura.setLivro(livro);
+        leitura.setUsuario(usuario);
 
         DiarioDeLeitura diario = new DiarioDeLeitura();
         diario.setId(diarioId);
-        diario.setUsuarioLivro(usuarioLivro);
+        diario.setLeitura(leitura);
         diario.setInicioDaLeitura(LocalDateTime.now().minusDays(1));
         diario.setTerminoDaLeitura(LocalDateTime.now());
         diario.setPaginasLidas(10);

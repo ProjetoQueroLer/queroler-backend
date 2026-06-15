@@ -11,7 +11,7 @@ import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.mappers.LivroMapper;
 import com.usuario.quero_ler.models.*;
 import com.usuario.quero_ler.repository.LivroRepository;
-import com.usuario.quero_ler.repository.UsuarioLivroRepository;
+import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.utils.LivroFiltro;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +54,7 @@ class LivroServiceImplTest {
     private MultipartFile multipartFile;
 
     @Mock
-    private UsuarioLivroRepository usuarioLivroRepository;
+    private LeituraRepository leituraRepository;
 
     @Mock
     private LoginService loginService;

@@ -48,7 +48,7 @@ public class Livro {
 
 		@Builder.Default
     @OneToMany(mappedBy = "livro", fetch = FetchType.LAZY)
-    private List<UsuarioLivro> usuarios = new ArrayList<>();
+    private List<Leitura> usuarios = new ArrayList<>();
 
 		@Builder.Default
     @Setter(AccessLevel.NONE)

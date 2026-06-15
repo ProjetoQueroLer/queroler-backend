@@ -2,11 +2,12 @@ package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.fixtures.LivroFixture;
 import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
+import com.usuario.quero_ler.service.AcompanhamentoDeLeituraService;
 import com.usuario.quero_ler.service.LivroService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,9 @@ class LivroControllerTest {
 
     @MockitoBean
     private UserRepository userRepository;
+
+    @MockitoBean
+    private AcompanhamentoDeLeituraService acompanhamentoDeLeituraService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -143,7 +147,7 @@ class LivroControllerTest {
                 .andExpect(jsonPath("$.titulo").value(response.titulo()))
                 .andExpect(jsonPath("$.isbn").value(response.isbn()))
                 .andExpect(jsonPath("$.editora").value(response.editora()))
-                .andExpect(jsonPath("$.anoDePublicacao").value(response.anoDePublicacao()))
+                .andExpect(jsonPath("$.anoDePublicacao").value(response.anoDePublicacao().toString()))
                 .andExpect(jsonPath("$.numeroDePaginas").value(response.numeroDePaginas()))
                 .andExpect(jsonPath("$.idioma").value(response.idioma().name()));
 
@@ -234,7 +238,7 @@ class LivroControllerTest {
     void deveAlterarStatusDoLivro() throws Exception {
 
         Long idLivro = 1L;
-        LivroStatus status = LivroStatus.LIVROS_LIDOS;
+        LeituraStatus status = LeituraStatus.LIVROS_LIDOS;
 
         mockMvc.perform(
                         put("/livros/{id}/usuario", idLivro)
@@ -253,7 +257,7 @@ class LivroControllerTest {
     @DisplayName("Deve retornar livros do usuário para tela de leitura com sucesso")
     void deveRetornarLivrosTelaDeLeituraDoUsuario() throws Exception {
 
-        LivroTelaLeituraResponse response = LivroFixture.responseTelaDeLeitura(LivroStatus.LIVROS_QUE_QUERO_LER);
+        LivroTelaLeituraResponse response = LivroFixture.responseTelaDeLeitura(LeituraStatus.LIVROS_QUE_QUERO_LER);
         Page<LivroTelaLeituraResponse> page =
                 new PageImpl<>(List.of(response));
 
@@ -279,7 +283,7 @@ class LivroControllerTest {
     @DisplayName("Deve retornar livros detalhado do usuário com sucesso")
     void deveRetornarLivrosDetalhadosDoUsuario() throws Exception {
 
-        LivroDetalhadoResponse response = LivroFixture.responseDetalhado(LivroStatus.LIVROS_QUE_QUERO_LER);
+        LivroDetalhadoResponse response = LivroFixture.responseDetalhado(LeituraStatus.LIVROS_QUE_QUERO_LER);
         Page<LivroDetalhadoResponse> page = new PageImpl<>(List.of(response));
 
         when(serviceI.getLivrosDoUsuario(

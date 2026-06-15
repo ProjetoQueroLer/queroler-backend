@@ -65,5 +65,5 @@ public class Usuario {
     private List<UsuarioNotificacao> notificacoes;
 
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
-    private List<UsuarioLivro> livros;
+    private List<Leitura> livros;
 }

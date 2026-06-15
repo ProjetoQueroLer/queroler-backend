@@ -2,11 +2,11 @@ package com.usuario.quero_ler.fixtures;
 
 import com.usuario.quero_ler.dtos.livro.*;
 import com.usuario.quero_ler.enums.LivroIdioma;
-import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.enums.TiposDeBusca;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.models.Livro;
-import com.usuario.quero_ler.models.UsuarioLivro;
+import com.usuario.quero_ler.models.Leitura;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +26,7 @@ public class LivroFixture {
     private static final String SINOPSE = "Um guia sobre boas práticas de programação e escrita de código limpo.";
     private static final byte[] CAPADOLIVRO = carregarImagem();
     private static final List<Autor> AUTORES = new ArrayList<>();
-    private static final List<UsuarioLivro> USUARIOS = new ArrayList<>();
+    private static final List<Leitura> USUARIOS = new ArrayList<>();
     private static final LocalDateTime DATA_DE_CADASTRO = LocalDateTime.now();
 
 
@@ -120,7 +120,7 @@ public static Livro entityComCapa(){
         );
     }
 
-    public static LivroTelaLeituraResponse responseTelaDeLeitura(LivroStatus status){
+    public static LivroTelaLeituraResponse responseTelaDeLeitura(LeituraStatus status){
         return new LivroTelaLeituraResponse(
                 TITULO,
                 status,
@@ -129,7 +129,7 @@ public static Livro entityComCapa(){
         );
     }
 
-    public static LivroDetalhadoResponse responseDetalhado(LivroStatus status){
+    public static LivroDetalhadoResponse responseDetalhado(LeituraStatus status){
         return new LivroDetalhadoResponse(
                 "/livros/"+ ID + "/capa",
                 TITULO,

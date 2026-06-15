@@ -1,13 +1,13 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.*;
 import com.usuario.quero_ler.mappers.UsuarioMapper;
 import com.usuario.quero_ler.models.*;
 import com.usuario.quero_ler.repository.UserRepository;
-import com.usuario.quero_ler.repository.UsuarioLivroRepository;
+import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
 import com.usuario.quero_ler.service.LivroService;
@@ -35,7 +35,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UserRepository userRepository;
     private final UsuarioMapper mapper;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
-    private final UsuarioLivroRepository usuarioLivroRepository;
+    private final LeituraRepository leituraRepository;
     private final LivroService livroService;
     private final LoginService loginService;
 
@@ -142,10 +142,10 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void adicionarLivro(Long idLivro, LivroStatus status) {
+    public void adicionarLivro(Long idLivro, LeituraStatus status) {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
 
-        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByUsuarioIdAndLivroId(usuario.getId(),
+        Optional<Leitura> usuarioLivro = leituraRepository.findByUsuarioIdAndLivroId(usuario.getId(),
                 idLivro);
         if (usuarioLivro.isPresent()) {
             throw new UsuarioJaPossueOLivroException("O usuario já possue o livro na estante.");
@@ -157,12 +157,12 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioLivroId.setUsuarioId(usuario.getId());
         usuarioLivroId.setLivroId(livro.getId());
 
-        UsuarioLivro novoUsuarioLivro = new UsuarioLivro();
-        novoUsuarioLivro.setId(usuarioLivroId);
-        novoUsuarioLivro.setUsuario(usuario);
-        novoUsuarioLivro.setLivro(livro);
-        novoUsuarioLivro.setStatus(status);
-        usuarioLivroRepository.save(novoUsuarioLivro);
+        Leitura novoLeitura = new Leitura();
+        novoLeitura.setId(usuarioLivroId);
+        novoLeitura.setUsuario(usuario);
+        novoLeitura.setLivro(livro);
+        novoLeitura.setStatus(status);
+        leituraRepository.save(novoLeitura);
     }
 
     public User getUsuarioLogado() {

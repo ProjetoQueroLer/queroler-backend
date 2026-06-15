@@ -2,7 +2,7 @@
 package com.usuario.quero_ler.service;
 
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.models.Usuario;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +15,6 @@ public interface UsuarioService {
     void atualizar(UsuarioAtualizadoAdministradorRequest dto, MultipartFile foto);
     void alterarSenha(UsuarioAlterarSenhaRequest dto);
     void excluirPerfil();
-    void adicionarLivro(Long idLivro, LivroStatus status);
+    void adicionarLivro(Long idLivro, LeituraStatus status);
     byte[] buscarFoto();
 }
