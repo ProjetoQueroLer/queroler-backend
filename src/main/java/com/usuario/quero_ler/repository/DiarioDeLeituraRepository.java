@@ -1,7 +1,7 @@
 package com.usuario.quero_ler.repository;
 
 import com.usuario.quero_ler.models.DiarioDeLeitura;
-import com.usuario.quero_ler.models.UsuarioLivro;
+import com.usuario.quero_ler.models.Leitura;
 
 import java.util.Optional;
 
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DiarioDeLeituraRepository extends JpaRepository<DiarioDeLeitura, Long> {
 
-    boolean existsByUsuarioLivro(UsuarioLivro usuarioLivro);
+    boolean existsByLeitura(Leitura leitura);
 
-    @Query("SELECT d FROM DiarioDeLeitura d WHERE d.usuarioLivro.id.usuarioId = :usuarioId AND d.usuarioLivro.id.livroId = :livroId")
+    @Query("SELECT d FROM DiarioDeLeitura d WHERE d.leitura.id.usuarioId = :usuarioId AND d.leitura.id.livroId = :livroId")
     Optional<DiarioDeLeitura> findByUsuarioIdAndLivroId(@Param("usuarioId")Long usuarioId, @Param("livroId")Long livroId);
 }

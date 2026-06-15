@@ -1,20 +1,15 @@
 package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enums.LivroStatus;
-import com.usuario.quero_ler.service.LivroService;
-import com.usuario.quero_ler.service.AcompanhamentoDeLeituraService;
 import com.usuario.quero_ler.dtos.leitura.AcompanhamentoResponseDto;
-import java.util.List;
-
+import com.usuario.quero_ler.dtos.livro.*;
+import com.usuario.quero_ler.enums.LeituraStatus;
+import com.usuario.quero_ler.service.AcompanhamentoDeLeituraService;
+import com.usuario.quero_ler.service.LivroService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Set;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,73 +18,75 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Set;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/livros")
 public class LivroController {
 
-        private final AcompanhamentoDeLeituraService acompanhamentoService;
-        private final LivroService serviceI;
-        private final ObjectMapper mapper;
-        private final Validator validator;
+    private final AcompanhamentoDeLeituraService acompanhamentoService;
+    private final LivroService serviceI;
+    private final ObjectMapper mapper;
+    private final Validator validator;
 
-        @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        public ResponseEntity<Void> cadastrar(
-                        @RequestPart(value = "imagem", required = false) MultipartFile capaDoLivro,
-                        @RequestPart("dados") String dadosJson) throws Exception {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> cadastrar(
+            @RequestPart(value = "imagem", required = false) MultipartFile capaDoLivro,
+            @RequestPart("dados") String dadosJson) throws Exception {
 
-                LivroRequest dto = mapper.readValue(dadosJson, LivroRequest.class);
-                serviceI.criar(dto, capaDoLivro);
+        LivroRequest dto = mapper.readValue(dadosJson, LivroRequest.class);
 
-                Set<ConstraintViolation<LivroRequest>> violations = validator.validate(dto);
+        Set<ConstraintViolation<LivroRequest>> violations = validator.validate(dto);
 
-                if (!violations.isEmpty()) {
-                        throw new ConstraintViolationException(violations);
-                }
-
-                serviceI.criar(dto, capaDoLivro);
-                return ResponseEntity.status(HttpStatus.CREATED).build();
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
         }
 
-        @GetMapping()
-        public ResponseEntity<Page<LivroCardResponse>> buscar(@RequestParam(required = false) String titulo,
-                        @RequestParam(required = false) String editora,
-                        @RequestParam(required = false) String autor,
-                        Pageable pageable) {
-                return ResponseEntity.status(HttpStatus.OK).body(serviceI.buscar(titulo, editora, autor, pageable));
-        }
+        serviceI.criar(dto, capaDoLivro);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 
-        @GetMapping("/populares")
-        ResponseEntity<Page<LivroResponse>> listarPopulares() {
-                Page<LivroResponse> page = serviceI.listarPopulares();
+    @GetMapping()
+    public ResponseEntity<Page<LivroCardResponse>> buscar(@RequestParam(required = false) String titulo,
+                                                          @RequestParam(required = false) String editora,
+                                                          @RequestParam(required = false) String autor,
+                                                          Pageable pageable) {
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.buscar(titulo, editora, autor, pageable));
+    }
 
-                return ResponseEntity.status(HttpStatus.OK).body(page);
-        }
+    @GetMapping("/populares")
+    ResponseEntity<Page<LivroResponse>> listarPopulares() {
+        Page<LivroResponse> page = serviceI.listarPopulares();
+
+        return ResponseEntity.status(HttpStatus.OK).body(page);
+    }
 
     @GetMapping("/buscar/{isbn}")
     public ResponseEntity<LivroResponse> buscar(@PathVariable String isbn) {
         return ResponseEntity.status(HttpStatus.OK).body(serviceI.buscarIsbn(isbn));
     }
 
-        @GetMapping("/{id}/capa")
-        public ResponseEntity<byte[]> buscarCapa(@PathVariable Long id) {
-                return ResponseEntity.ok()
-                                .contentType(MediaType.IMAGE_JPEG)
-                                .body(serviceI.buscarCapa(id));
-        }
+    @GetMapping("/{id}/capa")
+    public ResponseEntity<byte[]> buscarCapa(@PathVariable Long id) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(serviceI.buscarCapa(id));
+    }
 
-        @PutMapping("/{id}/capa")
-        public ResponseEntity<Void> inserirCapa(
-                        @PathVariable Long id,
-                        @RequestPart(value = "imagem") MultipartFile capaDoLivro) {
+    @PutMapping("/{id}/capa")
+    public ResponseEntity<Void> inserirCapa(
+            @PathVariable Long id,
+            @RequestPart(value = "imagem") MultipartFile capaDoLivro) {
 
-                serviceI.inserirCapaDoLivro(id, capaDoLivro);
-                return ResponseEntity.noContent().build();
-        }
+        serviceI.inserirCapaDoLivro(id, capaDoLivro);
+        return ResponseEntity.noContent().build();
+    }
 
     @PutMapping("/{id}/usuario")
     public ResponseEntity<Void> mudarStatus(@PathVariable Long id,
-            @RequestParam LivroStatus status) {
+                                            @RequestParam LeituraStatus status) {
         serviceI.alterarStatusDoLivroNoUsuario(id, status);
         return ResponseEntity.ok().build();
     }

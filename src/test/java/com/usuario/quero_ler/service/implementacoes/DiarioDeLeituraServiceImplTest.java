@@ -33,10 +33,10 @@ import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.models.Usuario;
-import com.usuario.quero_ler.models.UsuarioLivro;
+import com.usuario.quero_ler.models.Leitura;
 import com.usuario.quero_ler.models.UsuarioLivroId;
 import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
-import com.usuario.quero_ler.repository.UsuarioLivroRepository;
+import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.service.LoginService;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,7 +49,7 @@ class DiarioDeLeituraServiceImplTest {
 	private DiarioDeLeituraRepository repository;
 
 	@Mock
-	private UsuarioLivroRepository usuarioLivroRepository;
+	private LeituraRepository leituraRepository;
 
 	@Mock
 	private LoginService loginService;
@@ -74,9 +74,9 @@ class DiarioDeLeituraServiceImplTest {
 		id.setUsuarioId(1L);
 		id.setLivroId(2L);
 
-		UsuarioLivro usuarioLivro = new UsuarioLivro();
-		usuarioLivro.setId(id);
-		usuarioLivro.setUsuario(new Usuario());
+		Leitura leitura = new Leitura();
+		leitura.setId(id);
+		leitura.setUsuario(new Usuario());
 
 		User user = new User();
 		Usuario usuario = new Usuario();
@@ -84,8 +84,8 @@ class DiarioDeLeituraServiceImplTest {
 		user.setUsuario(usuario);
 		when(loginService.getUsuarioLogado()).thenReturn(user);
 
-		when(usuarioLivroRepository.findByUsuarioIdAndLivroId(1L, 2L))
-				.thenReturn(Optional.of(usuarioLivro));
+		when(leituraRepository.findByUsuarioIdAndLivroId(1L, 2L))
+				.thenReturn(Optional.of(leitura));
 
 		service.criar(dto);
 
@@ -111,7 +111,7 @@ class DiarioDeLeituraServiceImplTest {
 		user.setUsuario(usuario);
 		when(loginService.getUsuarioLogado()).thenReturn(user);
 
-		when(usuarioLivroRepository.findByUsuarioIdAndLivroId(1L, 2L))
+		when(leituraRepository.findByUsuarioIdAndLivroId(1L, 2L))
 				.thenReturn(Optional.empty());
 
 		assertThrows(UsuarioLivroNaoEncontradoException.class, () -> service.criar(dto));
@@ -209,13 +209,13 @@ class DiarioDeLeituraServiceImplTest {
 		livro.setTitulo("Dom Casmurro");
 		livro.setNumeroDePaginas(256);
 
-		UsuarioLivro usuarioLivro = new UsuarioLivro();
-		usuarioLivro.setId(id);
-		usuarioLivro.setLivro(livro);
+		Leitura leitura = new Leitura();
+		leitura.setId(id);
+		leitura.setLivro(livro);
 
 		DiarioDeLeitura diario = DiarioDeLeitura.builder()
 				.id(10L)
-				.usuarioLivro(usuarioLivro)
+				.leitura(leitura)
 				.inicioDaLeitura(LocalDateTime.now().minusDays(5))
 				.terminoDaLeitura(null)
 				.paginasLidas(50)
@@ -297,13 +297,13 @@ class DiarioDeLeituraServiceImplTest {
 		id.setUsuarioId(1L);
 		id.setLivroId(2L);
 
-		UsuarioLivro usuarioLivro = new UsuarioLivro();
-		usuarioLivro.setId(id);
+		Leitura leitura = new Leitura();
+		leitura.setId(id);
 		Usuario dono = new Usuario();
 		dono.setId(1L);
-		usuarioLivro.setUsuario(dono);
+		leitura.setUsuario(dono);
 
-		diario.setUsuarioLivro(usuarioLivro);
+		diario.setLeitura(leitura);
 
 		User user = new User();
 		Usuario usuario = new Usuario();
@@ -352,13 +352,13 @@ class DiarioDeLeituraServiceImplTest {
 		id.setUsuarioId(2L);
 		id.setLivroId(2L);
 
-		UsuarioLivro usuarioLivro = new UsuarioLivro();
-		usuarioLivro.setId(id);
+		Leitura leitura = new Leitura();
+		leitura.setId(id);
 		Usuario dono = new Usuario();
 		dono.setId(2L);
-		usuarioLivro.setUsuario(dono);
+		leitura.setUsuario(dono);
 
-		diario.setUsuarioLivro(usuarioLivro);
+		diario.setLeitura(leitura);
 
 		User user = new User();
 		Usuario usuario = new Usuario();

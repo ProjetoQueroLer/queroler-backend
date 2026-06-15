@@ -10,7 +10,7 @@ import com.usuario.quero_ler.mappers.UsuarioMapper;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.UserRepository;
-import com.usuario.quero_ler.repository.UsuarioLivroRepository;
+import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
 import com.usuario.quero_ler.security.TokenService;
@@ -58,7 +58,7 @@ class UsuarioServiceImplTest {
     private UsuarioNotificacaoRepository usuarioNotificacaoRepository;
 
     @Mock
-    private UsuarioLivroRepository usuarioLivroRepository;
+    private LeituraRepository leituraRepository;
 
     @Mock
     private LivroService livroServiceI;

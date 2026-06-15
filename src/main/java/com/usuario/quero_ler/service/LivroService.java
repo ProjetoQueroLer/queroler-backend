@@ -1,7 +1,7 @@
 package com.usuario.quero_ler.service;
 
 import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.models.Livro;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +17,6 @@ public interface LivroService {
     byte[] buscarCapa(Long id);
     Livro buscar(Long id);
     Page<LivroDetalhadoResponse> getLivrosDoUsuario(Pageable pageable);
-    void alterarStatusDoLivroNoUsuario(Long id, LivroStatus status);
+    void alterarStatusDoLivroNoUsuario(Long id, LeituraStatus status);
     Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Pageable pageable);
 }

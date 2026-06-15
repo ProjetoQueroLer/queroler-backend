@@ -11,7 +11,7 @@ import com.usuario.quero_ler.dtos.livro.LivroResumoResponseDto;
 import com.usuario.quero_ler.models.AcompanhamentoDeLeitura;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.Livro;
-import com.usuario.quero_ler.models.UsuarioLivro;
+import com.usuario.quero_ler.models.Leitura;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +33,7 @@ public class DiarioLeituraMapper {
 		public DiarioDeLeituraResponseDto toResponse(DiarioDeLeitura diario){
 			if (diario == null) return null;
 			
-			LivroResumoResponseDto livro = toLivroResumo(diario.getUsuarioLivro());
+			LivroResumoResponseDto livro = toLivroResumo(diario.getLeitura());
 			List<AcompanhamentoLeituraResponseDto> acompanhamentos = diario.getComentarios()
 				.stream()
 				.map(this::toAcompanhamentoResponse)
@@ -52,8 +52,8 @@ public class DiarioLeituraMapper {
 					);
 			
 		}
-         private LivroResumoResponseDto toLivroResumo(UsuarioLivro usuarioLivro) {
-             Livro livro = usuarioLivro.getLivro();
+         private LivroResumoResponseDto toLivroResumo(Leitura leitura) {
+             Livro livro = leitura.getLivro();
              return new LivroResumoResponseDto( 
                  livro.getId(),
                  livro.getTitulo(),

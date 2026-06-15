@@ -1,11 +1,7 @@
 package com.usuario.quero_ler.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,20 +23,21 @@ public class DiarioDeLeitura {
             @JoinColumn(name = "usuario_id", referencedColumnName = "usuario_id"),
             @JoinColumn(name = "livro_id", referencedColumnName = "livro_id")
     })
-    private UsuarioLivro usuarioLivro;
+    private Leitura leitura;
     private LocalDateTime inicioDaLeitura;
     private LocalDateTime terminoDaLeitura;
     private Integer paginasLidas;
 
     @OneToMany(mappedBy = "diarioDeLeitura", cascade = CascadeType.ALL, orphanRemoval = true)
-		@Builder.Default
+    @Builder.Default
     private List<AcompanhamentoDeLeitura> comentarios = new ArrayList<>();
-		@Builder.Default
+
+    @Builder.Default
     private Double nota = 0.0;
     private String tituloDaResenha;
 
-		@Builder.Default
-		private Boolean spoiler = true;
+    @Builder.Default
+    private Boolean spoiler = true;
 
     @Column(columnDefinition = "TEXT")
     private String resenha;

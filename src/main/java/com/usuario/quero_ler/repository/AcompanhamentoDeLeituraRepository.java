@@ -11,20 +11,20 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AcompanhamentoDeLeituraRepository extends JpaRepository<AcompanhamentoDeLeitura, Long> {
-    List<AcompanhamentoDeLeitura> findByDiarioDeLeitura_UsuarioLivro_Livro_Id(Long livroId);
+    List<AcompanhamentoDeLeitura> findByDiarioDeLeitura_Leitura_Livro_Id(Long livroId);
 
-    List<AcompanhamentoDeLeitura> findByDiarioDeLeitura_UsuarioLivro_Usuario_Id(Long usuarioId);
+    List<AcompanhamentoDeLeitura> findByDiarioDeLeitura_Leitura_Usuario_Id(Long usuarioId);
 
     @Query("select a from AcompanhamentoDeLeitura a " +
             "join fetch a.diarioDeLeitura d " +
-            "join fetch d.usuarioLivro ul " +
+            "join fetch d.leitura ul " +
             "join fetch ul.usuario u " +
             "where ul.livro.id = :livroId")
     List<AcompanhamentoDeLeitura> findByLivroIdWithJoins(@Param("livroId") Long livroId);
 
     @Query("select a from AcompanhamentoDeLeitura a " +
             "join fetch a.diarioDeLeitura d " +
-            "join fetch d.usuarioLivro ul " +
+            "join fetch d.leitura ul " +
             "join fetch ul.usuario u " +
             "where ul.usuario.id = :usuarioId")
     List<AcompanhamentoDeLeitura> findByUsuarioIdWithJoins(@Param("usuarioId") Long usuarioId);

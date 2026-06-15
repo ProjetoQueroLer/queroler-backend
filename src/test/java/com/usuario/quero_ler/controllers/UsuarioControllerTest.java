@@ -2,7 +2,7 @@ package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.models.User;
@@ -308,7 +308,7 @@ class UsuarioControllerTest {
     @DisplayName("Deve adicionar um livro na estante do usuario.")
     void deveAdicionarUmLivroNaEstanteDoUsuario() throws Exception {
         Long idLivro = 10L;
-        LivroStatus status = LivroStatus.LIVROS_QUE_QUERO_LER;
+        LeituraStatus status = LeituraStatus.LIVROS_QUE_QUERO_LER;
 
         mockMvc.perform(post("/usuarios/livro")
                         .param("idLivro", idLivro.toString())

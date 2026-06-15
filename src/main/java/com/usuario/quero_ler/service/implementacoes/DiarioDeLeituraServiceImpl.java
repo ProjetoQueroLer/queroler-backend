@@ -8,11 +8,11 @@ import com.usuario.quero_ler.mappers.DiarioLeituraMapper;
 import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
 import java.time.LocalDateTime;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
-import com.usuario.quero_ler.models.UsuarioLivro;
+import com.usuario.quero_ler.models.Leitura;
 import com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException;
 import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
 import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
-import com.usuario.quero_ler.repository.UsuarioLivroRepository;
+import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.service.DiarioDeLeituraService;
 import com.usuario.quero_ler.service.LoginService;
 
@@ -26,7 +26,7 @@ import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoExce
 public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 
     private final DiarioDeLeituraRepository repository;
-    private final UsuarioLivroRepository usuarioLivroRepository;
+    private final LeituraRepository leituraRepository;
     private final LoginService loginService;
 		private final DiarioLeituraMapper diarioLeituraMapper;
 
@@ -37,12 +37,12 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 
         Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
 
-        UsuarioLivro usuarioLivro = usuarioLivroRepository
+        Leitura leitura = leituraRepository
                 .findByUsuarioIdAndLivroId(usuarioId, dto.livroId())
                 .orElseThrow(() -> new UsuarioLivroNaoEncontradoException("Usuário/Livro não encontrado na estante."));
 
         DiarioDeLeitura diario = DiarioDeLeitura.builder()
-                .usuarioLivro(usuarioLivro)
+                .leitura(leitura)
                 .inicioDaLeitura(dto.inicioDaLeitura())
                 .terminoDaLeitura(dto.terminoDaLeitura())
                 .paginasLidas(dto.paginasLidas())
@@ -52,7 +52,7 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 								.spoiler(dto.spoiler() != null ? dto.spoiler():false)
                 .build();
 
-        if (repository.existsByUsuarioLivro(usuarioLivro)) {
+        if (repository.existsByLeitura(leitura)) {
             throw new DiarioJaExisteException("Já existe um diário de leitura para este usuário e livro.");
         }
 
@@ -87,8 +87,8 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
     }
 
     private void verificarPropriedade(DiarioDeLeitura diario, Long usuarioId) {
-        if (diario.getUsuarioLivro() == null || diario.getUsuarioLivro().getUsuario() == null ||
-                !diario.getUsuarioLivro().getUsuario().getId().equals(usuarioId)) {
+        if (diario.getLeitura() == null || diario.getLeitura().getUsuario() == null ||
+                !diario.getLeitura().getUsuario().getId().equals(usuarioId)) {
             throw new UsuarioSemPermissaoParaAcaoException("Usuário sem permissão para atualizar este diário.");
         }
     }

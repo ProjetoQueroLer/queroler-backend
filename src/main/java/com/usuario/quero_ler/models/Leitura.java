@@ -1,6 +1,6 @@
 package com.usuario.quero_ler.models;
 
-import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,17 +8,17 @@ import lombok.*;
 @Setter
 @Builder
 @Entity
-@Table(name = "tb_usuario_livro")
+@Table(name = "tb_leitura")
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioLivro {
+public class Leitura {
 
     @EmbeddedId
     private UsuarioLivroId id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private LivroStatus status;
+    private LeituraStatus status;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id",  nullable = false)
@@ -30,7 +30,7 @@ public class UsuarioLivro {
     @MapsId("livroId")
     private Livro livro;
 
-    @OneToOne(mappedBy = "usuarioLivro",
+    @OneToOne(mappedBy = "leitura",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private DiarioDeLeitura diarioDeLeitura;

@@ -2,14 +2,14 @@ package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.autor.AutorRequest;
 import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.exceptions.especies.*;
 import com.usuario.quero_ler.mappers.LivroMapper;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.models.Livro;
-import com.usuario.quero_ler.models.UsuarioLivro;
+import com.usuario.quero_ler.models.Leitura;
 import com.usuario.quero_ler.repository.LivroRepository;
-import com.usuario.quero_ler.repository.UsuarioLivroRepository;
+import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.service.AutorService;
 import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.service.LoginService;
@@ -36,7 +36,7 @@ public class LivroServiceImpl implements LivroService {
     private final LivroRepository repository;
     private final LivroMapper mapper;
     private final AutorService autorService;
-    private final UsuarioLivroRepository usuarioLivroRepository;
+    private final LeituraRepository leituraRepository;
     private final LoginService loginService;
 
     @Override
@@ -170,7 +170,7 @@ public class LivroServiceImpl implements LivroService {
     @Override
     public Page<LivroDetalhadoResponse> getLivrosDoUsuario(Pageable pageable){
         Long id = loginService.getUsuarioLogado().getUsuario().getId();
-        Page<LivroDetalhadoResponse> livros = usuarioLivroRepository.findLivrosByUsuarioId(id,pageable)
+        Page<LivroDetalhadoResponse> livros = leituraRepository.findLivrosByUsuarioId(id,pageable)
                 .map(mapper::toLivroDetalhadoResponse);
         return livros;
     }
@@ -178,25 +178,25 @@ public class LivroServiceImpl implements LivroService {
     @Override
     public Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Pageable pageable){
         Long id = loginService.getUsuarioLogado().getUsuario().getId();
-        List<UsuarioLivro> usuarioLivros = usuarioLivroRepository.findAllByUsuarioId(id, pageable).stream().toList();
+        List<Leitura> leituras = leituraRepository.findAllByUsuarioId(id, pageable).stream().toList();
         List<LivroTelaLeituraResponse> resposta = new ArrayList<>();
 
-        for (UsuarioLivro usuarioLivro: usuarioLivros){
-            Livro livro = usuarioLivro.getLivro();
-            resposta.add(mapper.toLivroTelaLeituraResponse(livro,usuarioLivro.getStatus()));
+        for (Leitura leitura : leituras){
+            Livro livro = leitura.getLivro();
+            resposta.add(mapper.toLivroTelaLeituraResponse(livro, leitura.getStatus()));
         }
         Page<LivroTelaLeituraResponse> page = new PageImpl<>(resposta, pageable, resposta.size());
         return page;
     }
 
     @Override
-    public void alterarStatusDoLivroNoUsuario(Long id, LivroStatus status){
+    public void alterarStatusDoLivroNoUsuario(Long id, LeituraStatus status){
         Long idUsuario = loginService.getUsuarioLogado().getUsuario().getId();
-        Optional<UsuarioLivro> usuarioLivro = usuarioLivroRepository.findByLivro_IdAndUsuario_Id(id,idUsuario);
+        Optional<Leitura> usuarioLivro = leituraRepository.findByLivro_IdAndUsuario_Id(id,idUsuario);
         if (usuarioLivro.isEmpty()) {
             throw new LivroNaoEncontradoException("O usuario não possue o livro na estante.");
         }
         usuarioLivro.get().setStatus(status);
-        usuarioLivroRepository.save(usuarioLivro.get());
+        leituraRepository.save(usuarioLivro.get());
     }
 }

@@ -2,7 +2,7 @@ package com.usuario.quero_ler.mappers;
 
 import com.usuario.quero_ler.dtos.autor.AutorResponse;
 import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enums.LivroStatus;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.models.Livro;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +56,7 @@ public class LivroMapper {
                 getAutoresResponse(livro));
     }
 
-    public LivroTelaLeituraResponse toLivroTelaLeituraResponse(Livro livro, LivroStatus status) {
+    public LivroTelaLeituraResponse toLivroTelaLeituraResponse(Livro livro, LeituraStatus status) {
         return new LivroTelaLeituraResponse(
                 livro.getTitulo(),
                 status,
