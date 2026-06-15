@@ -139,7 +139,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CapaForaDePadraoException.class)
     public ResponseEntity<Object> handlerCapaForaDePadraoException(CapaForaDePadraoException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(ex.getMessage());
     }
 
     @ExceptionHandler(AusenciaDeDadosException.class)
