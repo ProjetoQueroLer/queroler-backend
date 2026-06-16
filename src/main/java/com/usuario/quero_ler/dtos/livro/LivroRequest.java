@@ -20,7 +20,7 @@ public record LivroRequest(
 
                 @NotNull LivroIdioma idioma,
 
-                @NotBlank @Size(min = 50, message = "A sinopse deve ter no mínimo 50 caracteres") String sinopse,
+                @NotBlank @Size(min = 50) String sinopse,
 
                 @NotEmpty List<AutorRequest> autores) {
 }

@@ -3,7 +3,6 @@ package com.usuario.quero_ler.exceptions;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.usuario.quero_ler.exceptions.especies.*;
 
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 import org.springframework.http.HttpStatus;
@@ -13,6 +12,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -182,13 +183,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolationException(
             ConstraintViolationException ex) {
-        String mensagemAmigavel = ex.getConstraintViolations()
-                .stream()
-                .map(ConstraintViolation::getMessage)
-                .findFirst()
-                .orElse("Erro de validação nos dados enviados.");
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensagemAmigavel);
+        var erros = ex.getConstraintViolations()
+                .stream()
+                .map(violation -> {
+                    Map<String, String> erro = new HashMap<>();
+                    erro.put("campo", violation.getPropertyPath().toString());
+                    erro.put("mensagem", violation.getMessage());
+                    return erro;
+                })
+                .toList();
+
+        return ResponseEntity.badRequest().body(erros);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
