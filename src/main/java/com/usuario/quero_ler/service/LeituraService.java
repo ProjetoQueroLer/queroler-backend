@@ -11,5 +11,5 @@ public interface LeituraService {
 
     Page<LivroTelaLeituraResponse>lista(Long id, Pageable pageable);
 
-    Boolean ControleStatusLeitura(Leitura leitura , LeituraStatus status);
+    void ControleStatusLeitura(Leitura leitura , LeituraStatus status);
 }

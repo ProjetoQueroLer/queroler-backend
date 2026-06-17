@@ -180,6 +180,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
+		@ExceptionHandler(LeituraEstadoInvalidoException.class)
+		public ResponseEntity<Object> handlerLeituraEstadoInvalidoException(LeituraEstadoInvalidoException ex){
+					return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+				}
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolationException(
             ConstraintViolationException ex) {
