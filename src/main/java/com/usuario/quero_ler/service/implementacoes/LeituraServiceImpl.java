@@ -50,6 +50,85 @@ public class LeituraServiceImpl implements LeituraService {
     }
 
     @Override
-    public void mudarStatus(Long idUsuario, String isbn, LeituraStatus status) {
+    public Boolean ControleStatusLeitura(Leitura leitura , LeituraStatus status) {
+			
+
+			switch (leitura.getStatus()) {
+				case null:
+					if (
+							status.equals(LeituraStatus.LIVROS_QUE_QUERO_LER) ||
+							status.equals(LeituraStatus.LIVROS_QUE_ESTOU_LENDO) ||
+							status.equals(LeituraStatus.LIVROS_LIDOS)
+								){
+						leitura.setStatus(status);
+					}else{
+						// Mensagem de transição inválida.
+						throw new RuntimeException("Transição inválida. Para o estado atual, somente é permitido transicionar para os estados LIVROS_QUE_QUERO_LER, LIVROS_QUE_ESTOU_LENDO e LIVROS_LIDOS.");
+					}
+					
+					break;
+				case LIVROS_QUE_QUERO_LER:
+					if (
+							status.equals(LeituraStatus.LIVROS_QUE_ESTOU_LENDO) ||
+							status.equals(LeituraStatus.LIVROS_ABANDONADOS) ||
+							status.equals(LeituraStatus.LIVROS_LIDOS)
+						 ){
+						leitura.setStatus(status);
+					}else{
+						// Mensagem de transição inválida.
+						throw new RuntimeException("Transição inválida. Para o estado atual, somente é permitido transicionar para os estados LIVROS_QUE_ESTOU_LENDO, LIVROS_ABNDONADOS e LIVROS_LIDOS.");
+					}
+					
+					break;
+			
+				case LIVROS_QUE_ESTOU_LENDO:
+					if ( 
+							status.equals(LeituraStatus.LIVROS_ABANDONADOS) ||
+							status.equals(LeituraStatus.LIVROS_LIDOS)
+							){
+						leitura.setStatus(status);
+					}else{
+						// Mensagem de transição inválida.
+						throw new RuntimeException("Transição inválida. Para o estado atual, somente é permitido transicionar para os estado LIVROS_ABNDONADOS e LIVROS_LIDOS.");
+					}
+					
+					break;
+				case RELENDO:
+					if (
+							status.equals(LeituraStatus.LIVROS_ABANDONADOS) ||
+							status.equals(LeituraStatus.LIVROS_LIDOS)
+							){
+						leitura.setStatus(status);
+					}else{
+						// Mensagem de transição inválida.
+					 throw new RuntimeException("Transição inválida. Para o estado atual, somente é permitido transicionar para os estado LIVROS_ABNDONADOS e LIVROS_LIDOS.");
+					}
+					break;
+				case LIVROS_ABANDONADOS:
+					if (status.equals(LeituraStatus.LIVROS_QUE_ESTOU_LENDO)
+							){
+						leitura.setStatus(status);
+					}else{
+						// Mensagem de transição inválida.
+					 throw new RuntimeException("Transição inválida. Para o estado atual, somente é permitido transicionar para os estados LIVROS_QUE_ESTOU_LENDO e RELENDO.");
+					}
+					
+					break;
+				case LIVROS_LIDOS:
+					if (
+							status.equals(LeituraStatus.RELENDO)
+							){
+						leitura.setStatus(status);
+					}else{
+						// Mensagem de transição inválida.
+					 throw new RuntimeException("Transição inválida. Para o estado atual, somente é permitido transicionar para o estado RELENDO.");
+					}
+					break;
+
+				default:
+					 throw new RuntimeException("Estado invalido");
+
+			}
+			return false;
     }
 }

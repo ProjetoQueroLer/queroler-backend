@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.service;
 
 import com.usuario.quero_ler.dtos.livro.LivroTelaLeituraResponse;
+import com.usuario.quero_ler.models.Leitura;
 import com.usuario.quero_ler.enums.LeituraStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,5 +11,5 @@ public interface LeituraService {
 
     Page<LivroTelaLeituraResponse>lista(Long id, Pageable pageable);
 
-    void  mudarStatus(Long idUsuario, String isbn, LeituraStatus status);
+    Boolean ControleStatusLeitura(Leitura leitura , LeituraStatus status);
 }
