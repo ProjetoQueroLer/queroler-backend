@@ -8,7 +8,10 @@ import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.exceptions.especies.AusenciaDeDadosException;
 import com.usuario.quero_ler.service.AcompanhamentoDeLeituraService;
 import com.usuario.quero_ler.service.UsuarioService;
+
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,13 +27,24 @@ import java.util.List;
 public class UsuarioController {
     private final UsuarioService service;
     private final ObjectMapper mapper;
+    private final Validator validator;
     private final AcompanhamentoDeLeituraService acompanhamentoService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UsuarioResponseDto> criar(@RequestPart(value = "imagem", required = false) MultipartFile foto,
-                                                    @RequestPart("dados") String dadosJson) throws Exception {
+    public ResponseEntity<UsuarioResponseDto> criar(
+            @RequestPart(value = "imagem", required = false) MultipartFile foto,
+            @RequestPart("dados") String dadosJson) throws Exception {
+
         UsuarioRequestDto dto = mapper.readValue(dadosJson, UsuarioRequestDto.class);
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto, foto));
+
+        var violations = validator.validate(dto);
+
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.criar(dto, foto));
     }
 
     @GetMapping
@@ -40,7 +54,7 @@ public class UsuarioController {
 
     @PutMapping(value = "/dados-adicionais", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> inserirDadosAdicionais(@RequestPart(value = "dados", required = false) String dados,
-                                                       @RequestPart(value = "imagem", required = false) MultipartFile imagem) throws JsonProcessingException {
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem) throws JsonProcessingException {
 
         UsuarioDadosComplementarRequest dto = null;
 
@@ -64,7 +78,7 @@ public class UsuarioController {
 
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> alterar(@RequestPart(value = "dados", required = false) String dados,
-                                        @RequestPart(value = "imagem", required = false) MultipartFile imagem) throws JsonProcessingException {
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem) throws JsonProcessingException {
 
         UsuarioAtualizadoLeitorRequest dto = null;
 
@@ -82,7 +96,7 @@ public class UsuarioController {
 
     @PutMapping(value = "/administrador", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> alterarAdministrador(@RequestPart(value = "dados", required = false) String dados,
-                                                     @RequestPart(value = "imagem", required = false) MultipartFile imagem) throws JsonProcessingException {
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem) throws JsonProcessingException {
 
         UsuarioAtualizadoAdministradorRequest dto = null;
 
@@ -106,7 +120,7 @@ public class UsuarioController {
 
     @PostMapping("/livro")
     public ResponseEntity<Void> adicionarLivro(@RequestParam Long idLivro,
-                                               @RequestParam LeituraStatus status) {
+            @RequestParam LeituraStatus status) {
 
         service.adicionarLivro(idLivro, status);
         return ResponseEntity.status(HttpStatus.CREATED).build();
