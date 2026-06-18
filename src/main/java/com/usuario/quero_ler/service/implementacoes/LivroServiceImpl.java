@@ -44,7 +44,7 @@ public class LivroServiceImpl implements LivroService {
 
         Optional<Livro> isbn = repository.findByIsbn(dto.isbn());
         if(isbn.isPresent()){
-            throw new IsbnJaCadastradoException("Isbn já cadastrado");
+            throw new IsbnJaCadastradoException("ISBN já cadastrado");
         }
 
         Livro livro = mapper.toEntity(dto);

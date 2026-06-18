@@ -5,11 +5,13 @@ import com.usuario.quero_ler.exceptions.especies.*;
 
 import jakarta.validation.ConstraintViolationException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,6 +19,9 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @Value("${spring.servlet.multipart.max-file-size}")
+    private String tamanhoMaximo;
 
     @ExceptionHandler(EmailNaoCadastradoException.class)
     public ResponseEntity<Object> handlerEmailNaoCadastradoException(EmailNaoCadastradoException ex) {
@@ -178,6 +183,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handlerDiarioJaExiste(
             DiarioJaExisteException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Object> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("Arquivo excede o tamanho máximo permitido. Tamanho máximo: " + tamanhoMaximo);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
