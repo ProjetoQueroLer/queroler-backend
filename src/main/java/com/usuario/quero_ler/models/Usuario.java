@@ -1,3 +1,4 @@
+
 package com.usuario.quero_ler.models;
 
 import jakarta.persistence.*;
@@ -22,7 +23,7 @@ public class Usuario {
     @Column(name = "nome", nullable = false, length = 80)
     private String nome;
 
-    @Column(name = "email", nullable = false, unique = true, length = 150)
+    @Column(name = "email", nullable = false, unique = true, length = 256)
     private String email;
 
     @Column(name = "cpf", nullable = false, unique = true, length = 14)
