@@ -2,7 +2,6 @@ package com.usuario.quero_ler.repository;
 
 import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.Leitura;
-import com.usuario.quero_ler.models.UsuarioLivroId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,10 +12,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface LeituraRepository extends JpaRepository<Leitura, UsuarioLivroId> {
+public interface LeituraRepository extends JpaRepository<Leitura, Long> {
     Optional<Leitura> findByUsuarioIdAndLivroId(Long usuarioId, Long livroId);
 
-    Optional<Leitura> findByLivro_IdAndUsuario_Id(Long id, Long idUsuario);
+    Optional<Leitura> findByLivro_IdAndUsuario_Id(Long Livroid, Long usuarioId);
 
     boolean existsByUsuarioIdAndLivroId(Long usuarioId, Long livroId);
 

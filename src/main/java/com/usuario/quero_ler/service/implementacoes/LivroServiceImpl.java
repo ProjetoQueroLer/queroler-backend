@@ -189,14 +189,4 @@ public class LivroServiceImpl implements LivroService {
         return page;
     }
 
-    @Override
-    public void alterarStatusDoLivroNoUsuario(Long id, LeituraStatus status){
-        Long idUsuario = loginService.getUsuarioLogado().getUsuario().getId();
-        Optional<Leitura> usuarioLivro = leituraRepository.findByLivro_IdAndUsuario_Id(id,idUsuario);
-        if (usuarioLivro.isEmpty()) {
-            throw new LivroNaoEncontradoException("O usuario não possue o livro na estante.");
-        }
-        usuarioLivro.get().setStatus(status);
-        leituraRepository.save(usuarioLivro.get());
-    }
 }

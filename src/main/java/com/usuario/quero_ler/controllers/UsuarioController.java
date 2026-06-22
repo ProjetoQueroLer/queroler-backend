@@ -104,14 +104,6 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PostMapping("/livro")
-    public ResponseEntity<Void> adicionarLivro(@RequestParam Long idLivro,
-                                               @RequestParam LeituraStatus status) {
-
-        service.adicionarLivro(idLivro, status);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
     @GetMapping("/foto")
     public ResponseEntity<byte[]> buscarFoto() {
         return ResponseEntity.ok()

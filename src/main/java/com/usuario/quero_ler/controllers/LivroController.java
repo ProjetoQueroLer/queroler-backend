@@ -3,7 +3,6 @@ package com.usuario.quero_ler.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.leitura.AcompanhamentoResponseDto;
 import com.usuario.quero_ler.dtos.livro.*;
-import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.service.AcompanhamentoDeLeituraService;
 import com.usuario.quero_ler.service.LivroService;
 import jakarta.validation.ConstraintViolation;
@@ -82,13 +81,6 @@ public class LivroController {
 
         serviceI.inserirCapaDoLivro(id, capaDoLivro);
         return ResponseEntity.noContent().build();
-    }
-
-    @PutMapping("/{id}/usuario")
-    public ResponseEntity<Void> mudarStatus(@PathVariable Long id,
-                                            @RequestParam LeituraStatus status) {
-        serviceI.alterarStatusDoLivroNoUsuario(id, status);
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/tela_de_leitura")

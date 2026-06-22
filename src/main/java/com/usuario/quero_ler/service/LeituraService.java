@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface LeituraService {
-    void adicionar(Long idUsuario, Long idLivro);
+    void adicionar(Long idLivro, LeituraStatus status);
 
     Page<LivroTelaLeituraResponse>lista(Long id, Pageable pageable);
 

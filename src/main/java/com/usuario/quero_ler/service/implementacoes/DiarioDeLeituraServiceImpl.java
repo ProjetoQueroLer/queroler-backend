@@ -3,17 +3,19 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
-import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
 import com.usuario.quero_ler.mappers.DiarioLeituraMapper;
 import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
 import java.time.LocalDateTime;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.Leitura;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException;
 import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
+import com.usuario.quero_ler.exceptions.especies.LeituraNaoEncontradaException;
 import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
 import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.service.DiarioDeLeituraService;
+import com.usuario.quero_ler.service.LeituraService;
 import com.usuario.quero_ler.service.LoginService;
 
 import jakarta.transaction.Transactional;
@@ -29,6 +31,7 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
     private final LeituraRepository leituraRepository;
     private final LoginService loginService;
 		private final DiarioLeituraMapper diarioLeituraMapper;
+		private final LeituraService leituraService;
 
     @Transactional
     @Override
@@ -39,7 +42,7 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 
         Leitura leitura = leituraRepository
                 .findByUsuarioIdAndLivroId(usuarioId, dto.livroId())
-                .orElseThrow(() -> new UsuarioLivroNaoEncontradoException("Usuário/Livro não encontrado na estante."));
+                .orElseThrow(() -> new LeituraNaoEncontradaException("Usuário/Livro não encontrado na estante."));
 
         DiarioDeLeitura diario = DiarioDeLeitura.builder()
                 .leitura(leitura)
@@ -57,6 +60,10 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
         }
 
         repository.save(diario);
+
+        leituraService.ControleStatusLeitura(leitura,
+                dto.terminoDaLeitura() != null ? LeituraStatus.LIVROS_LIDOS : LeituraStatus.LIVROS_QUE_ESTOU_LENDO);
+        leituraRepository.save(leitura);
     }
 		@Override
 		public DiarioDeLeituraResponseDto buscarLeituraPorLivroEUsuario (Long livroId){
@@ -84,6 +91,13 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
         aplicarAtualizacaoParcial(diario, dto);
 
         repository.save(diario);
+
+        if (dto.terminoDaLeitura() != null) {
+            Leitura leitura = diario.getLeitura();
+            leitura.setLido(true);
+            leituraService.ControleStatusLeitura(leitura, LeituraStatus.LIVROS_LIDOS);
+            leituraRepository.save(leitura);
+        }
     }
 
     private void verificarPropriedade(DiarioDeLeitura diario, Long usuarioId) {

@@ -5,7 +5,7 @@ import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
-import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
+import com.usuario.quero_ler.exceptions.especies.LeituraNaoEncontradaException;
 import com.usuario.quero_ler.fixtures.DiarioLeituraFixtures;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
@@ -72,7 +72,7 @@ class DiarioDeLeituraControllerTest {
 
 		String json = objectMapper.writeValueAsString(requestDto);
 
-		doThrow(new UsuarioLivroNaoEncontradoException("Não encontrado"))
+		doThrow(new LeituraNaoEncontradaException("Não encontrado"))
 				.when(service).criar(any(DiarioDeLeituraRequestDto.class));
 
 		mockMvc.perform(post("/leituras")

@@ -1,7 +1,6 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.*;
 import com.usuario.quero_ler.mappers.UsuarioMapper;
@@ -35,8 +34,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UserRepository userRepository;
     private final UsuarioMapper mapper;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
-    private final LeituraRepository leituraRepository;
-    private final LivroService livroService;
     private final LoginService loginService;
 
     @Transactional
@@ -139,30 +136,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
         user.setSenha(novaSenha);
         userRepository.save(user);
-    }
-
-    @Override
-    public void adicionarLivro(Long idLivro, LeituraStatus status) {
-        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
-
-        Optional<Leitura> usuarioLivro = leituraRepository.findByUsuarioIdAndLivroId(usuario.getId(),
-                idLivro);
-        if (usuarioLivro.isPresent()) {
-            throw new UsuarioJaPossueOLivroException("O usuario já possue o livro na estante.");
-        }
-
-        Livro livro = livroService.buscar(idLivro);
-
-        UsuarioLivroId usuarioLivroId = new UsuarioLivroId();
-        usuarioLivroId.setUsuarioId(usuario.getId());
-        usuarioLivroId.setLivroId(livro.getId());
-
-        Leitura novoLeitura = new Leitura();
-        novoLeitura.setId(usuarioLivroId);
-        novoLeitura.setUsuario(usuario);
-        novoLeitura.setLivro(livro);
-        novoLeitura.setStatus(status);
-        leituraRepository.save(novoLeitura);
     }
 
     public User getUsuarioLogado() {

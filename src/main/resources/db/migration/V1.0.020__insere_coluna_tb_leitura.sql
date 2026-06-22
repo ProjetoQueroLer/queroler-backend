@@ -1,0 +1,3 @@
+ALTER TABLE tb_leitura
+    ADD COLUMN IF NOT EXISTS lido BOOLEAN NOT NULL ;
+

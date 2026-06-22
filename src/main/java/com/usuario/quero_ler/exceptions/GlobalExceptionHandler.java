@@ -68,11 +68,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
-    @ExceptionHandler(UsuarioLivroNaoEncontradoException.class)
-    public ResponseEntity<Object> handlerUsuarioLivroNaoEncontrado(UsuarioLivroNaoEncontradoException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
     @ExceptionHandler(DiarioNaoEncontradoException.class)
     public ResponseEntity<Object> handlerDiarioNaoEncontrado(DiarioNaoEncontradoException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
@@ -111,6 +106,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CpfJaCadastradoException.class)
     public ResponseEntity<Object> handlerCpfJaCadastradoException(CpfJaCadastradoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(LeituraNaoEncontradaException.class)
+    public ResponseEntity<Object> handlerLeituraNaoEncontrada(LeituraNaoEncontradaException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(EmailJaCadastradoException.class)
