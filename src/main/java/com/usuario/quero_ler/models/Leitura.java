@@ -14,6 +14,7 @@ import lombok.*;
 public class Leitura {
 
 		@Id
+		@GeneratedValue(strategy = GenerationType.IDENTITY)
 		private Long id;
 
     @Enumerated(EnumType.STRING)

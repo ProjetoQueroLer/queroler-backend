@@ -44,6 +44,10 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
                 .findByUsuarioIdAndLivroId(usuarioId, dto.livroId())
                 .orElseThrow(() -> new LeituraNaoEncontradaException("Usuário/Livro não encontrado na estante."));
 
+        leituraService.ControleStatusLeitura(leitura,
+                dto.terminoDaLeitura() != null ? LeituraStatus.LIVROS_LIDOS : LeituraStatus.LIVROS_QUE_ESTOU_LENDO);
+        leituraRepository.save(leitura);
+
         DiarioDeLeitura diario = DiarioDeLeitura.builder()
                 .leitura(leitura)
                 .inicioDaLeitura(dto.inicioDaLeitura())
@@ -60,10 +64,6 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
         }
 
         repository.save(diario);
-
-        leituraService.ControleStatusLeitura(leitura,
-                dto.terminoDaLeitura() != null ? LeituraStatus.LIVROS_LIDOS : LeituraStatus.LIVROS_QUE_ESTOU_LENDO);
-        leituraRepository.save(leitura);
     }
 		@Override
 		public DiarioDeLeituraResponseDto buscarLeituraPorLivroEUsuario (Long livroId){

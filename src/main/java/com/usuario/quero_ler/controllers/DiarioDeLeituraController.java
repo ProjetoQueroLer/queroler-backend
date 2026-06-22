@@ -12,7 +12,7 @@ import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/leituras")
+@RequestMapping("/diario")
 public class DiarioDeLeituraController {
 
 	private final DiarioDeLeituraService service;
