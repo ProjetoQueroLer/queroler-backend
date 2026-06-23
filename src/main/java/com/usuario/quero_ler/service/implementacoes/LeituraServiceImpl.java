@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.usuario.quero_ler.dtos.livro.LivroTelaLeituraResponse;
 import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.exceptions.especies.LeituraEstadoInvalidoException;
+import com.usuario.quero_ler.exceptions.especies.LeituraNaoEncontradaException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioJaPossueOLivroException;
 import com.usuario.quero_ler.mappers.LivroMapper;
 import com.usuario.quero_ler.models.Leitura;
@@ -55,6 +56,13 @@ public class LeituraServiceImpl implements LeituraService {
 		repository.save(leitura);
     }
 
+	@Override
+	public void remover(Long idLivro) {
+		Long idUsuario = loginService.getUsuarioLogado().getUsuario().getId();
+		Leitura leitura = repository.findByUsuarioIdAndLivroId(idUsuario, idLivro)
+				.orElseThrow(() -> new LeituraNaoEncontradaException("Leitura não encontrada para este usuário e livro."));
+		repository.delete(leitura);
+	}
 
 	@Override
 	public Page<LivroTelaLeituraResponse> lista(Long id, Pageable pageable) {

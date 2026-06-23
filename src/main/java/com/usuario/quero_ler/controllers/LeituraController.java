@@ -20,4 +20,10 @@ public class LeituraController {
         leituraService.adicionar(dto.livroId(), dto.status());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @DeleteMapping("/{livroId}")
+    public ResponseEntity<Void> remover(@PathVariable Long livroId) {
+        leituraService.remover(livroId);
+        return ResponseEntity.noContent().build();
+    }
 }
