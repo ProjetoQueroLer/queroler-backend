@@ -10,7 +10,7 @@ public record UsuarioRequestDto(
         @Size(max = 80)
         String nome,
         @Email
-        @Size(max = 150)
+        @Size(max = 256)
         String email,
         String senha,
         @Size(min = 11, max = 14)

@@ -1,0 +1,1 @@
+ALTER TABLE tb_usuario ALTER COLUMN email TYPE varchar(256) USING email::varchar(256);
