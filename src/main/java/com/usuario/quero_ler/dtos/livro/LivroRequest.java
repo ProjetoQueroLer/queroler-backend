@@ -16,7 +16,7 @@ public record LivroRequest(
 
                 @NotNull(message = "O ano de publicação é obrigatório") @PastOrPresent(message = "O ano de publicação deve ser no passado ou presente") Year anoDePublicacao,
 
-                @NotNull Integer numeroDePaginas,
+                @NotNull @Positive Integer numeroDePaginas,
 
                 @NotNull LivroIdioma idioma,
 
