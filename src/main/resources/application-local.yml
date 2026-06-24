@@ -28,3 +28,7 @@ api:
       secret: ${API_SECURITY_TOKEN_SECRET:quero-ler-secret-local-com-32-char!}
       issuer: quero_ler
       expiration-minutes: 120
+
+server:
+  tomcat:
+    max-swallow-size: -1
