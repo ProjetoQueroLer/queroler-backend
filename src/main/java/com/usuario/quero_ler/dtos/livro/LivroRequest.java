@@ -20,7 +20,7 @@ public record LivroRequest(
 
                 @NotNull LivroIdioma idioma,
 
-                @NotBlank @Size(min = 50) String sinopse,
+                @NotBlank @Size(min = 50, max = 256) String sinopse,
 
                 @NotEmpty List<AutorRequest> autores) {
 }
