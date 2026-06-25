@@ -16,11 +16,11 @@ public record LivroRequest(
 
                 @NotNull(message = "O ano de publicação é obrigatório") @PastOrPresent(message = "O ano de publicação deve ser no passado ou presente") Year anoDePublicacao,
 
-                @NotNull Integer numeroDePaginas,
+                @NotNull @Positive Integer numeroDePaginas,
 
                 @NotNull LivroIdioma idioma,
 
-                @NotBlank @Size(min = 50) String sinopse,
+                @NotBlank @Size(min = 50, max = 256) String sinopse,
 
                 @NotEmpty List<AutorRequest> autores) {
 }
