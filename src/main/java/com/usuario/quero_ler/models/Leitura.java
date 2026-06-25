@@ -13,8 +13,9 @@ import lombok.*;
 @AllArgsConstructor
 public class Leitura {
 
-    @EmbeddedId
-    private UsuarioLivroId id;
+		@Id
+		@GeneratedValue(strategy = GenerationType.IDENTITY)
+		private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -22,16 +23,16 @@ public class Leitura {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id",  nullable = false)
-    @MapsId("usuarioId")
     private Usuario usuario;
 
     @ManyToOne
     @JoinColumn(name = "livro_id",  nullable = false)
-    @MapsId("livroId")
     private Livro livro;
 
     @OneToOne(mappedBy = "leitura",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private DiarioDeLeitura diarioDeLeitura;
+		@Column(name = "lido")
+		private Boolean lido;
 }

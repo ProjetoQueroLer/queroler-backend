@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.leitura.AcompanhamentoResponseDto;
 import com.usuario.quero_ler.dtos.usuario.*;
-import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.exceptions.especies.AusenciaDeDadosException;
 import com.usuario.quero_ler.service.AcompanhamentoDeLeituraService;
 import com.usuario.quero_ler.service.UsuarioService;
@@ -116,14 +115,6 @@ public class UsuarioController {
     public ResponseEntity<Void> excluirPerfil() {
         service.excluirPerfil();
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    @PostMapping("/livro")
-    public ResponseEntity<Void> adicionarLivro(@RequestParam Long idLivro,
-            @RequestParam LeituraStatus status) {
-
-        service.adicionarLivro(idLivro, status);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/foto")

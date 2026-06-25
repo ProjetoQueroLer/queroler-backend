@@ -26,7 +26,7 @@ import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.dtos.livro.LivroResumoResponseDto;
 import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
 import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioLivroNaoEncontradoException;
+import com.usuario.quero_ler.exceptions.especies.LeituraNaoEncontradaException;
 import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import com.usuario.quero_ler.mappers.DiarioLeituraMapper;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
@@ -34,9 +34,9 @@ import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.User;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.models.Leitura;
-import com.usuario.quero_ler.models.UsuarioLivroId;
 import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
 import com.usuario.quero_ler.repository.LeituraRepository;
+import com.usuario.quero_ler.service.LeituraService;
 import com.usuario.quero_ler.service.LoginService;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,6 +57,9 @@ class DiarioDeLeituraServiceImplTest {
 	@Mock
 	private DiarioLeituraMapper diarioLeituraMapper;
 
+	@Mock
+	private LeituraService leituraService;
+
 	@Test
 	@DisplayName("Deve salvar diario de leitura quando usuarioLivro existir")
 	void deveSalvarDiarioQuandoUsuarioLivroExistir() {
@@ -70,12 +73,9 @@ class DiarioDeLeituraServiceImplTest {
 				"resenha",
 				true);
 
-		UsuarioLivroId id = new UsuarioLivroId();
-		id.setUsuarioId(1L);
-		id.setLivroId(2L);
 
 		Leitura leitura = new Leitura();
-		leitura.setId(id);
+		leitura.setId(1L);
 		leitura.setUsuario(new Usuario());
 
 		User user = new User();
@@ -114,7 +114,7 @@ class DiarioDeLeituraServiceImplTest {
 		when(leituraRepository.findByUsuarioIdAndLivroId(1L, 2L))
 				.thenReturn(Optional.empty());
 
-		assertThrows(UsuarioLivroNaoEncontradoException.class, () -> service.criar(dto));
+		assertThrows(LeituraNaoEncontradaException.class, () -> service.criar(dto));
 
 		verify(repository, never()).save(any());
 	}
@@ -200,9 +200,6 @@ class DiarioDeLeituraServiceImplTest {
 		Long livroId = 2L;
 		Long usuarioId = 1L;
 
-		UsuarioLivroId id = new UsuarioLivroId();
-		id.setUsuarioId(usuarioId);
-		id.setLivroId(livroId);
 
 		Livro livro = new Livro();
 		livro.setId(livroId);
@@ -210,7 +207,7 @@ class DiarioDeLeituraServiceImplTest {
 		livro.setNumeroDePaginas(256);
 
 		Leitura leitura = new Leitura();
-		leitura.setId(id);
+		leitura.setId(1L);
 		leitura.setLivro(livro);
 
 		DiarioDeLeitura diario = DiarioDeLeitura.builder()
@@ -293,12 +290,9 @@ class DiarioDeLeituraServiceImplTest {
 				"resenha atualizada");
 
 		DiarioDeLeitura diario = new DiarioDeLeitura();
-		UsuarioLivroId id = new UsuarioLivroId();
-		id.setUsuarioId(1L);
-		id.setLivroId(2L);
 
 		Leitura leitura = new Leitura();
-		leitura.setId(id);
+		leitura.setId(1L);
 		Usuario dono = new Usuario();
 		dono.setId(1L);
 		leitura.setUsuario(dono);
@@ -348,12 +342,9 @@ class DiarioDeLeituraServiceImplTest {
 				"resenha");
 
 		DiarioDeLeitura diario = new DiarioDeLeitura();
-		UsuarioLivroId id = new UsuarioLivroId();
-		id.setUsuarioId(2L);
-		id.setLivroId(2L);
 
 		Leitura leitura = new Leitura();
-		leitura.setId(id);
+		leitura.setId(1L);
 		Usuario dono = new Usuario();
 		dono.setId(2L);
 		leitura.setUsuario(dono);

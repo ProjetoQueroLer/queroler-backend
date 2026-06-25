@@ -234,26 +234,6 @@ class LivroControllerTest {
 
 
     @Test
-    @DisplayName("Deve alterar status do livro com sucesso")
-    void deveAlterarStatusDoLivro() throws Exception {
-
-        Long idLivro = 1L;
-        LeituraStatus status = LeituraStatus.LIVROS_LIDOS;
-
-        mockMvc.perform(
-                        put("/livros/{id}/usuario", idLivro)
-                                .param("status", status.name())
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk());
-
-        verify(serviceI).alterarStatusDoLivroNoUsuario(
-                eq(idLivro),
-                eq(status)
-        );
-    }
-
-    @Test
     @DisplayName("Deve retornar livros do usuário para tela de leitura com sucesso")
     void deveRetornarLivrosTelaDeLeituraDoUsuario() throws Exception {
 

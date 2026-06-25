@@ -15,6 +15,6 @@ public interface DiarioDeLeituraRepository extends JpaRepository<DiarioDeLeitura
 
     boolean existsByLeitura(Leitura leitura);
 
-    @Query("SELECT d FROM DiarioDeLeitura d WHERE d.leitura.id.usuarioId = :usuarioId AND d.leitura.id.livroId = :livroId")
+    @Query("SELECT d FROM DiarioDeLeitura d WHERE d.leitura.usuario.id = :usuarioId AND d.leitura.livro.id = :livroId")
     Optional<DiarioDeLeitura> findByUsuarioIdAndLivroId(@Param("usuarioId")Long usuarioId, @Param("livroId")Long livroId);
 }

@@ -19,10 +19,7 @@ public class DiarioDeLeitura {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToOne
-    @JoinColumns({
-            @JoinColumn(name = "usuario_id", referencedColumnName = "usuario_id"),
-            @JoinColumn(name = "livro_id", referencedColumnName = "livro_id")
-    })
+    @JoinColumn(name = "leitura_id")
     private Leitura leitura;
     private LocalDateTime inicioDaLeitura;
     private LocalDateTime terminoDaLeitura;

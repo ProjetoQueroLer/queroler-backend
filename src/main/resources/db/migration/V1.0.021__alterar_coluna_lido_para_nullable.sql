@@ -1,0 +1,1 @@
+ALTER TABLE tb_leitura ALTER COLUMN lido DROP NOT NULL;
