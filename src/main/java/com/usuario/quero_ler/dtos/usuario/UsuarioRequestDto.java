@@ -8,7 +8,6 @@ public record UsuarioRequestDto(
         @Size(max = 80)
         String nome,
         @NotBlank
-//        @Email
         @Size(max = 150)
         @Pattern(
                 regexp = "^$|^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
