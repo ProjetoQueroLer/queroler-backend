@@ -2,6 +2,8 @@ package com.usuario.quero_ler.dtos.livro;
 
 import com.usuario.quero_ler.dtos.autor.AutorRequest;
 import com.usuario.quero_ler.enums.LivroIdioma;
+
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 import java.time.Year;
@@ -22,5 +24,5 @@ public record LivroRequest(
 
                 @NotBlank @Size(min = 50, max = 256) String sinopse,
 
-                @NotEmpty List<AutorRequest> autores) {
+                @NotEmpty @Valid List<AutorRequest> autores) {
 }
