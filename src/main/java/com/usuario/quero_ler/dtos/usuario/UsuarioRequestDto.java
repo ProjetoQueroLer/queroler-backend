@@ -2,15 +2,17 @@ package com.usuario.quero_ler.dtos.usuario;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 public record UsuarioRequestDto(
         @Size(max = 80)
         String nome,
-        @Email
-        @Size(max = 256)
+        @NotBlank
+        @Size(max = 150)
+        @Pattern(
+                regexp = "^$|^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+                message = "Informe um endereço de e-mail válido"
+        )
         String email,
         String senha,
         @Size(min = 11, max = 14)
