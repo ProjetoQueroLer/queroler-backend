@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import jakarta.validation.constraints.*;
 
 public record UsuarioRequestDto(
-        @Size(max = 80)
+        @Size(min = 3, max = 80)
         String nome,
         @NotBlank
         @Size(max = 256)
