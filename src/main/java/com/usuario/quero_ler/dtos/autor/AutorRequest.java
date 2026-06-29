@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 public record AutorRequest(
         @NotBlank
-        @Size(max = 80)
+        @Size(min = 3, max = 80)
         String nome
 ) {
 }
