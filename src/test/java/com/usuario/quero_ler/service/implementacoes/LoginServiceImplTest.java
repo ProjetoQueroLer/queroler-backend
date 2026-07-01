@@ -91,7 +91,7 @@ class LoginServiceImplTest {
 
         LoginResponseDto retorno = service.login(dto, response);
 
-        assertEquals(true,retorno.primeiroLogin());
+        assertEquals(true, retorno.primeiroLogin());
 
         verify(tokenService).generateToken(user);
     }
@@ -104,8 +104,7 @@ class LoginServiceImplTest {
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.empty());
 
         UsuarioNaoEncontradoException exception = assertThrows(UsuarioNaoEncontradoException.class,
-                () -> service.login(dto, response)
-        );
+                () -> service.login(dto, response));
 
         assertEquals("Usuario não cadastrado", exception.getMessage());
     }
@@ -133,8 +132,7 @@ class LoginServiceImplTest {
         when(repository.findByUserIgnoreCase(dto.user())).thenReturn(Optional.of(user));
 
         CredenciaisInvalidasException exception = assertThrows(CredenciaisInvalidasException.class,
-                () -> service.login(dto, response)
-        );
+                () -> service.login(dto, response));
 
         assertEquals("Senha incorreta.", exception.getMessage());
     }
@@ -197,5 +195,21 @@ class LoginServiceImplTest {
         SenhaInvalidaException exception = assertThrows(SenhaInvalidaException.class,
                 () -> service.criar(dto, UsuarioProfile.LEITOR));
         assertEquals("A senha deve conter pelo menos um caractere especial.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve negar login com email antigo após atualização do usuário")
+    void deveNegarLoginComEmailAntigoAposAtualizacao() {
+        String emailAntigo = "antigo@email.com";
+        LoginRequestDto dto = new LoginRequestDto(emailAntigo, "Senha123!");
+
+        when(repository.findByUserIgnoreCase(emailAntigo))
+                .thenReturn(Optional.empty());
+
+        UsuarioNaoEncontradoException exception = assertThrows(
+                UsuarioNaoEncontradoException.class,
+                () -> service.login(dto, response));
+
+        assertEquals("Usuario não cadastrado", exception.getMessage());
     }
 }
