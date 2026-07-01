@@ -133,7 +133,7 @@ public class UserFixture {
     }
 
     private static byte[] carregarImagem() {
-        try (InputStream is = LivroFixture.class
+        try (InputStream is = UserFixture.class
                 .getClassLoader()
                 .getResourceAsStream("usuario.jpg")) {
 

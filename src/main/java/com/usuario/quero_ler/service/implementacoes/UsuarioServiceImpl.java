@@ -94,6 +94,13 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuario = validarFoto(usuario, foto);
         usuario = mapper.update(usuario, dto);
+
+        usuario.setEmail(novoEmail);
+
+        User user = usuario.getUser();
+        user.setUser(novoEmail);
+        userRepository.save(user);
+
         repository.save(usuario);
     }
 
