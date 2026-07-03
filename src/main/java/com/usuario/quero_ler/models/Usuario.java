@@ -56,4 +56,7 @@ public class Usuario {
 
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
     private List<Leitura> livros;
+
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private List<MetaLeitura> metasLeitura;
 }
