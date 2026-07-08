@@ -88,6 +88,7 @@ public class UserFixture {
         usuario.setDataDeNascimento(DATA_DE_NASCIMENTO);
         usuario.setAceitarTermos(CHECK_TERMO);
         usuario.setUser(user);
+        user.setUsuario(usuario);
         return usuario;
     }
 
