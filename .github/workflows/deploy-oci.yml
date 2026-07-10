@@ -209,6 +209,7 @@ jobs:
               db:
                 image: postgres:17
                 container_name: postgres-queroler-${{ matrix.target }}
+                restart: unless-stopped
                 environment:
                   POSTGRES_DB: ${{ env.DB_NAME }}
                   POSTGRES_USER: postgres
@@ -226,6 +227,7 @@ jobs:
               api:
                 image: ${{ needs.build-and-push.outputs.image_tag }}
                 container_name: api-queroler-${{ matrix.target }}
+                restart: unless-stopped
                 ports:
                   - "8080:8080"
                 depends_on:
@@ -244,7 +246,21 @@ jobs:
             sudo /usr/local/bin/format-mount-volume.sh
             sudo mkdir -p /mnt/postgres-data/pgdata
             sudo docker compose pull
-            sudo docker compose up -d || (sudo docker logs postgres-queroler-${{ matrix.target }} && exit 1)
+            sudo docker compose up -d
+            echo "Aguardando API ficar saudável..."
+            for i in $(seq 1 30); do
+              STATUS=$(sudo docker inspect --format='{{.State.Status}}' api-queroler-${{ matrix.target }} 2>/dev/null)
+              if [ "$STATUS" = "exited" ]; then
+                echo "API falhou ao iniciar"
+                sudo docker logs api-queroler-${{ matrix.target }}
+                exit 1
+              fi
+              if [ "$STATUS" = "running" ]; then
+                echo "API está rodando"
+                break
+              fi
+              sleep 5
+            done
             sudo docker image prune -f
 
       - name: Show Deployment URL
