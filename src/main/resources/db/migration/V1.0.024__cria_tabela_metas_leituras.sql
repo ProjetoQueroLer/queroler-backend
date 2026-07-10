@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS TABLE tb_metas_leitura (
+CREATE TABLE IF NOT EXISTS tb_metas_leitura (
                                   id BIGSERIAL PRIMARY KEY,
 
                                   ano INTEGER NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS TABLE tb_metas_leitura (
                                       UNIQUE (usuario_id, ano)
 );
 
-CREATE TABLE IF NOT EXISTS TABLE tb_livros_meta (
+CREATE TABLE IF NOT EXISTS tb_livros_meta (
                                 id BIGSERIAL PRIMARY KEY,
 
                                 meta_leitura_id BIGINT NOT NULL,
