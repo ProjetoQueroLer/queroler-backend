@@ -113,6 +113,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
+  @ExceptionHandler(MetaDeLeituraJaCadastradaException.class)
+    public ResponseEntity<Object> handlerMetaDeLeituraJaCadastradaException (MetaDeLeituraJaCadastradaException  ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
     @ExceptionHandler(LeituraNaoEncontradaException.class)
     public ResponseEntity<Object> handlerLeituraNaoEncontrada(LeituraNaoEncontradaException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
