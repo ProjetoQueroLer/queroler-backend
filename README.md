@@ -31,7 +31,30 @@ A gerência e o ciclo de vida do token de autenticação estão concentrados no 
 
 ---
 
-## 🚀 Como Rodar o Projeto
+## 🔔 Sistema de Notificações
+
+O sistema de notificações segue uma arquitetura de **broadcast** com controle de leitura por usuário.
+
+### Modelo de Dados
+
+- **`Notificacao`**: Representa a notificação em si (mensagem e data de criação). Uma única notificação pode ser enviada para todos os usuários.
+- **`UsuarioNotificacao`**: Entidade associativa que vincula uma notificação a um usuário específico, controlando se foi **visualizada** ou não.
+
+### Endpoints
+
+| Método | Rota             | Descrição                                                     |
+|--------|------------------|---------------------------------------------------------------|
+| GET    | `/notificacoes`  | Retorna todas as notificações dos últimos 30 dias do usuário logado, ordenadas da mais recente para a mais antiga. Cada item possui a flag `visualizada: true/false`. |
+| PUT    | `/notificacoes`  | Marca todas as notificações do usuário logado como lidas.     |
+
+### Comportamento
+
+- **Limpeza automática**: Notificações com mais de 30 dias são excluídas automaticamente a cada consulta ou atualização.
+- **Flag de leitura**: O campo `visualizada` no response do GET permite que o front-end diferencie notificações lidas das não lidas.
+- **Ordenação**: As notificações são retornadas da mais recente para a mais antiga.
+- **Criação**: Quando um documento é atualizado pelo administrador, uma notificação é criada e enviada para todos os usuários cadastrados.
+
+---
 
 ### Pré-requisitos
 *   Docker e Docker Compose

@@ -20,7 +20,8 @@ public class NotificacaoMapper {
         return new NotificacaoResponseDto(
                 notificacao.getId(),
                 notificacao.getNotificacao(),
-                notificacao.getDataDeCriacao()
+                notificacao.getDataDeCriacao(),
+                false
         );
     }
 }

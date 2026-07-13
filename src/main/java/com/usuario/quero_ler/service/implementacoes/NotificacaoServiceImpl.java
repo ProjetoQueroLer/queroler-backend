@@ -4,7 +4,7 @@ import com.usuario.quero_ler.dtos.notificacao.NotificacaoRequestDto;
 import com.usuario.quero_ler.dtos.notificacao.NotificacaoResponseDto;
 import com.usuario.quero_ler.mappers.NotificacaoMapper;
 import com.usuario.quero_ler.models.Notificacao;
-import com.usuario.quero_ler.models.Usuario;
+import com.usuario.quero_ler.models.UsuarioNotificacao;
 import com.usuario.quero_ler.repository.NotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.service.LoginService;
@@ -42,10 +42,15 @@ public class NotificacaoServiceImpl implements NotificacaoService {
     public Page<NotificacaoResponseDto> naoLidas(Pageable pageable) {
         apagarNotificacoesComMaisDe30Dias();
         Long idUsuario = loginService.getUsuarioLogado().getUsuario().getId();
-        List<Notificacao> usuarioNotificacaos = usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(idUsuario);
+        List<UsuarioNotificacao> usuarioNotificacaos = usuarioNotificacaoRepository.buscarTodasPorUsuario(idUsuario);
         List<NotificacaoResponseDto> notificacoes = new ArrayList<>();
-        for (Notificacao notificacao : usuarioNotificacaos) {
-            notificacoes.add(new NotificacaoResponseDto(notificacao.getId(), notificacao.getNotificacao(), notificacao.getDataDeCriacao()));
+        for (UsuarioNotificacao un : usuarioNotificacaos) {
+            notificacoes.add(new NotificacaoResponseDto(
+                    un.getNotificacao().getId(),
+                    un.getNotificacao().getNotificacao(),
+                    un.getNotificacao().getDataDeCriacao(),
+                    un.getVisualizada()
+            ));
         }
         Page<NotificacaoResponseDto> page = new PageImpl<>(notificacoes, pageable, notificacoes.size());
         return page;

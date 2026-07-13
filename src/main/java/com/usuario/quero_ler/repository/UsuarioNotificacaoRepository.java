@@ -43,4 +43,12 @@ public interface UsuarioNotificacaoRepository extends JpaRepository<UsuarioNotif
     void deleteByNotificacaoDataDeCriacaoBefore(LocalDateTime data);
 
     List<UsuarioNotificacao> findByUsuarioId(Long usuarioId);
+
+    @Query("""
+            SELECT un FROM UsuarioNotificacao un
+            JOIN FETCH un.notificacao n
+            WHERE un.usuario.id = :usuarioId
+            ORDER BY n.dataDeCriacao DESC
+            """)
+    List<UsuarioNotificacao> buscarTodasPorUsuario(@Param("usuarioId") Long usuarioId);
 }

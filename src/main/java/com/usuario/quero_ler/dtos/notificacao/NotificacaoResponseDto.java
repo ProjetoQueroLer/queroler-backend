@@ -7,6 +7,8 @@ public record NotificacaoResponseDto(
         Long id,
         String notificacao,
         @Schema(description = "Data e hora de criação no formato dd/MM/yyyy HH:mm:ss", example = "08/03/2026 11:30:00")
-        LocalDateTime dataDeCriacao
+        LocalDateTime dataDeCriacao,
+        @Schema(description = "Indica se a notificação já foi visualizada pelo usuário")
+        Boolean visualizada
 ) {
 }

@@ -16,10 +16,10 @@ public class NotificacaoFixture {
     }
 
     public static Notificacao entity(){
-        return new Notificacao(ID, DATA_DE_CRIACAO,NOTIFICACAO);
+        return new Notificacao(ID, DATA_DE_CRIACAO,NOTIFICACAO, false);
     }
 
     public static NotificacaoResponseDto response(){
-        return new NotificacaoResponseDto(ID,NOTIFICACAO,DATA_DE_CRIACAO);
+        return new NotificacaoResponseDto(ID,NOTIFICACAO,DATA_DE_CRIACAO, false);
     }
 }

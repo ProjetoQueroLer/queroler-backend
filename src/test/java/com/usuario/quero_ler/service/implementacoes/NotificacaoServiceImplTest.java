@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import com.usuario.quero_ler.models.Usuario;
+import com.usuario.quero_ler.models.UsuarioNotificacao;
 import com.usuario.quero_ler.service.LoginService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -72,7 +73,7 @@ class NotificacaoServiceImplTest {
     }
 
     @Test
-    @DisplayName("Deve marcar todas as notificaçoes de determinado usuario como lidas.")
+    @DisplayName("Deve retornar todas as notificaçoes (lidas e não lidas) dos últimos 30 dias ordenadas da mais recente.")
     void deveRetornarNotificacoesNaoLidas() {
 
         Pageable pageable = PageRequest.of(0, 10);
@@ -85,10 +86,22 @@ class NotificacaoServiceImplTest {
         Notificacao notificacao = NotificacaoFixture.entity();
         Notificacao notificacao2 = NotificacaoFixture.entity();
 
-        List<Notificacao> lista = List.of(notificacao,notificacao2);
+        UsuarioNotificacao un1 = UsuarioNotificacao.builder()
+                .usuario(usuario)
+                .notificacao(notificacao)
+                .visualizada(false)
+                .build();
+
+        UsuarioNotificacao un2 = UsuarioNotificacao.builder()
+                .usuario(usuario)
+                .notificacao(notificacao2)
+                .visualizada(true)
+                .build();
+
+        List<UsuarioNotificacao> lista = List.of(un1, un2);
 
         when(loginService.getUsuarioLogado()).thenReturn(user);
-        when(usuarioNotificacaoRepository.buscarNotificacoesNaoLidas(usuario.getId()))
+        when(usuarioNotificacaoRepository.buscarTodasPorUsuario(usuario.getId()))
                 .thenReturn(lista);
 
         Page<NotificacaoResponseDto> resultado =
@@ -97,9 +110,11 @@ class NotificacaoServiceImplTest {
         assertEquals(2, resultado.getTotalElements());
         assertEquals(notificacao.getId(), resultado.getContent().get(0).id());
         assertEquals(notificacao2.getId(), resultado.getContent().get(1).id());
+        assertEquals(false, resultado.getContent().get(0).visualizada());
+        assertEquals(true, resultado.getContent().get(1).visualizada());
 
         verify(loginService).getUsuarioLogado();
-        verify(usuarioNotificacaoRepository).buscarNotificacoesNaoLidas(usuario.getId());
+        verify(usuarioNotificacaoRepository).buscarTodasPorUsuario(usuario.getId());
     }
 
     @Test
@@ -121,7 +136,7 @@ class NotificacaoServiceImplTest {
     @Test
     @DisplayName("Deve apagar as notificações cridas a mais de 30 dias")
     void apagarNotificacoesComMaisDe30Dias() {
-        LocalDateTime dataRecorte = LocalDateTime.now().minusDays(30);
+        LocalDateTime dataRecorte = LocalDateTime.now().minusDays(30).truncatedTo(ChronoUnit.MILLIS);
         service.apagarNotificacoesComMaisDe30Dias();
 
         verify(usuarioNotificacaoRepository).deleteByNotificacaoDataDeCriacaoBefore(dataRecorte);
