@@ -3,6 +3,9 @@ package com.usuario.quero_ler.utils;
 import com.usuario.quero_ler.models.Autor;
 import com.usuario.quero_ler.models.Livro;
 import jakarta.persistence.criteria.*;
+
+import java.util.Locale;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -15,12 +18,12 @@ public class LivroFiltro {
 
             if (titulo != null && !titulo.isEmpty()) {
                 predicate = builder.and(predicate, builder.like(builder
-                        .lower(root.get("titulo")), "%" + titulo.toLowerCase() + "%"));
+                        .lower(root.get("titulo")), "%" + titulo.toLowerCase(Locale.ROOT) + "%"));
             }
 
             if (editora != null && !editora.isEmpty()) {
                 predicate = builder.and(predicate, builder.like(builder
-                        .lower(root.get("editora")), "%" + editora + "%"));
+                        .lower(root.get("editora")), "%" + editora.toLowerCase(Locale.ROOT) + "%"));
             }
 
             if (autor != null && !autor.isEmpty()) {
@@ -32,7 +35,7 @@ public class LivroFiltro {
                 predicate = builder.and(predicate,
                         builder.like(
                                 builder.lower(autoresJoin.get("nome")),
-                                "%" + autor.toLowerCase() + "%"
+                                "%" + autor.toLowerCase(Locale.ROOT) + "%"
                         )
                 );
             }
