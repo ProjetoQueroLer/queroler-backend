@@ -19,11 +19,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class MetaLeituraServiceImplTest {
@@ -139,5 +139,20 @@ public class MetaLeituraServiceImplTest {
                 () -> service.novaMeta(dto));
 
         assertEquals("Já há meta cadastrada para o ano de: " + anoCorrente + ".", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve deletar todas as metas do usuario.")
+    void deveDeletarTodasAsMetasDoUsuarioLogado() {
+        MetaRequestDto dto = MetaLeituraFixture.requestDto(2027);
+        Usuario usuario = UserFixture.entidadeCompleta();
+
+        when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
+
+        service.deletar();
+
+        verify(loginService).getUsuarioLogado();
+        verify(repository).deleteAllByUsuario(usuario);
+        verifyNoMoreInteractions(repository);
     }
 }

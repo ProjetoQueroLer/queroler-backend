@@ -20,4 +20,10 @@ public class MetaController {
         metaLeituraService.novaMeta(dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deletar() {
+        metaLeituraService.deletar();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MetaLeituraRepository extends JpaRepository<MetaLeitura, Long> {
     boolean existsByUsuarioAndAno(Usuario usuario, Integer ano);
+    void deleteAllByUsuario(Usuario usuario);
 }
