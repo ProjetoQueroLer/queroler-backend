@@ -17,7 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,7 +43,7 @@ public class MetaLeituraControllerTest {
 
     @Test
     @DisplayName("Deve adicionar uma meta de leitura com sucesso")
-    void deveCriarDocumento() throws Exception {
+    void deveCriarMeta() throws Exception {
         Integer proximoAno = LocalDate.now().plusYears(1).getYear();
         MetaRequestDto dto = MetaLeituraFixture.requestDto(proximoAno);
 
@@ -51,5 +53,17 @@ public class MetaLeituraControllerTest {
                 .andExpect(status().isCreated());
 
         verify(service).novaMeta(dto);
+    }
+
+    @Test
+    @DisplayName("Deve deletar todas as metas de leitura do usuario")
+    void deveDeltarMetasDoUsuario() throws Exception {
+
+        doNothing().when(service).deletar();
+
+        mockMvc.perform(delete("/metas"))
+                .andExpect(status().isNoContent());
+
+        verify(service).deletar();
     }
 }
