@@ -21,6 +21,12 @@ public class MetaController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PutMapping
+    public ResponseEntity<Void> atualizar(@RequestBody @Valid MetaRequestDto dto) {
+        metaLeituraService.atualizar(dto);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @DeleteMapping
     public ResponseEntity<Void> deletar() {
         metaLeituraService.deletar();
