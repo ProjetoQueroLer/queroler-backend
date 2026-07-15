@@ -3,6 +3,7 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.meta.MetaRequestDto;
 import com.usuario.quero_ler.exceptions.especies.DataInvalidaException;
 import com.usuario.quero_ler.exceptions.especies.MetaDeLeituraJaCadastradaException;
+import com.usuario.quero_ler.exceptions.especies.MetaDeLeituraNaoEncontradaException;
 import com.usuario.quero_ler.mappers.MetaLeituraMapper;
 import com.usuario.quero_ler.models.MetaLeitura;
 import com.usuario.quero_ler.models.Usuario;
@@ -11,14 +12,13 @@ import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.service.MetaLeituraService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.Table;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 
 @RequiredArgsConstructor
 @Service
-public class MetaLeituraLeituraServiceImpl implements MetaLeituraService {
+public class MetaLeituraServiceImpl implements MetaLeituraService {
 
     private final LoginService loginService;
     private final MetaLeituraRepository repository;
@@ -31,6 +31,23 @@ public class MetaLeituraLeituraServiceImpl implements MetaLeituraService {
         MetaLeitura novaMeta = mapper.toMetaLeitura(dto);
         novaMeta.setUsuario(usuario);
         novaMeta = repository.save(novaMeta);
+    }
+
+    @Transactional
+    @Override
+    public void atualizar(MetaRequestDto dto) {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
+
+        Integer anoAtual = LocalDate.now().getYear();
+        Integer ano = dto.ano() != null ? dto.ano() : anoAtual;
+
+        MetaLeitura meta = repository.findByUsuarioAndAno(usuario, ano)
+                .orElseThrow(() -> new MetaDeLeituraNaoEncontradaException(
+                        "Não há meta cadastrada para o ano de: " + ano + "."));
+
+        mapper.atualizarMetaLeitura(meta, dto);
+
+        repository.save(meta);
     }
 
     @Transactional
@@ -50,8 +67,7 @@ public class MetaLeituraLeituraServiceImpl implements MetaLeituraService {
 
         if (repository.existsByUsuarioAndAno(usuario, anoDto)) {
             throw new MetaDeLeituraJaCadastradaException(
-                    "Já há meta cadastrada para o ano de: " + anoDto + "."
-            );
+                    "Já há meta cadastrada para o ano de: " + anoDto + ".");
         }
     }
 

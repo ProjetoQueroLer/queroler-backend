@@ -27,11 +27,9 @@ public class MetaLeituraMapperTest {
 
         MetaLeitura meta = mapper.toMetaLeitura(dto);
 
-        assertEquals(dto.ano(),meta.getAno());
-        assertEquals(dto.metaLivrosAno(), meta.getMetaLivrosAno());
-        assertEquals(dto.metaLivrosMes(),meta.getMetaLivrosMes());
-        assertEquals(dto.metaPaginasDia(), meta.getMetaPaginasDia());
+        assertMeta(dto, meta, proximoAno);
     }
+
     @Test
     @DisplayName("Deve Converter uma meta leitura request em entidade, com ano corrente.")
     void toEntityAnoCorrente() {
@@ -40,9 +38,39 @@ public class MetaLeituraMapperTest {
 
         MetaLeitura meta = mapper.toMetaLeitura(dto);
 
-        assertEquals(anoCorrente,meta.getAno());
+        assertMeta(dto, meta, anoCorrente);
+    }
+
+    @Test
+    @DisplayName("Deve atualizar uma entidade MetaLeitura a partir do DTO.")
+    void deveAtualizarMetaLeitura() {
+        Integer proximoAno = LocalDate.now().plusYears(1).getYear();
+
+        MetaRequestDto dto = MetaLeituraFixture.requestDto(proximoAno);
+        MetaLeitura meta = new MetaLeitura();
+
+        mapper.atualizarMetaLeitura(meta, dto);
+
+        assertMeta(dto, meta, proximoAno);
+    }
+
+    @Test
+    @DisplayName("Deve atualizar uma entidade MetaLeitura com o ano corrente.")
+    void deveAtualizarMetaLeituraComAnoCorrente() {
+        Integer anoCorrente = LocalDate.now().getYear();
+
+        MetaRequestDto dto = MetaLeituraFixture.requestDto(null);
+        MetaLeitura meta = new MetaLeitura();
+
+        mapper.atualizarMetaLeitura(meta, dto);
+
+        assertMeta(dto, meta, anoCorrente);
+    }
+
+    private void assertMeta(MetaRequestDto dto, MetaLeitura meta, Integer anoEsperado) {
+        assertEquals(anoEsperado, meta.getAno());
         assertEquals(dto.metaLivrosAno(), meta.getMetaLivrosAno());
-        assertEquals(dto.metaLivrosMes(),meta.getMetaLivrosMes());
+        assertEquals(dto.metaLivrosMes(), meta.getMetaLivrosMes());
         assertEquals(dto.metaPaginasDia(), meta.getMetaPaginasDia());
     }
 }

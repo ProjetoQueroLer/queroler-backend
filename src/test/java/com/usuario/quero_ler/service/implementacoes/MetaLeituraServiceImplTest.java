@@ -3,6 +3,7 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.meta.MetaRequestDto;
 import com.usuario.quero_ler.exceptions.especies.DataInvalidaException;
 import com.usuario.quero_ler.exceptions.especies.MetaDeLeituraJaCadastradaException;
+import com.usuario.quero_ler.exceptions.especies.MetaDeLeituraNaoEncontradaException;
 import com.usuario.quero_ler.fixtures.MetaLeituraFixture;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.mappers.MetaLeituraMapper;
@@ -38,7 +39,7 @@ public class MetaLeituraServiceImplTest {
     private MetaLeituraMapper mapper;
 
     @InjectMocks
-    private MetaLeituraLeituraServiceImpl service;
+    private MetaLeituraServiceImpl service;
 
     @Test
     @DisplayName("Deve Criar nova meta com os dados informados no DTO.")
@@ -104,8 +105,45 @@ public class MetaLeituraServiceImplTest {
     }
 
     @Test
+    @DisplayName("Deve atualizar meta existente com os dados informados no DTO.")
+    void deveAtualizarMetaExistenteComUsuarioLogado() {
+        Integer ano = LocalDate.now().getYear();
+
+        MetaRequestDto dto = MetaLeituraFixture.requestDto(ano);
+        Usuario usuario = UserFixture.entidadeCompleta();
+        MetaLeitura meta = MetaLeituraFixture.metaLeitura(dto);
+
+        when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
+        when(repository.findByUsuarioAndAno(usuario, ano)).thenReturn(Optional.of(meta));
+
+        service.atualizar(dto);
+
+        verify(loginService).getUsuarioLogado();
+        verify(repository).findByUsuarioAndAno(usuario, ano);
+        verify(mapper).atualizarMetaLeitura(meta, dto);
+        verify(repository).save(meta);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar atualizar uma meta inexistente.")
+    void deveLancarExcecaoAoTentarAtualizarMetaInexistente() {
+        Integer ano = LocalDate.now().getYear();
+
+        MetaRequestDto dto = MetaLeituraFixture.requestDto(ano);
+        Usuario usuario = UserFixture.entidadeCompleta();
+
+        when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
+        when(repository.findByUsuarioAndAno(usuario, ano)).thenReturn(Optional.empty());
+
+        MetaDeLeituraNaoEncontradaException exception = assertThrows(MetaDeLeituraNaoEncontradaException.class,
+                () -> service.atualizar(dto));
+
+        assertEquals("Não há meta cadastrada para o ano de: " + ano + ".", exception.getMessage());
+    }
+
+    @Test
     @DisplayName("Deve lançar exceção de data iválida, por tentativa de criar meta para anos preteritos.")
-    void deveLnancarExcecaoAoTentarCriarNovaMetaParaAnoPreterito() {
+    void deveLancarExcecaoAoTentarCriarNovaMetaParaAnoPreterito() {
         MetaRequestDto dto = MetaLeituraFixture.requestDto(2020);
         Integer anoCorrente = LocalDate.now().getYear();
 
@@ -130,7 +168,6 @@ public class MetaLeituraServiceImplTest {
         Usuario usuario = UserFixture.entidadeCompleta();
 
         MetaLeitura meta = MetaLeituraFixture.metaLeitura(dto);
-
 
         when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
         when(repository.existsByUsuarioAndAno(usuario, anoCorrente)).thenReturn(true);
