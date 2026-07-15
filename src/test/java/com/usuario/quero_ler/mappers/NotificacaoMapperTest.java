@@ -11,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
@@ -30,7 +29,7 @@ class NotificacaoMapperTest {
 
         assertNull(resposta.getId());
         assertEquals(dto.notificacao(),resposta.getNotificacao());
-        assertEquals(agora.truncatedTo(ChronoUnit.SECONDS), resposta.getDataDeCriacao().truncatedTo(ChronoUnit.SECONDS));
+        assertEquals(agora.withNano(0), resposta.getDataDeCriacao().withNano(0));
     }
 
     @Test

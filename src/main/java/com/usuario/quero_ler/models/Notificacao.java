@@ -20,7 +20,4 @@ public class Notificacao {
     private LocalDateTime dataDeCriacao;
     @Column(name = "notificacao", nullable = false)
     private String notificacao;
-    @Builder.Default
-    @Column(name = "lido", nullable = false)
-    private Boolean lido = false;
 }
