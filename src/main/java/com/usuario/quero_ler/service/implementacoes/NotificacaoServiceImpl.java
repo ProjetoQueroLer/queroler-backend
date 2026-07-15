@@ -66,7 +66,7 @@ public class NotificacaoServiceImpl implements NotificacaoService {
 
     @Transactional
     public void apagarNotificacoesComMaisDe30Dias() {
-        LocalDateTime dataDeCorte = LocalDateTime.now().minusDays(30);
+        LocalDateTime dataDeCorte = LocalDateTime.now().minusDays(30).withNano(0);
         usuarioNotificacaoRepository.deleteByNotificacaoDataDeCriacaoBefore(dataDeCorte);
         repository.deleteByDataDeCriacaoBefore(dataDeCorte);
     }
