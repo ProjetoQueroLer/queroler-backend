@@ -2,10 +2,10 @@ package com.usuario.quero_ler.service.implementacoes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -50,6 +51,9 @@ class NotificacaoServiceImplTest {
 
     @Mock
     private LoginService loginService;
+
+    @Mock
+    private Clock clock;
 
     @Test
     @DisplayName("Deve criar uma notificação para todos os usuarios do sistema")
@@ -141,5 +145,58 @@ class NotificacaoServiceImplTest {
 
         verify(usuarioNotificacaoRepository).deleteByNotificacaoDataDeCriacaoBefore(dataRecorte);
         verify(repository).deleteByDataDeCriacaoBefore(dataRecorte);
+    }
+
+
+
+
+    @Test
+    @DisplayName("Deve gerar notificações aos usuarios surgerindo a criação de novas metas para o ano que se inicia")
+    void deveGerarNotificacoesComSugestaoDeCriacaoDeNovasMetasParaOAno() {
+        LocalDate hoje = LocalDate.now().plusYears(1);
+        LocalDate data = LocalDate.of(hoje.getYear(), 1, 1);
+        String mensagem = "Olá. Que tal revisar suas metas de leituras para o novo ano que se inicia?";
+
+        Instant instant = data.atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+        when(clock.instant()).thenReturn(instant);
+        when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+
+        Notificacao notificacao = NotificacaoFixture.entity();
+        notificacao.setId(1L);
+
+        NotificacaoResponseDto responseDto = NotificacaoFixture.response();
+
+        when(repository.existsByDataAndNotificacaoIgnoreCase(data, mensagem)).thenReturn(false);
+        when(mapper.toEntity(any(NotificacaoRequestDto.class))).thenReturn(notificacao);
+        when(repository.save(notificacao)).thenReturn(notificacao);
+        when(mapper.toResponse(notificacao)).thenReturn(responseDto);
+
+        service.geraNotificacaoParaRenovacaoDeMeta();
+
+        verify(repository).existsByDataAndNotificacaoIgnoreCase(data, mensagem);
+        verify(mapper).toEntity(any(NotificacaoRequestDto.class));
+        verify(repository).save(notificacao);
+        verify(usuarioNotificacaoRepository).enviarParaTodosUsuarios(notificacao.getId());
+        verify(mapper).toResponse(notificacao);
+    }
+
+    @Test
+    @DisplayName("Não deve gerar notificações aos usuarios surgerindo a criação de novas metas para o ano que se inicia")
+    void deveEnviarNotificacoesComSugestaoDeCriacaoDeNovasMetasParaOAno() {
+        LocalDate hoje = LocalDate.now().plusYears(1);
+        LocalDate data = LocalDate.of(hoje.getYear(), 11, 1);
+
+        Instant instant = data.atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+        when(clock.instant()).thenReturn(instant);
+        when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+
+        service.geraNotificacaoParaRenovacaoDeMeta();
+
+        verifyNoInteractions(repository);
+        verifyNoInteractions(mapper);
+        verifyNoInteractions(repository);
+        verifyNoInteractions(usuarioNotificacaoRepository);
     }
 }
