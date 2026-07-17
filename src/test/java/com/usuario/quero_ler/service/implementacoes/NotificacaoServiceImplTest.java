@@ -140,7 +140,7 @@ class NotificacaoServiceImplTest {
     @Test
     @DisplayName("Deve apagar as notificações cridas a mais de 30 dias")
     void apagarNotificacoesComMaisDe30Dias() {
-        LocalDateTime dataRecorte = LocalDateTime.now().minusDays(30).truncatedTo(ChronoUnit.MILLIS);
+        LocalDateTime dataRecorte = LocalDateTime.now().minusDays(30).withNano(0);
         service.apagarNotificacoesComMaisDe30Dias();
 
         verify(usuarioNotificacaoRepository).deleteByNotificacaoDataDeCriacaoBefore(dataRecorte);

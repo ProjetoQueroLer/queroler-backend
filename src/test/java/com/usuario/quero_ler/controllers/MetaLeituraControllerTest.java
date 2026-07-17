@@ -21,6 +21,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MetaController.class)
@@ -48,16 +49,32 @@ public class MetaLeituraControllerTest {
         MetaRequestDto dto = MetaLeituraFixture.requestDto(proximoAno);
 
         mockMvc.perform(post("/metas")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
 
         verify(service).novaMeta(dto);
     }
 
     @Test
+    @DisplayName("Deve atualizar uma meta de leitura com sucesso")
+    void deveAtualizarMeta() throws Exception {
+        Integer ano = LocalDate.now().getYear();
+        MetaRequestDto dto = MetaLeituraFixture.requestDto(ano);
+
+        doNothing().when(service).atualizar(dto);
+
+        mockMvc.perform(put("/metas")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNoContent());
+
+        verify(service).atualizar(dto);
+    }
+
+    @Test
     @DisplayName("Deve deletar todas as metas de leitura do usuario")
-    void deveDeltarMetasDoUsuario() throws Exception {
+    void deveDeletarMetasDoUsuario() throws Exception {
 
         doNothing().when(service).deletar();
 

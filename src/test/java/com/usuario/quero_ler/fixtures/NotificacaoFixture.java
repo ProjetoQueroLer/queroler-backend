@@ -16,7 +16,7 @@ public class NotificacaoFixture {
     }
 
     public static Notificacao entity(){
-        return new Notificacao(ID, DATA_DE_CRIACAO,NOTIFICACAO);
+        return new Notificacao(ID, DATA_DE_CRIACAO, NOTIFICACAO);
     }
 
     public static NotificacaoResponseDto response(){
