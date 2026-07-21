@@ -62,6 +62,11 @@ public class LivroController {
         return ResponseEntity.status(HttpStatus.OK).body(page);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<LivroDetalheCompletoResponse> detalhar(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(serviceI.detalhar(id));
+    }
+
     @GetMapping("/buscar/{isbn}")
     public ResponseEntity<LivroResponse> buscar(@PathVariable String isbn) {
         return ResponseEntity.status(HttpStatus.OK).body(serviceI.buscarIsbn(isbn));

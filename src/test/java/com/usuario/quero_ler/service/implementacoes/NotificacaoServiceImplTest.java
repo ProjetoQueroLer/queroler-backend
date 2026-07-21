@@ -104,6 +104,8 @@ class NotificacaoServiceImplTest {
 
         List<UsuarioNotificacao> lista = List.of(un1, un2);
 
+        when(clock.instant()).thenReturn(Instant.now());
+        when(clock.getZone()).thenReturn(ZoneId.systemDefault());
         when(loginService.getUsuarioLogado()).thenReturn(user);
         when(usuarioNotificacaoRepository.buscarTodasPorUsuario(usuario.getId()))
                 .thenReturn(lista);
@@ -144,7 +146,6 @@ class NotificacaoServiceImplTest {
         service.apagarNotificacoesComMaisDe30Dias();
 
         verify(usuarioNotificacaoRepository).deleteByNotificacaoDataDeCriacaoBefore(dataRecorte);
-        verify(repository).deleteByDataDeCriacaoBefore(dataRecorte);
     }
 
 

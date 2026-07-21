@@ -17,4 +17,5 @@ public interface LivroService {
     Livro buscar(Long id);
     Page<LivroDetalhadoResponse> getLivrosDoUsuario(Pageable pageable);
     Page<LivroTelaLeituraResponse> getLivrosTelaDeLeituraDoUsuario(Pageable pageable);
+    LivroDetalheCompletoResponse detalhar(Long livroId);
 }
