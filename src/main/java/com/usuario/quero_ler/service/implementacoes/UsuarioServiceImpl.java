@@ -14,6 +14,8 @@ import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.service.UsuarioService;
 import com.usuario.quero_ler.utils.Senhas;
 import com.usuario.quero_ler.utils.Cpf;
+import com.usuario.quero_ler.utils.Email;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -41,6 +43,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
 
         String emailNormalizado = dto.email().trim().toLowerCase();
+
+        Email.validar(emailNormalizado);
 
         if (repository.existsByEmailIgnoreCase(emailNormalizado)) {
             throw new EmailJaCadastradoException("O email '" + emailNormalizado + "' já está cadastrado.");
