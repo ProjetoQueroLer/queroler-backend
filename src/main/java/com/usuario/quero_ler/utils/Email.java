@@ -8,7 +8,8 @@ public class Email {
                 throw new EmailInvalidoException("Email é obrigatório.");
             }
 
-            String regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,30}$";
+        String regex = "^(?!.*\\.\\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,30}$";
+
             if (!email.matches(regex)) {
                 throw new EmailInvalidoException("Email inválido.");
             }
