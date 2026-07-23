@@ -1,5 +1,6 @@
 package com.usuario.quero_ler.models;
 
+import com.usuario.quero_ler.enums.CompartilharResenha;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,6 +36,9 @@ public class DiarioDeLeitura {
 
     @Builder.Default
     private Boolean spoiler = true;
+
+    @Enumerated(EnumType.STRING)
+    private CompartilharResenha compartilhar;
 
     @Column(columnDefinition = "TEXT")
     private String resenha;

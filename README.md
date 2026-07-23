@@ -1,71 +1,283 @@
 # 📚 Projeto Quero Ler - API Backend
 
-A **API Quero Ler** é uma plataforma inspirada na rede social Skoob, desenvolvida para gerenciar bibliotecas pessoais, monitorar leituras e conectar leitores. O projeto foca em segurança robusta e boas práticas de arquitetura Java.
+A **API Quero Ler** é uma plataforma inspirada na rede social Skoob, desenvolvida para gerenciar bibliotecas pessoais, monitorar leituras e conectar leitores.
 
 ---
 
 ## 🛠️ Tecnologias e Ferramentas
 
-*   **Linguagem:** Java 21
-*   **Framework:** Spring Boot 3.x
-*   **Banco de Dados:** PostgreSQL (Produção/Dev), H2 (Testes)
-*   **Migrações:** Flyway
-*   **Segurança:** Spring Security + JWT (Cookie HttpOnly)
-*   **Documentação:** Swagger (OpenAPI 3)
-*   **Containers:** Docker
+- **Linguagem:** Java 21
+- **Framework:** Spring Boot 3.x
+- **Banco de Dados:** PostgreSQL (Produção/Dev)
+- **Migrações:** Flyway
+- **Segurança:** Spring Security + JWT (Cookie HttpOnly)
+- **Documentação:** Swagger (OpenAPI 3) — disponível em `/swagger-ui.html`
+- **Containers:** Docker
 
 ---
 
 ## 🔐 Segurança e Autenticação
 
-O projeto utiliza **Spring Security** com uma estratégia **Stateless** via tokens JWT. Um diferencial desta implementação é o uso de **Cookies HttpOnly**, o que aumenta a segurança contra ataques XSS ao impedir que o JavaScript do front-end acesse o token diretamente.
+A API utiliza **Spring Security** com estratégia **Stateless** via tokens JWT armazenados em **Cookie HttpOnly**, prevenindo ataques XSS.
 
-### Modelo de Dados de Usuário
-A estrutura de segurança é dividida em duas entidades para separação de responsabilidades:
+### Fluxo de autenticação
 
-1.  **`User`**: Entidade de infraestrutura que implementa `UserDetails`. Gerencia credenciais e perfis de acesso (`ROLE_USER`, `ROLE_ADMIN`).
-2.  **`Usuario`**: Entidade de domínio que armazena informações cadastrais, perfil social e relacionamentos (livros e notificações).
+1. **POST `/logins`** — envia `user` e `senha`, recebe um cookie `jwt` (HttpOnly) e um body `{"primeiroLogin": boolean}`
+2. Para usuários admin/moderador com `primeiroLogin: true`, deve-se trocar a senha via **PUT `/usuarios/alterar-senha`**
+3. Nas demais requisições, o cookie `jwt` é enviado automaticamente pelo navegador. Para testes com curl, use o header `Authorization: Bearer <token>` extraído do cookie
 
-### Configuração de Segurança (SecurityConfig)
-A gerência e o ciclo de vida do token de autenticação estão concentrados no backend, removendo a responsabilidade do front-end de armazenar ou validar o token manualmente.
+### Perfis de usuário
+
+| Perfil | Acesso |
+|--------|--------|
+| `LEITOR` | Acesso à plataforma, cadastro de livros, diário de leitura, metas |
+| `MODERADOR` | Acesso de leitor + moderação de resenhas |
+| `ADMINISTRADOR` | Acesso de moderador + gerenciamento de documentos e exclusão de usuários |
+
+### Credenciais padrão (pré-cadastradas)
+
+| Perfil | E-mail | Senha |
+|--------|--------|-------|
+| Administrador | `administrador@queroler.com` | `Admin123@` |
+| Moderador | `moderador@queroler.com` | `Moderador123@` |
+
+---
+
+## 📡 API Reference
+
+### Autenticação
+
+| Método | Rota | Autenticação | Descrição |
+|--------|------|-------------|-----------|
+| POST | `/logins` | ❌ Público | Realiza login e retorna cookie JWT + flag `primeiroLogin` |
+
+**Request:**
+```json
+{ "user": "email@exemplo.com", "senha": "MinhaSenha123@" }
+```
+
+**Response:**
+```json
+{ "primeiroLogin": false }
+```
 
 ---
 
-## 🔔 Sistema de Notificações
+### Usuários
 
-O sistema de notificações segue uma arquitetura de **broadcast** com controle de leitura por usuário.
+| Método | Rota | Autenticação | Descrição |
+|--------|------|-------------|-----------|
+| POST | `/usuarios` | ❌ Público | Cadastrar novo leitor (multipart: `dados` JSON + `imagem` opcional) |
+| GET | `/usuarios` | ✅ | Retorna dados do usuário autenticado |
+| PUT | `/usuarios` | ✅ | Atualizar perfil (multipart) |
+| PUT | `/usuarios/dados-adicionais` | ✅ | Inserir dados complementares (cidade, estado, país + foto opcional) |
+| PUT | `/usuarios/alterar-senha` | ✅ | Alterar senha |
+| PUT | `/usuarios/administrador` | ✅ | Atualizar perfil por administrador |
+| DELETE | `/usuarios` | ✅ | Excluir próprio perfil (apenas leitor) |
+| GET | `/usuarios/foto` | ✅ | Obter foto do perfil |
 
-### Modelo de Dados
+**POST `/usuarios` (multipart):**
+- `dados`: JSON com `{ "nome", "email", "senha", "cpf", "dataDeNascimento", "checkTermo" }`
+- `imagem`: arquivo de foto (opcional, até 10MB, formatos JPG/PNG/JPEG)
 
-- **`Notificacao`**: Representa a notificação em si (mensagem e data de criação). Uma única notificação pode ser enviada para todos os usuários.
-- **`UsuarioNotificacao`**: Entidade associativa que vincula uma notificação a um usuário específico, controlando se foi **visualizada** ou não.
+**PUT `/usuarios/alterar-senha`:**
+```json
+{ "senhaAtual": "Admin123@", "senhaNova": "NovaSenha123@" }
+```
 
-### Endpoints
-
-| Método | Rota             | Descrição                                                     |
-|--------|------------------|---------------------------------------------------------------|
-| GET    | `/notificacoes`  | Retorna todas as notificações dos últimos 30 dias do usuário logado, ordenadas da mais recente para a mais antiga. Cada item possui a flag `visualizada: true/false`. |
-| PUT    | `/notificacoes`  | Marca todas as notificações do usuário logado como lidas.     |
-
-### Comportamento
-
-- **Limpeza automática**: Notificações com mais de 30 dias são excluídas automaticamente a cada consulta ou atualização.
-- **Flag de leitura**: O campo `visualizada` no response do GET permite que o front-end diferencie notificações lidas das não lidas.
-- **Ordenação**: As notificações são retornadas da mais recente para a mais antiga.
-- **Criação**: Quando um documento é atualizado pelo administrador, uma notificação é criada e enviada para todos os usuários cadastrados.
+**PUT `/usuarios/dados-adicionais` (multipart):**
+- `dados`: JSON com `{ "cidade", "estado", "pais" }`
+- `imagem`: arquivo de foto (opcional)
 
 ---
+
+### Livros
+
+| Método | Rota | Autenticação | Descrição |
+|--------|------|-------------|-----------|
+| POST | `/livros` | ✅ | Cadastrar novo livro (multipart: `dados` JSON + `imagem` capa opcional) |
+| GET | `/livros` | ✅ | Buscar livros (query params: `titulo`, `editora`, `autor`) |
+| GET | `/livros/populares` | ✅ | Listar top 5 livros mais adicionados |
+| GET | `/livros/{id}` | ✅ | Detalhar livro com estatísticas (avaliação, contagens, resenhas públicas) |
+| GET | `/livros/buscar/{isbn}` | ✅ | Buscar livro por ISBN |
+| GET | `/livros/{id}/capa` | ✅ | Obter imagem da capa |
+| PUT | `/livros/{id}/capa` | ✅ | Inserir/atualizar capa (multipart) |
+| GET | `/livros/tela_de_leitura` | ✅ | Listar livros do usuário para tela de leitura |
+| GET | `/livros/detalhados` | ✅ | Listar livros detalhados do usuário |
+
+**POST `/livros` (multipart):**
+- `dados`: JSON com:
+```json
+{
+  "titulo": "Dom Casmurro",
+  "isbn": "9788543107163",
+  "editora": "Sextante",
+  "anoDePublicacao": 2000,
+  "numeroDePaginas": 512,
+  "idioma": "PORTUGUES",
+  "sinopse": "Texto com no mínimo 50 caracteres...",
+  "autores": [{ "nome": "Machado de Assis" }]
+}
+```
+- `imagem`: arquivo de capa (opcional, até 10MB, JPG/PNG)
+
+**GET `/livros/{id}`** — retorna:
+```json
+{
+  "urlCapaDoLivro": "/livros/1/capa",
+  "titulo": "Dom Casmurro",
+  "editora": "Sextante",
+  "anoDePublicacao": 2000,
+  "numeroDePaginas": 512,
+  "idioma": "PORTUGUES",
+  "isbn": "9788543107163",
+  "sinopse": "...",
+  "dataDeCadastro": "08/03/2026 11:30:00",
+  "autores": [{ "id": 1, "nome": "Machado de Assis" }],
+  "mediaAvaliacao": 4.5,
+  "totalAvaliacoes": 12,
+  "quantidadeQueremLer": 8,
+  "quantidadeEstaoLendo": 3,
+  "quantidadeJaLeRAM": 10,
+  "quantidadeAbandonaram": 1,
+  "resenhas": [
+    {
+      "nomeDoAutor": "João",
+      "tituloDaResenha": "Incrível",
+      "resenha": "Texto da resenha...",
+      "spoiler": false,
+      "nota": 5.0,
+      "data": "10/03/2026 15:30:00"
+    }
+  ]
+}
+```
+
+---
+
+### Leitura (Estante)
+
+| Método | Rota | Autenticação | Descrição |
+|--------|------|-------------|-----------|
+| POST | `/leituras` | ✅ | Adicionar livro à estante com status |
+| DELETE | `/leituras/{livroId}` | ✅ | Remover livro da estante |
+
+**POST `/leituras`:**
+```json
+{
+  "livroId": 1,
+  "status": "LIVROS_QUE_QUERO_LER"
+}
+```
+
+**Status disponíveis:** `LIVROS_QUE_QUERO_LER`, `LIVROS_QUE_ESTOU_LENDO`, `RELENDO`, `LIVROS_LIDOS`, `LIVROS_ABANDONADOS`
+
+---
+
+### Diário de Leitura
+
+| Método | Rota | Autenticação | Descrição |
+|--------|------|-------------|-----------|
+| POST | `/diario` | ✅ | Criar diário de leitura para um livro |
+| GET | `/diario?livroId={id}` | ✅ | Buscar diário de leitura do livro |
+| PUT | `/diario/{id}` | ✅ | Atualizar diário de leitura |
+| POST | `/leituras/{diarioId}/comentarios` | ✅ | Adicionar acompanhamento (páginas lidas + comentário) |
+
+**POST `/diario`:**
+```json
+{
+  "livroId": 1,
+  "inicioDaLeitura": "08/03/2026 10:00:00",
+  "terminoDaLeitura": null
+}
+```
+
+**POST `/leituras/{diarioId}/comentarios`:**
+```json
+{
+  "paginaInicial": 1,
+  "paginaFinal": 50,
+  "comentario": "Comecei a leitura, ótimo início!"
+}
+```
+
+---
+
+### Metas de Leitura
+
+| Método | Rota | Autenticação | Descrição |
+|--------|------|-------------|-----------|
+| POST | `/metas` | ✅ | Criar meta de leitura para o ano |
+| PUT | `/metas` | ✅ | Atualizar meta de leitura |
+| DELETE | `/metas` | ✅ | Excluir meta de leitura |
+
+**POST/PUT `/metas`:**
+```json
+{
+  "ano": 2026,
+  "metaLivrosAno": 24,
+  "metaLivrosMes": 2,
+  "metaPaginasDia": 30
+}
+```
+> Todos os campos de meta são opcionais. Se não informado o ano, assume o ano corrente.
+
+---
+
+### Documentos
+
+| Método | Rota | Autenticação | Descrição |
+|--------|------|-------------|-----------|
+| POST | `/documentos` | ✅ (Admin) | Criar documento (ex: Termos de Uso) |
+| GET | `/documentos/termos-gerais-de-uso` | ❌ Público | Obter termos de uso vigentes |
+| PUT | `/documentos/{id}` | ✅ (Admin) | Atualizar documento |
+
+**POST/PUT `/documentos`:**
+```json
+{
+  "titulo": "Termos Gerais de Uso",
+  "tipo": "TERMOS_GERAIS_DE_USO",
+  "conteudo": "Texto do documento..."
+}
+```
+
+---
+
+### Notificações
+
+| Método | Rota | Autenticação | Descrição |
+|--------|------|-------------|-----------|
+| GET | `/notificacoes` | ✅ | Listar notificações dos últimos 30 dias (ordenadas da mais recente) |
+| PUT | `/notificacoes` | ✅ | Marcar todas como lidas |
+
+**GET `/notificacoes`** — retorna:
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "notificacao": "Termos de uso atualizados.",
+      "dataDeCriacao": "08/03/2026 11:30:00",
+      "visualizada": false
+    }
+  ],
+  "totalElements": 1,
+  "totalPages": 1
+}
+```
+
+---
+
+## 🚀 Como Rodar o Projeto
 
 ### Pré-requisitos
-*   Docker e Docker Compose
-*   Java 21 e Maven (ou Maven Wrapper `./mvnw`)
 
-### Passo a Passo
+- Docker e Docker Compose
+- Java 21 e Maven (ou `./mvnw`)
 
-#### Utilizando docker compose 
+### Utilizando Docker Compose
 
-* ** Antes de subir a aplicação local, é necessário adicionar as variaveis de ambiente no projeto (arquivo .env na raiz do projeto)**
-- Exemplo de configuração (.env)
+1. Configure o arquivo `.env` na raiz do projeto:
 ```bash
 POSTGRES_DB=db_quero_ler_v2
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/db_quero_ler_v2
@@ -73,116 +285,143 @@ SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=postgres
 ```
 
-1. **Iniciar as instancia da aplicação, e, do banco de dados (docker-compose):"**
-    ```bash
-    docker compose up -d --build
-    ```
-2. **Verificar se as instancia estão em execução:**
-    ```bash
-    docker ps 
-    ```
-3. ** Deve retornar ao menos 2 instancias:**
+2. Inicie os containers:
+```bash
+docker compose up -d --build
+```
 
-|CONTAINER ID|IMAGE|COMMAND|CREATED|STATUS|PORTS|NAMES|
-|------------|--------------------|----------------------|---------------|-----------|-------------------------------------------|------------| 
-|90bb0deec9c9|queroler-backend-api|"sh -c 'java $JAVA_O…"|49 minutes ago|Up 5 seconds|0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp|api-queroler|
-|fe6a83a4f7fe|postgres:latest|"docker-entrypoint.s…"|49 minutes ago|Up 16 seconds (healthy)|0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp|postgres-queroler|
----
+3. A API estará disponível em `http://localhost:8080`
 
-### Rodar pela IDE/Terminal com instancia docker postgres para ambiente local.
+### Rodar pela IDE/Terminal (apenas PostgreSQL no Docker)
 
-1. Suba a instancia docker do postgres via docker compose.
-
+1. Suba apenas o banco:
 ```bash
 docker compose up -d --build db
 ```
 
-2. Rodar o maven do spring-boot com o perfil local. Para quem utiliza ide como intelij, precisa especificar na configuração do runner para usar o profile de execução.
-
+2. Execute a aplicação com profile local:
 ```bash
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-## 🧪 Testes
+---
 
-Para garantir a qualidade e integridade do código, execute a suíte de testes unitários e de integração:
+## 🧪 Testes
 
 ```bash
 ./mvnw clean test
 ```
-## Api Railway
 
-- Fazendo requisições na api via curl.
-1. Fazer login
+---
+
+## 📖 Exemplos de uso com curl
+
+### 1. Login
+
 ```bash
-  curl -i -X 'POST' \
-  'https://queroler-backend-production.up.railway.app/logins' \
-  -H 'accept: */*' \
+curl -i -X POST 'http://localhost:8080/logins' \
+  -H 'Content-Type: application/json' \
+  -d '{"user":"administrador@queroler.com","senha":"Admin123@"}' \
+  | grep -i "jwt"
+```
+
+Extraia o token JWT do header `set-cookie` e use nas demais requisições.
+
+### 2. Buscar livros
+
+```bash
+TOKEN="seu_token_jwt_aqui"
+curl -X GET 'http://localhost:8080/livros?titulo=Dom' \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### 3. Detalhar livro
+
+```bash
+curl -X GET 'http://localhost:8080/livros/1' \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### 4. Cadastrar livro
+
+```bash
+curl -X POST 'http://localhost:8080/livros' \
+  -H "Authorization: Bearer $TOKEN" \
+  -F 'dados={
+    "titulo": "Dom Casmurro",
+    "isbn": "9788543107163",
+    "editora": "Sextante",
+    "anoDePublicacao": 2000,
+    "numeroDePaginas": 256,
+    "idioma": "PORTUGUES",
+    "sinopse": "Uma das obras mais importantes da literatura brasileira, Dom Casmurro narra a história de Bentinho e Capitu.",
+    "autores": [{"nome": "Machado de Assis"}]
+  }' \
+  -F 'imagem=@/caminho/para/capa.jpg'
+```
+
+### 5. Adicionar livro à estante
+
+```bash
+curl -X POST 'http://localhost:8080/leituras' \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"livroId": 1, "status": "LIVROS_QUE_QUERO_LER"}'
+```
+
+### 6. Criar diário de leitura
+
+```bash
+curl -X POST 'http://localhost:8080/diario' \
+  -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{
-  "user":"admin@administrator.com",
-  "senha": "Admin123@root"
-}' | grep "jwt"
+    "livroId": 1,
+    "inicioDaLeitura": "08/03/2026 10:00:00"
+  }'
 ```
 
-Como foi usado o commando grep do linux, esperamos receber como resposta a informação set-cookie com a chave jwt. A chava vamos usar para chamar o nosso proximo endpoit para listar os livros.
+---
 
-```bash
-set-cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJxdWVyb19sZXIiLCJzdWIiOiJhZG1pbkBhZG1pbmlzdHJhdG9yLmNvbSIsInJvbGUiOiJMRUlUT1IiLCJleHAiOjE3NzUxMjQ1Njh9.wa5v3v_beTIBCWaGpBniF4Nc6hIWEWTgI2QM6_LP8E4; Path=/; Max-Age=7200; Expires=Thu, 02 Apr 2026 07:09:28 GMT; HttpOnly; SameSite=Strict
+## 🔔 Sistema de Notificações
+
+O sistema de notificações segue uma arquitetura de **broadcast** com controle de leitura por usuário.
+
+- **`Notificacao`**: mensagem e data de criação. Uma única notificação é enviada para todos os usuários.
+- **`UsuarioNotificacao`**: vincula a notificação a um usuário, controlando se foi visualizada.
+
+**Comportamento:**
+- Notificações com mais de 30 dias são excluídas automaticamente
+- O campo `visualizada` no GET permite diferenciar lidas de não lidas
+- Ordenação da mais recente para a mais antiga
+- Quando um documento é atualizado, uma notificação é criada para todos os usuários
+
+---
+
+## 🤝 Contribuir
+
+Clone o repositório e faça checkout na branch **develop**.
+
+### Convenção de branches
+
+```
+tipo/descrição-curta
 ```
 
-2. Cadastrar livro
+| Tipo | Descrição |
+|------|-----------|
+| `ci` | Fluxos de integração contínua |
+| `docs` | Documentação |
+| `fix` | Correção de bugs |
+| `feat` | Nova funcionalidade |
+| `refactor` | Refatoração de código |
 
-Vamos popular a nossa requisição coms as informações dos dados no formulario, alem do arquivo que servira de imagem para capa do livro. O header **Authorization** deve ser informado com a chave jwt que recebemos no login. Dessa forma: `  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJxdWVyb19sZXIiLCJzdWIiOiJhZG1pbkBhZG1pbmlzdHJhdG9yLmNvbSIsInJvbGUiOiJMRUlUT1IiLCJleHAiOjE3NzUxMjM1MzN9.936-ke4lRqzNhorABVboVl8PGcWLstVMghobi2UKyI8'`
-Ficamos com a seguinte request.
-```bash
- curl -i --request POST \
-  --url 'https://queroler-backend-production.up.railway.app/livros' \
-  --header 'Content-Type: multipart/form-data' \
-  --header 'User-Agent: insomnia/12.3.1' \
-  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJxdWVyb19sZXIiLCJzdWIiOiJhZG1pbkBhZG1pbmlzdHJhdG9yLmNvbSIsInJvbGUiOiJMRUlUT1IiLCJleHAiOjE3NzUxMjM1MzN9.936-ke4lRqzNhorABVboVl8PGcWLstVMghobi2UKyI8' \
-  --form 'dados={
-  "titulo": "Scrum: A arte de fazer o dobro do trabalho na metade do tempo",
-  "isbn": "8543107164",
-  "editora": "Sextante",
-  "anoDePublicacao": "2000",
-  "numeroDePaginas": 512,
-  "idioma": "PORTUGUES",
-  "sinopse": "Repleto de histórias empolgantes e exemplos reais. O método de gerenciamento de projetos conhecido como Scrum deve ser a ferramenta de produtividade mais largamente empregada entre as empresas de alta tecnologia. Jeff Sutherland tem sido brilhantemente bem-sucedido em sua missão de pôr esse recurso nas mãos de mais negócios em todo o mundo.",
-  "autores": [
-    {
-      "nome": "Emily Bronte"
-    }
-  ]
-}' \
-  --form 'imagem=@/home/renanalves/Imagens/imagem.png'
+**Exemplo:** `feat/cadastro-usuario`
+
+### Convenção de commits
+
 ```
-Devemos receber um status 200 confirmando que nossa requisição foi processada com sucesso.
+tipo(escopo): mensagem curta
+```
 
-## 🤝Contribuir
-
-Clonar o repositorio, e fazer o checkout na branch **develop** para iniciar as contribuições. Seguir as conveções de branchs e commits deste documento.
-
-### Convenção de branch e commits
-
-Para este projeto vamos utilizar algumas convenções para commits e nomenclatura de branchs. Os nomes das branchs devem seguir o seguinte formar.
-
-* **tipo/descrição-curta**
-
-|tipo    |descrição|
-|--------|---------|
-|ci      | Criar/atualizar fluxos automatizados para integração continua| 
-|docs    | Mudanças na documentação| 
-|fix     | Correção de bugs e/ou problemas| 
-|feat    | Adiciona uma nova funcionalidade| 
-|refactor| Correção de código, sem adicionar nova funcionalidade ou resolver bug| 
-
-**Exemplo**: feat/cadastro-usuario
-
-Também precisamos trabalhar com o commit semantico, para seguir um padrão mais organizado de escrever as mensagens de commit.
-
-* **tipo(escopo): mensagem curta**
-
-**Exemplo**: feat(infra): Adicionar o arquivo Dockerfile do applicação 
-
-
+**Exemplo:** `feat(infra): Adicionar Dockerfile da aplicação`

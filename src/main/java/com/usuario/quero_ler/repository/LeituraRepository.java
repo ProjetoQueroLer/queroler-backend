@@ -1,5 +1,6 @@
 package com.usuario.quero_ler.repository;
 
+import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.Leitura;
 import org.springframework.data.domain.Page;
@@ -23,4 +24,6 @@ public interface LeituraRepository extends JpaRepository<Leitura, Long> {
 
     @Query("SELECT ul.livro FROM Leitura ul WHERE ul.usuario.id = :usuarioId")
     Page<Livro> findLivrosByUsuarioId(Long usuarioId, Pageable pageable);
+
+    long countByLivroIdAndStatus(Long livroId, LeituraStatus status);
 }

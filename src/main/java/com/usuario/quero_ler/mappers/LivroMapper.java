@@ -78,7 +78,7 @@ public class LivroMapper {
                 getAutoresResponse(livro));
     }
 
-    protected String getUrlFoto(Livro livro) {
+    public String getUrlFoto(Livro livro) {
         String urlCapa = "Capa não cadastrada.";
         if (livro.getCapaDoLivro() != null) {
             urlCapa = "/livros/" + livro.getId() + "/capa";
@@ -86,7 +86,7 @@ public class LivroMapper {
         return urlCapa;
     }
 
-    protected List<AutorResponse> getAutoresResponse(Livro livro) {
+    public List<AutorResponse> getAutoresResponse(Livro livro) {
         List<AutorResponse> autorResponses = new ArrayList<>();
         for (Autor autor : livro.getAutores()) {
             autorResponses.add(autorMapper.autorResponse(autor));

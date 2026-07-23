@@ -6,8 +6,10 @@ import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.exceptions.especies.*;
 import com.usuario.quero_ler.mappers.LivroMapper;
 import com.usuario.quero_ler.models.Autor;
+import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.Leitura;
+import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
 import com.usuario.quero_ler.repository.LivroRepository;
 import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.service.AutorService;
@@ -37,6 +39,7 @@ public class LivroServiceImpl implements LivroService {
     private final LivroMapper mapper;
     private final AutorService autorService;
     private final LeituraRepository leituraRepository;
+    private final DiarioDeLeituraRepository diarioRepository;
     private final LoginService loginService;
 
     @Override
@@ -187,6 +190,55 @@ public class LivroServiceImpl implements LivroService {
         }
         Page<LivroTelaLeituraResponse> page = new PageImpl<>(resposta, pageable, resposta.size());
         return page;
+    }
+
+    @Override
+    public LivroDetalheCompletoResponse detalhar(Long livroId) {
+        Livro livro = repository.findById(livroId)
+                .orElseThrow(() -> new LivroNaoEncontradoException("Livro não encontrado."));
+
+        Double mediaAvaliacao = diarioRepository.avgNotaByLivroId(livroId).orElse(0.0);
+        Long totalAvaliacoes = diarioRepository.countAvaliacoesByLivroId(livroId);
+
+        Long quantidadeQueremLer = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_QUE_QUERO_LER);
+        Long quantidadeEstaoLendo = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_QUE_ESTOU_LENDO)
+                + leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.RELENDO);
+        Long quantidadeJaLeRAM = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_LIDOS);
+        Long quantidadeAbandonaram = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_ABANDONADOS);
+
+        List<DiarioDeLeitura> resenhasPublicas = diarioRepository.findResenhasPublicasByLivroId(livroId);
+        List<ResenhaPublicaResponse> resenhas = new ArrayList<>();
+        for (DiarioDeLeitura d : resenhasPublicas) {
+            String nomeAutor = d.getLeitura().getUsuario().getNome();
+            resenhas.add(new ResenhaPublicaResponse(
+                    nomeAutor,
+                    d.getTituloDaResenha(),
+                    d.getResenha(),
+                    d.getSpoiler(),
+                    d.getNota(),
+                    d.getTerminoDaLeitura() != null ? d.getTerminoDaLeitura() : d.getInicioDaLeitura()
+            ));
+        }
+
+        return new LivroDetalheCompletoResponse(
+                mapper.getUrlFoto(livro),
+                livro.getTitulo(),
+                livro.getEditora(),
+                livro.getAnoDePublicacao(),
+                livro.getNumeroDePaginas(),
+                livro.getIdioma().name(),
+                livro.getIsbn(),
+                livro.getSinopse(),
+                livro.getDataDeCadastro(),
+                mapper.getAutoresResponse(livro),
+                mediaAvaliacao,
+                totalAvaliacoes,
+                quantidadeQueremLer,
+                quantidadeEstaoLendo,
+                quantidadeJaLeRAM,
+                quantidadeAbandonaram,
+                resenhas
+        );
     }
 
 }
