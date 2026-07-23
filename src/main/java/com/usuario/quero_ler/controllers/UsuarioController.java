@@ -8,6 +8,7 @@ import com.usuario.quero_ler.exceptions.especies.AusenciaDeDadosException;
 import com.usuario.quero_ler.service.AcompanhamentoDeLeituraService;
 import com.usuario.quero_ler.service.UsuarioService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
@@ -32,7 +33,7 @@ public class UsuarioController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UsuarioResponseDto> criar(
             @RequestPart(value = "imagem", required = false) MultipartFile foto,
-            @RequestPart("dados") String dadosJson) throws Exception {
+            @RequestPart("dados") String dadosJson, HttpServletResponse response) throws Exception {
 
         UsuarioRequestDto dto = mapper.readValue(dadosJson, UsuarioRequestDto.class);
 
@@ -43,7 +44,7 @@ public class UsuarioController {
         }
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.criar(dto, foto));
+                .body(service.criar(dto, foto, response));
     }
 
     @GetMapping

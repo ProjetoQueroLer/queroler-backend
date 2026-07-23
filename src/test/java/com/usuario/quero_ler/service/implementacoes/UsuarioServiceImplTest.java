@@ -16,6 +16,7 @@ import com.usuario.quero_ler.repository.UsuarioRepository;
 import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.LivroService;
 import com.usuario.quero_ler.service.LoginService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,6 +64,9 @@ class UsuarioServiceImplTest {
     @Mock
     private LivroService livroServiceI;
 
+    @Mock
+    private HttpServletResponse responseServlet;
+
     @Test
     @DisplayName("Deve criar um usuário sem foto com sucesso.")
     void deveCriarUmUsuarioComSucesso() {
@@ -76,7 +80,7 @@ class UsuarioServiceImplTest {
         when(repository.save(usuario)).thenReturn(usuario);
         when(mapper.toResponse(usuario)).thenReturn(response);
 
-        UsuarioResponseDto resposta = service.criar(dto, null);
+        UsuarioResponseDto resposta = service.criar(dto, null, responseServlet);
 
         assertNotNull(resposta.id());
         assertEquals(dto.nome(), resposta.nome());
@@ -107,7 +111,7 @@ class UsuarioServiceImplTest {
         when(repository.save(any(Usuario.class))).thenReturn(usuario);
         when(mapper.toResponse(usuario)).thenReturn(usuarioSalvo);
 
-        UsuarioResponseDto resultado = service.criar(dto, foto);
+        UsuarioResponseDto resultado = service.criar(dto, foto, responseServlet);
 
         assertNotNull(resultado);
 

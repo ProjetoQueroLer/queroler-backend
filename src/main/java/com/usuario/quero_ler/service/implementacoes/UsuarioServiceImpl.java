@@ -6,18 +6,21 @@ import com.usuario.quero_ler.exceptions.especies.*;
 import com.usuario.quero_ler.mappers.UsuarioMapper;
 import com.usuario.quero_ler.models.*;
 import com.usuario.quero_ler.repository.UserRepository;
-import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.repository.UsuarioNotificacaoRepository;
 import com.usuario.quero_ler.repository.UsuarioRepository;
-import com.usuario.quero_ler.service.LivroService;
+import com.usuario.quero_ler.security.TokenService;
 import com.usuario.quero_ler.service.LoginService;
 import com.usuario.quero_ler.service.UsuarioService;
 import com.usuario.quero_ler.utils.Senhas;
 import com.usuario.quero_ler.utils.Cpf;
 import com.usuario.quero_ler.utils.Email;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,10 +41,14 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioMapper mapper;
     private final UsuarioNotificacaoRepository usuarioNotificacaoRepository;
     private final LoginService loginService;
+    private final TokenService tokenService;
+
+    @Value("${api.security.token.expiration-minutes:120}")
+    private long tokenExpirationMinutes;
 
     @Transactional
     @Override
-    public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
+    public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto, HttpServletResponse response) {
 
         String emailNormalizado = dto.email().trim().toLowerCase();
 
@@ -66,6 +74,19 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuario.setUser(user);
         usuario = repository.save(usuario);
+
+        String token = tokenService.generateToken(user);
+
+        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(Duration.ofMinutes(tokenExpirationMinutes))
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
         return mapper.toResponse(usuario);
     }
 
