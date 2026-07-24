@@ -2,6 +2,7 @@ package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.meta.MetaRequestDto;
+import com.usuario.quero_ler.dtos.meta.MetaResponseDto;
 import com.usuario.quero_ler.fixtures.MetaLeituraFixture;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
@@ -17,11 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MetaController.class)
@@ -49,8 +48,8 @@ public class MetaLeituraControllerTest {
         MetaRequestDto dto = MetaLeituraFixture.requestDto(proximoAno);
 
         mockMvc.perform(post("/metas")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
 
         verify(service).novaMeta(dto);
@@ -65,8 +64,8 @@ public class MetaLeituraControllerTest {
         doNothing().when(service).atualizar(dto);
 
         mockMvc.perform(put("/metas")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isNoContent());
 
         verify(service).atualizar(dto);
@@ -82,5 +81,22 @@ public class MetaLeituraControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(service).deletar();
+    }
+
+    @Test
+    @DisplayName("Deve retornar as metas de leitura do usuario do ano corrente")
+    void deveRetornarAsMetasDoUsuarioDoAnoCorrente() throws Exception {
+        MetaResponseDto response = MetaLeituraFixture.metaResponseDto();
+
+        when(service.getMetas()).thenReturn(response);
+
+        mockMvc.perform(get("/metas"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ano").value(response.ano()))
+                .andExpect(jsonPath("$.metaLivrosAno").value(response.metaLivrosAno()))
+                .andExpect(jsonPath("$.metaLivrosMes").value(response.metaLivrosMes()))
+                .andExpect(jsonPath("$.metaPaginasDia").value(response.metaPaginasDia()));
+
+        verify(service).getMetas();
     }
 }

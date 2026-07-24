@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.controllers;
 
 import com.usuario.quero_ler.dtos.meta.MetaRequestDto;
+import com.usuario.quero_ler.dtos.meta.MetaResponseDto;
 import com.usuario.quero_ler.service.MetaLeituraService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,5 +32,10 @@ public class MetaController {
     public ResponseEntity<Void> deletar() {
         metaLeituraService.deletar();
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping
+    public ResponseEntity<MetaResponseDto> getMetas() {
+        return ResponseEntity.status(HttpStatus.OK).body(metaLeituraService.getMetas());
     }
 }
