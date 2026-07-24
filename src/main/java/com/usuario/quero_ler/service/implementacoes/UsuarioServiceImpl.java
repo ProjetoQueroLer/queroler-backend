@@ -1,5 +1,6 @@
 package com.usuario.quero_ler.service.implementacoes;
 
+import com.usuario.quero_ler.dtos.login.LoginRequestDto;
 import com.usuario.quero_ler.dtos.usuario.*;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.*;
@@ -16,6 +17,7 @@ import com.usuario.quero_ler.utils.Senhas;
 import com.usuario.quero_ler.utils.Cpf;
 import com.usuario.quero_ler.utils.Email;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -40,7 +42,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Transactional
     @Override
-    public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto) {
+    public UsuarioResponseDto criar(UsuarioRequestDto dto, MultipartFile foto, HttpServletResponse response) {
 
         String emailNormalizado = dto.email().trim().toLowerCase();
 
@@ -66,6 +68,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuario.setUser(user);
         usuario = repository.save(usuario);
+        LoginRequestDto loginRequestDto = new LoginRequestDto(usuario.getEmail(), dto.senha());
+        loginService.login(loginRequestDto,response);
         return mapper.toResponse(usuario);
     }
 

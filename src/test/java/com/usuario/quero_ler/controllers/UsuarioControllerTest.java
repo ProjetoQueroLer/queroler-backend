@@ -78,7 +78,7 @@ class UsuarioControllerTest {
                 MediaType.IMAGE_JPEG_VALUE,
                 "imagem fake".getBytes());
 
-        when(service.criar(any(UsuarioRequestDto.class), any(MultipartFile.class)))
+        when(service.criar(any(UsuarioRequestDto.class), any(MultipartFile.class),any()))
                 .thenReturn(response);
 
         mockMvc.perform(multipart("/usuarios")
@@ -96,7 +96,7 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.estado").value(response.estado()))
                 .andExpect(jsonPath("$.pais").value(response.pais()));
 
-        verify(service).criar(any(UsuarioRequestDto.class), any(MultipartFile.class));
+        verify(service).criar(any(UsuarioRequestDto.class), any(MultipartFile.class),any());
     }
 
     @Test

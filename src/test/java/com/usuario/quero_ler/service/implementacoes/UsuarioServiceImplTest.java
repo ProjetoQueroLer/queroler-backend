@@ -76,7 +76,7 @@ class UsuarioServiceImplTest {
         when(repository.save(usuario)).thenReturn(usuario);
         when(mapper.toResponse(usuario)).thenReturn(response);
 
-        UsuarioResponseDto resposta = service.criar(dto, null);
+        UsuarioResponseDto resposta = service.criar(dto, null,null);
 
         assertNotNull(resposta.id());
         assertEquals(dto.nome(), resposta.nome());
@@ -107,7 +107,7 @@ class UsuarioServiceImplTest {
         when(repository.save(any(Usuario.class))).thenReturn(usuario);
         when(mapper.toResponse(usuario)).thenReturn(usuarioSalvo);
 
-        UsuarioResponseDto resultado = service.criar(dto, foto);
+        UsuarioResponseDto resultado = service.criar(dto, foto,null);
 
         assertNotNull(resultado);
 
