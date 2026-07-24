@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.meta.MetaRequestDto;
+import com.usuario.quero_ler.dtos.meta.MetaResponseDto;
 import com.usuario.quero_ler.exceptions.especies.DataInvalidaException;
 import com.usuario.quero_ler.exceptions.especies.MetaDeLeituraJaCadastradaException;
 import com.usuario.quero_ler.exceptions.especies.MetaDeLeituraNaoEncontradaException;
@@ -192,4 +193,41 @@ public class MetaLeituraServiceImplTest {
         verify(repository).deleteAllByUsuario(usuario);
         verifyNoMoreInteractions(repository);
     }
+
+    @Test
+    @DisplayName("Deve retornar a meta do ano corrente do usuario")
+    void deveRetornarAsMetasDoAnoCorrente(){
+        Integer anoCorrente = LocalDate.now().getYear();
+        Usuario usuario = UserFixture.entidadeCompleta();
+        MetaLeitura meta = MetaLeituraFixture.metaLeitura();
+        MetaResponseDto responseDto = MetaLeituraFixture.metaResponseDto();
+
+        when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
+        when(repository.findByUsuarioAndAno(usuario,anoCorrente)).thenReturn(Optional.of(meta));
+        when(mapper.metaResponseDto(meta)).thenReturn(responseDto);
+
+        MetaResponseDto resposta = service.getMetas();
+
+        assertEquals(responseDto.ano(), resposta.ano());
+        assertEquals(responseDto.metaLivrosAno(), resposta.metaLivrosAno());
+        assertEquals(responseDto.metaLivrosMes(), resposta.metaLivrosMes());
+        assertEquals(responseDto.metaPaginasDia(), resposta.metaPaginasDia());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção para usuario sem meta")
+    void deveLancarExcecaoParaUsuarioSemMeta() {
+        Integer anoCorrente = LocalDate.now().getYear();
+        Usuario usuario = UserFixture.entidadeCompleta();
+        MetaLeitura meta = MetaLeituraFixture.metaLeitura();
+
+        when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
+        when(repository.findByUsuarioAndAno(usuario, anoCorrente)).thenReturn(Optional.empty());
+
+        MetaDeLeituraNaoEncontradaException exception = assertThrows(MetaDeLeituraNaoEncontradaException.class,
+                ()-> service.getMetas());
+
+        assertEquals("Não há metas para o ano de: " + anoCorrente + ".",exception.getMessage());
+    }
+
 }

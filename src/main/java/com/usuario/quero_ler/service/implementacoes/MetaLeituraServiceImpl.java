@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.meta.MetaRequestDto;
+import com.usuario.quero_ler.dtos.meta.MetaResponseDto;
 import com.usuario.quero_ler.exceptions.especies.DataInvalidaException;
 import com.usuario.quero_ler.exceptions.especies.MetaDeLeituraJaCadastradaException;
 import com.usuario.quero_ler.exceptions.especies.MetaDeLeituraNaoEncontradaException;
@@ -55,6 +56,18 @@ public class MetaLeituraServiceImpl implements MetaLeituraService {
     public void deletar() {
         Usuario usuario = loginService.getUsuarioLogado().getUsuario();
         repository.deleteAllByUsuario(usuario);
+    }
+
+    public MetaResponseDto getMetas() {
+        Usuario usuario = loginService.getUsuarioLogado().getUsuario();
+        int anoAtual = LocalDate.now().getYear();
+        MetaLeitura metaAtual = repository.findByUsuarioAndAno(usuario, anoAtual)
+                .orElseThrow(() -> new MetaDeLeituraNaoEncontradaException(
+                        "Não há metas para o ano de: " + anoAtual + "."
+                ));
+
+        MetaResponseDto responseDto = mapper.metaResponseDto(metaAtual);
+        return responseDto;
     }
 
     protected void validarNovaMeta(MetaRequestDto dto, Usuario usuario) {
