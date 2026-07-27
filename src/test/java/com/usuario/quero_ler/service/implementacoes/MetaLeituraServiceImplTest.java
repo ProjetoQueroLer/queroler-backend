@@ -5,9 +5,11 @@ import com.usuario.quero_ler.dtos.meta.MetaResponseDto;
 import com.usuario.quero_ler.exceptions.especies.DataInvalidaException;
 import com.usuario.quero_ler.exceptions.especies.MetaDeLeituraJaCadastradaException;
 import com.usuario.quero_ler.exceptions.especies.MetaDeLeituraNaoEncontradaException;
+import com.usuario.quero_ler.fixtures.LivroFixture;
 import com.usuario.quero_ler.fixtures.MetaLeituraFixture;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.mappers.MetaLeituraMapper;
+import com.usuario.quero_ler.models.Livro;
 import com.usuario.quero_ler.models.MetaLeitura;
 import com.usuario.quero_ler.models.Usuario;
 import com.usuario.quero_ler.repository.MetaLeituraRepository;
@@ -23,8 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +42,9 @@ public class MetaLeituraServiceImplTest {
 
     @InjectMocks
     private MetaLeituraServiceImpl service;
+
+    @Mock
+    private LivroServiceImpl livroService;
 
     @Test
     @DisplayName("Deve Criar nova meta com os dados informados no DTO.")
@@ -228,6 +232,29 @@ public class MetaLeituraServiceImplTest {
                 ()-> service.getMetas());
 
         assertEquals("Não há metas para o ano de: " + anoCorrente + ".",exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve Inserir um livro na meta")
+    void deveInseriLivroNaMetaAnualDoUsuario(){
+        Livro livro = LivroFixture.entity();
+        Integer anoCorrente = LocalDate.now().getYear();
+        Usuario usuario = UserFixture.entidadeCompleta();
+        MetaLeitura meta = MetaLeituraFixture.metaLeitura();
+
+        when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
+        when(livroService.buscar(livro.getId())).thenReturn(livro);
+        when(repository.findByUsuarioAndAno(usuario,anoCorrente)).thenReturn(Optional.of(meta));
+        when(repository.existsByIdAndLivrosMetaLivroId(meta.getId(),livro.getId())).thenReturn(false);
+
+        service.adicionarLivro(livro.getId());
+
+        assertTrue(meta.getLivrosMeta().stream()
+                .anyMatch(lm -> lm.getLivro().equals(livro)));
+
+        verify(loginService).getUsuarioLogado();
+        verify(livroService).buscar(livro.getId());
+        verify(repository).save(meta);
     }
 
 }
