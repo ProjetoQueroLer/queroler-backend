@@ -15,4 +15,6 @@ public interface MetaLeituraRepository extends JpaRepository<MetaLeitura, Long> 
     Optional<MetaLeitura> findByUsuarioAndAno(Usuario usuario, Integer ano);
 
     void deleteAllByUsuario(Usuario usuario);
+
+    boolean existsByIdAndLivrosMetaLivroId(Long metaId, Long livroId);
 }

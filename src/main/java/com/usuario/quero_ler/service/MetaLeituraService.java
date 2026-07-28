@@ -12,4 +12,6 @@ public interface MetaLeituraService {
     void deletar();
 
     MetaResponseDto getMetas();
+
+    void adicionarLivro(Long id);
 }

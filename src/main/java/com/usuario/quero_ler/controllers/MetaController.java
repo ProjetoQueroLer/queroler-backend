@@ -38,4 +38,10 @@ public class MetaController {
     public ResponseEntity<MetaResponseDto> getMetas() {
         return ResponseEntity.status(HttpStatus.OK).body(metaLeituraService.getMetas());
     }
+
+    @PutMapping("/adicionar-livro/{id}")
+    public ResponseEntity<Void> adicionarLivro(@PathVariable Long id){
+        metaLeituraService.adicionarLivro(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

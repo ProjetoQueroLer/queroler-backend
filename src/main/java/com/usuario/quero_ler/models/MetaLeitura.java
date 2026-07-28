@@ -51,6 +51,10 @@ public class MetaLeitura {
     @OneToMany(mappedBy = "metaLeitura", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LivroMeta> livrosMeta = new ArrayList<>();
 
+    public void adicionarLivro(Livro livro){
+        livrosMeta.add(new LivroMeta(null,this,livro));
+    }
+
     public boolean pertenceAoAnoAtual() {
         return ano.equals(LocalDate.now().getYear());
     }
