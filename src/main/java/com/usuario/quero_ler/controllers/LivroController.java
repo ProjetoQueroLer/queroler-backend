@@ -31,7 +31,7 @@ public class LivroController {
     private final Validator validator;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> cadastrar(
+    public ResponseEntity<LivroResponse> cadastrar(
             @RequestPart(value = "imagem", required = false) MultipartFile capaDoLivro,
             @RequestPart("dados") String dadosJson) throws Exception {
 
@@ -43,8 +43,8 @@ public class LivroController {
             throw new ConstraintViolationException(violations);
         }
 
-        serviceI.criar(dto, capaDoLivro);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        LivroResponse response = serviceI.criar(dto, capaDoLivro);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping()
