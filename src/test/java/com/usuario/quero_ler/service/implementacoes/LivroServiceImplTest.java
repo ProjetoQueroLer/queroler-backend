@@ -73,7 +73,7 @@ class LivroServiceImplTest {
     void deveCriarUmLivroComSucesso() {
         LivroRequest dto = LivroFixture.request();
         Livro livro = LivroFixture.entity();
-        LivroResponse response = LivroFixture.response();
+        LivroResponse response = LivroFixture.responseSemCapa();
 
         when(mapper.toEntity(dto)).thenReturn(livro);
         when(autorService.criar(dto.autores().get(0))).thenReturn(livro.getAutores().get(0));
@@ -91,7 +91,7 @@ class LivroServiceImplTest {
         assertEquals(dto.numeroDePaginas(), resultado.numeroDePaginas());
         assertEquals(dto.idioma(), resultado.idioma());
         assertEquals(dto.sinopse(), resultado.sinopse());
-        assertEquals("/livros/" + resultado.id() + "/capa", resultado.capaUrl());
+        assertNull(resultado.capaUrl());
 
         verify(mapper).toEntity(dto);
         verify(repository).save(livro);

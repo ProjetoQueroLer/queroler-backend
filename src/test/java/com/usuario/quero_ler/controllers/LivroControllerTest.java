@@ -28,13 +28,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(LivroController.class)
 class LivroControllerTest {
@@ -70,9 +70,29 @@ class LivroControllerTest {
                 json.getBytes()
         );
 
-        mockMvc.perform(multipart("/livros")
+        LivroResponse livroResponse = LivroFixture.responseSemCapa();
+
+        when(serviceI.criar(any(LivroRequest.class), isNull()))
+                .thenReturn(livroResponse);
+
+        MvcResult result = mockMvc.perform(multipart("/livros")
                         .file(dados))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated()
+                ).andReturn();
+
+        String jsonResposta = result.getResponse().getContentAsString();
+
+        LivroResponse response = objectMapper.readValue(jsonResposta, LivroResponse.class);
+
+        assertNotNull(response.id());
+        assertEquals(dto.titulo(), response.titulo());
+        assertEquals(dto.editora(), response.editora());
+        assertEquals(dto.numeroDePaginas(), response.numeroDePaginas());
+        assertEquals(dto.idioma(), response.idioma());
+        assertEquals(dto.sinopse(), response.sinopse());
+        assertEquals(dto.isbn(), response.isbn());
+        assertNull(response.capaUrl());
+
 
         verify(serviceI).criar(any(LivroRequest.class), isNull());
 
@@ -98,10 +118,28 @@ class LivroControllerTest {
                 json.getBytes()
         );
 
-        mockMvc.perform(multipart("/livros")
+        LivroResponse livroResponse = LivroFixture.response();
+
+        when(serviceI.criar(any(LivroRequest.class), eq(capaDoLivro)))
+                .thenReturn(livroResponse);
+
+        MvcResult result = mockMvc.perform(multipart("/livros")
                         .file(dados)
                         .file(capaDoLivro))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated()).andReturn();
+
+        String jsonResposta = result.getResponse().getContentAsString();
+
+        LivroResponse response = objectMapper.readValue(jsonResposta, LivroResponse.class);
+
+        assertNotNull(response.id());
+        assertEquals(dto.titulo(), response.titulo());
+        assertEquals(dto.editora(), response.editora());
+        assertEquals(dto.numeroDePaginas(), response.numeroDePaginas());
+        assertEquals(dto.idioma(), response.idioma());
+        assertEquals(dto.sinopse(), response.sinopse());
+        assertEquals(dto.isbn(), response.isbn());
+        assertNotNull(response.capaUrl());
 
         verify(serviceI).criar(dto, capaDoLivro);
 

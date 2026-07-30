@@ -108,6 +108,22 @@ public static Livro entityComCapa(){
         );
     }
 
+    public static LivroResponse responseSemCapa(){
+        return new LivroResponse(
+                ID,
+                TITULO,
+                ISBN,
+                EDITORA,
+                ANODEPUBLICACAO,
+                NUMERODEPAGINAS,
+                IDIOMA,
+                SINOPSE,
+                null,
+                DATA_DE_CADASTRO,
+                List.of(AutorFixture.response())
+        );
+    }
+
     public static LivroCardResponse responseCard(){
         return new LivroCardResponse(
                 "/livros/"+ ID + "/capa",
