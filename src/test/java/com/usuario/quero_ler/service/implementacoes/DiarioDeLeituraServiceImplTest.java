@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
+import com.usuario.quero_ler.dtos.leitura.LivroAcompanhamentoResponseDto;
 import com.usuario.quero_ler.dtos.livro.LivroResumoResponseDto;
 import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
 import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
@@ -380,5 +381,70 @@ class DiarioDeLeituraServiceImplTest {
 
 		verify(repository, never()).findById(any());
 		verify(repository, never()).save(any());
+	}
+
+	@Test
+	@DisplayName("Deve listar leituras em andamento do usuário com sucesso.")
+	void deveListarLeiturasEmAndamento() {
+		Long usuarioId = 1L;
+
+		Livro livro = new Livro();
+		livro.setId(2L);
+		livro.setTitulo("Dom Casmurro");
+
+		Leitura leitura = new Leitura();
+		leitura.setId(1L);
+		leitura.setLivro(livro);
+
+		DiarioDeLeitura diario = DiarioDeLeitura.builder()
+				.id(10L)
+				.leitura(leitura)
+				.inicioDaLeitura(LocalDateTime.now().minusDays(3))
+				.terminoDaLeitura(null)
+				.build();
+
+		User user = new User();
+		Usuario usuario = new Usuario();
+		usuario.setId(usuarioId);
+		user.setUsuario(usuario);
+
+		LivroAcompanhamentoResponseDto dto = new LivroAcompanhamentoResponseDto(
+				10L, 2L, "Dom Casmurro", "/livros/2/capa", List.of(), diario.getInicioDaLeitura());
+
+		when(loginService.getUsuarioLogado()).thenReturn(user);
+		when(repository.findEmAndamentoPorUsuario(usuarioId)).thenReturn(List.of(diario));
+		when(diarioLeituraMapper.toLivroAcompanhamentoResponse(diario)).thenReturn(dto);
+
+		List<LivroAcompanhamentoResponseDto> resultado = service.listarEmAndamento();
+
+		assertNotNull(resultado);
+		assertEquals(1, resultado.size());
+		assertEquals(10L, resultado.get(0).diarioId());
+		assertEquals(2L, resultado.get(0).livroId());
+		assertEquals("Dom Casmurro", resultado.get(0).titulo());
+
+		verify(loginService).getUsuarioLogado();
+		verify(repository).findEmAndamentoPorUsuario(usuarioId);
+	}
+
+	@Test
+	@DisplayName("Deve retornar lista vazia quando o usuário não tiver leituras em andamento.")
+	void deveRetornarListaVaziaQuandoNaoTiverLeiturasEmAndamento() {
+		Long usuarioId = 1L;
+
+		User user = new User();
+		Usuario usuario = new Usuario();
+		usuario.setId(usuarioId);
+		user.setUsuario(usuario);
+
+		when(loginService.getUsuarioLogado()).thenReturn(user);
+		when(repository.findEmAndamentoPorUsuario(usuarioId)).thenReturn(List.of());
+
+		List<LivroAcompanhamentoResponseDto> resultado = service.listarEmAndamento();
+
+		assertNotNull(resultado);
+		assertEquals(0, resultado.size());
+
+		verify(repository).findEmAndamentoPorUsuario(usuarioId);
 	}
 }

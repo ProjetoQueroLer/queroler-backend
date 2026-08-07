@@ -3,6 +3,7 @@ package com.usuario.quero_ler.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
+import com.usuario.quero_ler.dtos.leitura.LivroAcompanhamentoResponseDto;
 import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
 import com.usuario.quero_ler.exceptions.especies.LeituraNaoEncontradaException;
@@ -30,6 +31,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @WebMvcTest(DiarioDeLeituraController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -186,5 +190,36 @@ class DiarioDeLeituraControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(json))
 				.andExpect(status().isConflict());
+	}
+
+	@Test
+	@DisplayName("GET /diario/acompanhamento deve retornar 200 com a lista de leituras em andamento.")
+	void deveRetornarLeiturasEmAndamentoComStatus200() throws Exception {
+		LivroAcompanhamentoResponseDto dto = new LivroAcompanhamentoResponseDto(
+				10L, 2L, "Dom Casmurro", "/livros/2/capa", List.of(), LocalDateTime.now().minusDays(3));
+
+		when(service.listarEmAndamento()).thenReturn(List.of(dto));
+
+		mockMvc.perform(get("/diario/acompanhamento"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].diarioId").value(dto.diarioId()))
+				.andExpect(jsonPath("$[0].livroId").value(dto.livroId()))
+				.andExpect(jsonPath("$[0].titulo").value(dto.titulo()))
+				.andExpect(jsonPath("$[0].urlCapa").value(dto.urlCapa()));
+
+		verify(service).listarEmAndamento();
+	}
+
+	@Test
+	@DisplayName("GET /diario/acompanhamento deve retornar 200 com lista vazia quando não houver leituras em andamento.")
+	void deveRetornarListaVaziaQuandoNaoHouverLeiturasEmAndamento() throws Exception {
+		when(service.listarEmAndamento()).thenReturn(List.of());
+
+		mockMvc.perform(get("/diario/acompanhamento"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$").isEmpty());
+
+		verify(service).listarEmAndamento();
 	}
 }

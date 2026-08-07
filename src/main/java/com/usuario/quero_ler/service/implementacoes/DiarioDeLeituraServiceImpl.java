@@ -3,6 +3,7 @@ package com.usuario.quero_ler.service.implementacoes;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
+import com.usuario.quero_ler.dtos.leitura.LivroAcompanhamentoResponseDto;
 import com.usuario.quero_ler.mappers.DiarioLeituraMapper;
 import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
 import java.time.LocalDateTime;
@@ -23,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
@@ -30,8 +33,8 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
     private final DiarioDeLeituraRepository repository;
     private final LeituraRepository leituraRepository;
     private final LoginService loginService;
-		private final DiarioLeituraMapper diarioLeituraMapper;
-		private final LeituraService leituraService;
+    private final DiarioLeituraMapper diarioLeituraMapper;
+    private final LeituraService leituraService;
 
     @Transactional
     @Override
@@ -53,10 +56,10 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
                 .inicioDaLeitura(dto.inicioDaLeitura())
                 .terminoDaLeitura(dto.terminoDaLeitura())
                 .paginasLidas(dto.paginasLidas())
-                .nota(dto.nota() != null ? dto.nota():0.0)
+                .nota(dto.nota() != null ? dto.nota() : 0.0)
                 .tituloDaResenha(dto.tituloDaResenha())
                 .resenha(dto.resenha())
-								.spoiler(dto.spoiler() != null ? dto.spoiler():false)
+                .spoiler(dto.spoiler() != null ? dto.spoiler() : false)
                 .build();
 
         if (repository.existsByLeitura(leitura)) {
@@ -65,17 +68,29 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 
         repository.save(diario);
     }
-		@Override
-		public DiarioDeLeituraResponseDto buscarLeituraPorLivroEUsuario (Long livroId){
 
-			Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
+    @Override
+    public DiarioDeLeituraResponseDto buscarLeituraPorLivroEUsuario(Long livroId) {
 
-			DiarioDeLeitura diario = repository.findByUsuarioIdAndLivroId(usuarioId, livroId)
-			.orElseThrow(() -> new DiarioNaoEncontradoException("Diario não encontrado!"));
-				
-			return diarioLeituraMapper.toResponse(diario);
+        Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
 
-		}
+        DiarioDeLeitura diario = repository.findByUsuarioIdAndLivroId(usuarioId, livroId)
+                .orElseThrow(() -> new DiarioNaoEncontradoException("Diario não encontrado!"));
+
+        return diarioLeituraMapper.toResponse(diario);
+
+    }
+
+    @Override
+    @Transactional
+    public List<LivroAcompanhamentoResponseDto> listarEmAndamento() {
+        Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
+
+        return repository.findEmAndamentoPorUsuario(usuarioId)
+                .stream()
+                .map(diarioLeituraMapper::toLivroAcompanhamentoResponse)
+                .toList();
+    }
 
     @Transactional
     @Override
