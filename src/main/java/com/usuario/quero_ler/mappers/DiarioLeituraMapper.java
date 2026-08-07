@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.usuario.quero_ler.dtos.leitura.AcompanhamentoLeituraResponseDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
+import com.usuario.quero_ler.dtos.leitura.LivroAcompanhamentoResponseDto;
 import com.usuario.quero_ler.dtos.livro.LivroResumoResponseDto;
 import com.usuario.quero_ler.models.AcompanhamentoDeLeitura;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
@@ -18,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class DiarioLeituraMapper {
+
+    private final LivroMapper livroMapper;
 
     public DiarioDeLeitura toEntity(DiarioDeLeituraRequestDto dto) {
         DiarioDeLeitura diario = new DiarioDeLeitura();
@@ -67,6 +70,19 @@ public class DiarioLeituraMapper {
                  acomp.getPaginaInicial(),
                  acomp.getPaginaFinal(),
                  acomp.getComentario()
+             );
+         }
+
+         public LivroAcompanhamentoResponseDto toLivroAcompanhamentoResponse(DiarioDeLeitura diario) {
+             Leitura leitura = diario.getLeitura();
+             Livro livro = leitura.getLivro();
+             return new LivroAcompanhamentoResponseDto(
+                 diario.getId(),
+                 livro.getId(),
+                 livro.getTitulo(),
+                 livroMapper.getUrlFoto(livro),
+                 livroMapper.getAutoresResponse(livro),
+                 diario.getInicioDaLeitura()
              );
          }
 }

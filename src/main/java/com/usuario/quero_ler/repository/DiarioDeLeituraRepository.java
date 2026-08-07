@@ -17,7 +17,18 @@ public interface DiarioDeLeituraRepository extends JpaRepository<DiarioDeLeitura
     boolean existsByLeitura(Leitura leitura);
 
     @Query("SELECT d FROM DiarioDeLeitura d WHERE d.leitura.usuario.id = :usuarioId AND d.leitura.livro.id = :livroId")
-    Optional<DiarioDeLeitura> findByUsuarioIdAndLivroId(@Param("usuarioId")Long usuarioId, @Param("livroId")Long livroId);
+    Optional<DiarioDeLeitura> findByUsuarioIdAndLivroId(@Param("usuarioId") Long usuarioId,
+            @Param("livroId") Long livroId);
+
+    @Query("SELECT DISTINCT d FROM DiarioDeLeitura d " +
+            "JOIN FETCH d.leitura l " +
+            "JOIN FETCH l.livro li " +
+            "LEFT JOIN FETCH li.autores " +
+            "WHERE l.usuario.id = :usuarioId " +
+            "AND d.inicioDaLeitura IS NOT NULL " +
+            "AND d.terminoDaLeitura IS NULL " +
+            "ORDER BY d.inicioDaLeitura DESC")
+    List<DiarioDeLeitura> findEmAndamentoPorUsuario(@Param("usuarioId") Long usuarioId);
 
     @Query("SELECT AVG(d.nota) FROM DiarioDeLeitura d WHERE d.leitura.livro.id = :livroId AND d.nota > 0")
     Optional<Double> avgNotaByLivroId(@Param("livroId") Long livroId);
