@@ -115,6 +115,21 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
         }
     }
 
+    public void excluirDiarioDeLeitura(Long id) {
+        DiarioDeLeitura diario = repository.findById(id)
+                .orElseThrow(() -> new DiarioNaoEncontradoException("Diário de leitura não encontrado."));
+
+        Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
+        verificarPropriedade(diario, usuarioId);
+
+        Leitura leitura = diario.getLeitura();
+        leitura.setLido(false);
+        leituraService.ControleStatusLeitura(leitura, LeituraStatus.LIVROS_QUE_ESTOU_LENDO);
+        leituraRepository.save(leitura);
+
+        repository.delete(diario);
+    }
+
     private void verificarPropriedade(DiarioDeLeitura diario, Long usuarioId) {
         if (diario.getLeitura() == null || diario.getLeitura().getUsuario() == null ||
                 !diario.getLeitura().getUsuario().getId().equals(usuarioId)) {

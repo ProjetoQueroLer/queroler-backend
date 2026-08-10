@@ -42,4 +42,10 @@ public class DiarioDeLeituraController {
 		service.atualizar(id, dto);
 		return ResponseEntity.noContent().build();
 	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> excluirDiarioDeLeitura(@PathVariable Long id) {
+		service.excluirDiarioDeLeitura(id);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
 }
