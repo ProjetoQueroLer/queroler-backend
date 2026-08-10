@@ -124,9 +124,14 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 
         Leitura leitura = diario.getLeitura();
         leitura.setLido(false);
-        leituraService.ControleStatusLeitura(leitura, LeituraStatus.LIVROS_QUE_ESTOU_LENDO);
-        leituraRepository.save(leitura);
 
+        if (leitura.getStatus() == LeituraStatus.LIVROS_LIDOS) {
+            leituraService.ControleStatusLeitura(leitura, LeituraStatus.RELENDO);
+        } else if (leitura.getStatus() == LeituraStatus.LIVROS_ABANDONADOS) {
+            leituraService.ControleStatusLeitura(leitura, LeituraStatus.LIVROS_QUE_ESTOU_LENDO);
+        }
+
+        leituraRepository.save(leitura);
         repository.delete(diario);
     }
 
