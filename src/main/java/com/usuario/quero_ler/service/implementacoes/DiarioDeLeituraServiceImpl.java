@@ -115,6 +115,7 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
         }
     }
 
+    @Transactional
     public void excluirDiarioDeLeitura(Long id) {
         DiarioDeLeitura diario = repository.findById(id)
                 .orElseThrow(() -> new DiarioNaoEncontradoException("Diário de leitura não encontrado."));

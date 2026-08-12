@@ -384,6 +384,17 @@ class DiarioDeLeituraServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("Deve lançar DiarioNaoEncontradoException ao excluir um diário inexistente")
+	void deveLancarQuandoDiarioNaoExistirAoExcluir() {
+		when(repository.findById(1L)).thenReturn(Optional.empty());
+
+		assertThrows(DiarioNaoEncontradoException.class, () -> service.excluirDiarioDeLeitura(1L));
+
+		verify(leituraRepository, never()).save(any());
+		verify(repository, never()).delete(any());
+	}
+
+	@Test
 	@DisplayName("Deve voltar a leitura para relendo ao excluir um diário de um livro já lido")
 	void deveVoltarParaRelendoAoExcluirDiarioDeLivroLido() {
 		DiarioDeLeitura diario = new DiarioDeLeitura();
