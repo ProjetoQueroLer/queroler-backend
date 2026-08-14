@@ -62,4 +62,32 @@ class AcompanhamentoLeituraComentarioServiceTest {
         verify(acompanhamentoRepository, never()).save(any());
         verify(repository, never()).save(any());
     }
+
+    @Test
+    @DisplayName("Deve lançar DadosDiarioInvalidoException quando pagina inicial for maior que pagina final")
+    void deveLancarQuandoPaginaInicialMaiorQuePaginaFinal() {
+        Long diarioId = 1L;
+
+        AcompanhamentoRequestDto dto = new AcompanhamentoRequestDto(50, 25, null);
+
+        assertThrows(DadosDiarioInvalidoException.class, () -> service.adicionarComentario(diarioId, dto));
+
+        verify(acompanhamentoRepository, never()).save(any());
+        verify(repository, never()).save(any());
+        verify(repository, never()).findById(anyLong());
+    }
+
+    @Test
+    @DisplayName("Deve lançar DadosDiarioInvalidoException quando pagina inicial for igual a pagina final")
+    void deveLancarQuandoPaginaInicialIgualPaginaFinal() {
+        Long diarioId = 1L;
+
+        AcompanhamentoRequestDto dto = new AcompanhamentoRequestDto(25, 25, null);
+
+        assertThrows(DadosDiarioInvalidoException.class, () -> service.adicionarComentario(diarioId, dto));
+
+        verify(acompanhamentoRepository, never()).save(any());
+        verify(repository, never()).save(any());
+        verify(repository, never()).findById(anyLong());
+    }
 }
