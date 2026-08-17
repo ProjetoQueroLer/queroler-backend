@@ -71,4 +71,21 @@ class AcompanhamentoLeituraComentarioControllerTest {
 
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @DisplayName("POST /leituras/{id}/comentarios deve retornar 400 quando pagina inicial for maior que pagina final")
+    void postCriarComentarioPaginaInicialMaiorQueFinal() throws Exception {
+        AcompanhamentoRequestDto dto = new AcompanhamentoRequestDto(50, 25, null);
+
+        String json = objectMapper.writeValueAsString(dto);
+
+        doThrow(new DadosDiarioInvalidoException("A página inicial deve ser menor que a página final."))
+                .when(service).adicionarComentario(any(Long.class), any(AcompanhamentoRequestDto.class));
+
+        mockMvc.perform(post("/leituras/1/comentarios")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+
+                .andExpect(status().isBadRequest());
+    }
 }
