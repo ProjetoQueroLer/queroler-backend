@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -237,21 +239,50 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidFormatException.class)
     public ResponseEntity<Object> handleInvalidFormatException(InvalidFormatException ex) {
+
         if (ex.getTargetType().isEnum()) {
             Object[] valores = ex.getTargetType().getEnumConstants();
-            String mensagem = "Valor inválido. Valores permitidos: " + Arrays.toString(valores);
+
+            String mensagem =
+                    "Valor inválido. Valores permitidos: "
+                            + Arrays.toString(valores);
+
             return ResponseEntity.badRequest().body(mensagem);
         }
 
-        if (ex.getTargetType().equals(java.time.LocalDate.class) ||
-                ex.getTargetType().equals(java.time.LocalDateTime.class)) {
+        if (ex.getTargetType().equals(LocalDate.class) ||
+                ex.getTargetType().equals(LocalDateTime.class)) {
 
-            String campo = ex.getPath().isEmpty() ? "data" : ex.getPath().get(0).getFieldName();
-            String mensagem = String
-                    .format("O campo '%s' está com um formato de data inválido. Use o padrão DD/MM/YYYY.", campo);
+            String campo = ex.getPath().isEmpty()
+                    ? "data"
+                    : ex.getPath().get(0).getFieldName();
+
+            String mensagem = String.format(
+                    "O campo '%s' está com um formato de data inválido. " +
+                            "Use o padrão DD/MM/YYYY.",
+                    campo
+            );
+
             return ResponseEntity.badRequest().body(mensagem);
         }
 
-        return ResponseEntity.badRequest().body("Erro na formatação dos dados enviados: " + ex.getOriginalMessage());
+        if (ex.getTargetType().equals(Boolean.class) ||
+                ex.getTargetType().equals(boolean.class)) {
+
+            String campo = ex.getPath().isEmpty()
+                    ? "campo"
+                    : ex.getPath().get(0).getFieldName();
+
+            String mensagem = String.format(
+                    "O campo '%s' deve ser informado como true ou false.",
+                    campo
+            );
+
+            return ResponseEntity.badRequest().body(mensagem);
+        }
+
+        return ResponseEntity.badRequest()
+                .body("Erro na formatação dos dados enviados: "
+                        + ex.getOriginalMessage());
     }
 }
