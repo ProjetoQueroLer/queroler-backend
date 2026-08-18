@@ -1,7 +1,5 @@
 package com.usuario.quero_ler.dtos.leitura;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.PositiveOrZero;
 
@@ -23,7 +21,7 @@ public record DiarioDeLeituraRequestDto(
 
                 @PositiveOrZero Integer paginasLidas,
 
-                @Min(value = 0) @Max(value = 5) Double nota,
+                Double nota,
 
                 String tituloDaResenha,
 

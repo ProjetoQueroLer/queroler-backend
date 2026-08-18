@@ -196,6 +196,60 @@ class DiarioDeLeituraServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("Deve lançar DadosDiarioInvalidoException quando nota tiver mais de uma casa decimal")
+	void deveLancarQuandoNotaTiverMaisDeUmaCasaDecimal() {
+		DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
+				2L,
+				LocalDateTime.now().minusDays(1),
+				null,
+				10,
+				4.555,
+				"Título",
+				"resenha",
+				true);
+
+		assertThrows(DadosDiarioInvalidoException.class, () -> service.criar(dto));
+
+		verify(repository, never()).save(any());
+	}
+
+	@Test
+	@DisplayName("Deve lançar DadosDiarioInvalidoException quando nota nao for multiplo de 0.5")
+	void deveLancarQuandoNotaNaoForMultiploDeMeio() {
+		DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
+				2L,
+				LocalDateTime.now().minusDays(1),
+				null,
+				10,
+				4.6,
+				"Título",
+				"resenha",
+				true);
+
+		assertThrows(DadosDiarioInvalidoException.class, () -> service.criar(dto));
+
+		verify(repository, never()).save(any());
+	}
+
+	@Test
+	@DisplayName("Deve lançar DadosDiarioInvalidoException quando nota for zero")
+	void deveLancarQuandoNotaForZero() {
+		DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
+				2L,
+				LocalDateTime.now().minusDays(1),
+				null,
+				10,
+				0.0,
+				"Título",
+				"resenha",
+				true);
+
+		assertThrows(DadosDiarioInvalidoException.class, () -> service.criar(dto));
+
+		verify(repository, never()).save(any());
+	}
+
+	@Test
 	@DisplayName("Deve buscar os dados de um diario com sucesso.")
 	void deveBuscarOsDadosDeUmDiarioComSucesso() {
 		Long livroId = 2L;
@@ -376,6 +430,42 @@ class DiarioDeLeituraServiceImplTest {
 				3.0,
 				"Título",
 				"resenha");
+
+		assertThrows(DadosDiarioInvalidoException.class, () -> service.atualizar(1L, dto));
+
+		verify(repository, never()).findById(any());
+		verify(repository, never()).save(any());
+	}
+
+	@Test
+	@DisplayName("Deve lançar DadosDiarioInvalidoException ao atualizar quando nota tiver mais de uma casa decimal")
+	void deveLancarAoAtualizarQuandoNotaTiverMaisDeUmaCasaDecimal() {
+		DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
+				null, null, null, 4.555, null, null);
+
+		assertThrows(DadosDiarioInvalidoException.class, () -> service.atualizar(1L, dto));
+
+		verify(repository, never()).findById(any());
+		verify(repository, never()).save(any());
+	}
+
+	@Test
+	@DisplayName("Deve lançar DadosDiarioInvalidoException ao atualizar quando nota nao for multiplo de 0.5")
+	void deveLancarAoAtualizarQuandoNotaNaoForMultiploDeMeio() {
+		DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
+				null, null, null, 4.6, null, null);
+
+		assertThrows(DadosDiarioInvalidoException.class, () -> service.atualizar(1L, dto));
+
+		verify(repository, never()).findById(any());
+		verify(repository, never()).save(any());
+	}
+
+	@Test
+	@DisplayName("Deve lançar DadosDiarioInvalidoException ao atualizar quando nota for zero")
+	void deveLancarAoAtualizarQuandoNotaForZero() {
+		DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(
+				null, null, null, 0.0, null, null);
 
 		assertThrows(DadosDiarioInvalidoException.class, () -> service.atualizar(1L, dto));
 
