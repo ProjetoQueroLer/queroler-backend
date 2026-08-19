@@ -126,6 +126,7 @@ public static Livro entityComCapa(){
 
     public static LivroCardResponse responseCard(){
         return new LivroCardResponse(
+                ID,
                 "/livros/"+ ID + "/capa",
                 TITULO,
                 EDITORA,
@@ -138,6 +139,7 @@ public static Livro entityComCapa(){
 
     public static LivroTelaLeituraResponse responseTelaDeLeitura(LeituraStatus status){
         return new LivroTelaLeituraResponse(
+                ID,
                 TITULO,
                 status,
                 "/livros/"+ ID + "/capa",
