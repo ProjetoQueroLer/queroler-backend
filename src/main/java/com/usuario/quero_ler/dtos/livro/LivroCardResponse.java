@@ -8,6 +8,7 @@ import java.time.Year;
 import java.util.List;
 
 public record LivroCardResponse (
+        Long id,
         String urlCapaDoLivro,
         String titulo,
         String editora,

@@ -220,7 +220,12 @@ public class LivroServiceImpl implements LivroService {
             ));
         }
 
+        Long id = loginService.getUsuarioLogado().getUsuario().getId();
+        Optional<Leitura> leitura = leituraRepository.findByUsuarioIdAndLivroId(id, livroId);
+        LeituraStatus statusLeitura = leitura.map(Leitura::getStatus).orElse(null);
+
         return new LivroDetalheCompletoResponse(
+                livro.getId(),
                 mapper.getUrlFoto(livro),
                 livro.getTitulo(),
                 livro.getEditora(),
@@ -231,6 +236,7 @@ public class LivroServiceImpl implements LivroService {
                 livro.getSinopse(),
                 livro.getDataDeCadastro(),
                 mapper.getAutoresResponse(livro),
+                statusLeitura,
                 mediaAvaliacao,
                 totalAvaliacoes,
                 quantidadeQueremLer,
