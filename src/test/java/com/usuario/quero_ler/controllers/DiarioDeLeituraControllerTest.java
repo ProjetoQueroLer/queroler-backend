@@ -1,12 +1,13 @@
 package com.usuario.quero_ler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.dtos.leitura.LivroAcompanhamentoResponseDto;
 import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
-import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
 import com.usuario.quero_ler.exceptions.especies.LeituraNaoEncontradaException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import com.usuario.quero_ler.fixtures.DiarioLeituraFixtures;
 import com.usuario.quero_ler.repository.UserRepository;
 import com.usuario.quero_ler.security.TokenService;
@@ -20,206 +21,225 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
-
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DiarioDeLeituraController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class DiarioDeLeituraControllerTest {
 
-	@Autowired
-	private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-	@MockitoBean
-	private DiarioDeLeituraService service;
+    @MockitoBean
+    private DiarioDeLeituraService service;
 
-	@MockitoBean
-	private TokenService tokenService;
+    @MockitoBean
+    private TokenService tokenService;
 
-	@MockitoBean
-	private UserRepository userRepository;
+    @MockitoBean
+    private UserRepository userRepository;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-	@Test
-	@DisplayName("POST /diario deve retornar 201 quando criar com sucesso")
-	void postCriarSucesso() throws Exception {
-		DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
+    @Test
+    @DisplayName("POST /diario deve retornar 201 quando criar com sucesso")
+    void postCriarSucesso() throws Exception {
+        DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
 
-		String json = objectMapper.writeValueAsString(requestDto);
+        String json = objectMapper.writeValueAsString(requestDto);
 
-		doNothing().when(service).criar(any(DiarioDeLeituraRequestDto.class));
+        doNothing().when(service).criar(any(DiarioDeLeituraRequestDto.class));
 
-		mockMvc.perform(post("/diario")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(json))
-				.andExpect(status().isCreated());
-	}
+        mockMvc.perform(post("/diario")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isCreated());
+    }
 
-	@Test
-	@DisplayName("POST /diario deve retornar 404 quando usuarioLivro não existir")
-	void postCriarNotFound() throws Exception {
-		DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
+    @Test
+    @DisplayName("POST /diario deve retornar 400 quando paginas lidas estiver vazia")
+    void postCriarSemInformacaoDeQuantidadeDePaginasLidas() throws Exception {
+        DiarioDeLeituraRequestDto requestDto = new DiarioDeLeituraRequestDto(
+                2L,
+                LocalDateTime.now().minusDays(1),
+                LocalDateTime.now(),
+                null,
+                5.0,
+                "Título",
+                "resenha",
+                true);
 
-		String json = objectMapper.writeValueAsString(requestDto);
+        String json = objectMapper.writeValueAsString(requestDto);
 
-		doThrow(new LeituraNaoEncontradaException("Não encontrado"))
-				.when(service).criar(any(DiarioDeLeituraRequestDto.class));
+        doNothing().when(service).criar(any(DiarioDeLeituraRequestDto.class));
 
-		mockMvc.perform(post("/diario")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(json))
-				.andExpect(status().isNotFound());
-	}
+        mockMvc.perform(post("/diario")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.paginasLidas")
+                        .value("O número de páginas lidas é obrigatório."));
+    }
 
-	@Test
-	@DisplayName("GET /diario deve retornar 200 e o json com os dados do Diario de leitura.")
-	void deveRetornarODiarioDeLeituraComStatus200() throws Exception {
+    @Test
+    @DisplayName("POST /diario deve retornar 404 quando usuarioLivro não existir")
+    void postCriarNotFound() throws Exception {
+        DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
 
-		DiarioDeLeituraResponseDto responseDto = DiarioLeituraFixtures.diarioDeLeituraResponse();
+        String json = objectMapper.writeValueAsString(requestDto);
 
-		when(service.buscarLeituraPorLivroEUsuario(2L)).thenReturn(responseDto);
+        doThrow(new LeituraNaoEncontradaException("Não encontrado"))
+                .when(service).criar(any(DiarioDeLeituraRequestDto.class));
 
-		mockMvc.perform(get("/diario")
-				.param("livroId", "2"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(responseDto.id()))
-				.andExpect(jsonPath("$.livro.id").value(responseDto.livro().id()))
-				.andExpect(jsonPath("$.livro.titulo").value(responseDto.livro().titulo()))
-				.andExpect(jsonPath("$.livro.numeroDePaginas").value(responseDto.livro().numeroDePaginas()))
-				.andExpect(jsonPath("$.tituloDaResenha").value(responseDto.tituloDaResenha()))
-				.andExpect(jsonPath("$.resenha").value(responseDto.resenha()))
-				.andExpect(jsonPath("$.spoilers").value(responseDto.spoilers()));
+        mockMvc.perform(post("/diario")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound());
+    }
 
-		verify(service).buscarLeituraPorLivroEUsuario(2L);
-	}
+    @Test
+    @DisplayName("GET /diario deve retornar 200 e o json com os dados do Diario de leitura.")
+    void deveRetornarODiarioDeLeituraComStatus200() throws Exception {
 
-	@Test
-	@DisplayName("GET /diario deve retornar 404.")
-	void deveLancarExcecaoDiarioDeLeituraNaoEncontrado404() throws Exception {
+        DiarioDeLeituraResponseDto responseDto = DiarioLeituraFixtures.diarioDeLeituraResponse();
 
-		doThrow(new DiarioNaoEncontradoException("Diario não encontrado!"))
-				.when(service).buscarLeituraPorLivroEUsuario(any(Long.class));
-		mockMvc.perform(get("/diario")
-				.param("livroId", "99")
-				.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isNotFound());
+        when(service.buscarLeituraPorLivroEUsuario(2L)).thenReturn(responseDto);
 
-		verify(service).buscarLeituraPorLivroEUsuario(99L);
-	}
+        mockMvc.perform(get("/diario")
+                        .param("livroId", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(responseDto.id()))
+                .andExpect(jsonPath("$.livro.id").value(responseDto.livro().id()))
+                .andExpect(jsonPath("$.livro.titulo").value(responseDto.livro().titulo()))
+                .andExpect(jsonPath("$.livro.numeroDePaginas").value(responseDto.livro().numeroDePaginas()))
+                .andExpect(jsonPath("$.tituloDaResenha").value(responseDto.tituloDaResenha()))
+                .andExpect(jsonPath("$.resenha").value(responseDto.resenha()))
+                .andExpect(jsonPath("$.spoilers").value(responseDto.spoilers()));
 
-	@Test
-	@DisplayName("PUT /diario/{id} deve retornar 204 quando atualizar com sucesso")
-	void putAtualizarSucesso() throws Exception {
-		DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
+        verify(service).buscarLeituraPorLivroEUsuario(2L);
+    }
 
-		DiarioDeLeituraAtualizadoRequest updateDto = new DiarioDeLeituraAtualizadoRequest(
-				requestDto.inicioDaLeitura(),
-				requestDto.terminoDaLeitura(),
-				requestDto.paginasLidas(),
-				requestDto.nota(),
-				requestDto.tituloDaResenha(),
-				requestDto.resenha());
+    @Test
+    @DisplayName("GET /diario deve retornar 404.")
+    void deveLancarExcecaoDiarioDeLeituraNaoEncontrado404() throws Exception {
 
-		String json = objectMapper.writeValueAsString(updateDto);
+        doThrow(new DiarioNaoEncontradoException("Diario não encontrado!"))
+                .when(service).buscarLeituraPorLivroEUsuario(any(Long.class));
+        mockMvc.perform(get("/diario")
+                        .param("livroId", "99")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
 
-		doNothing().when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
+        verify(service).buscarLeituraPorLivroEUsuario(99L);
+    }
 
-		mockMvc.perform(put("/diario/1")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(json))
-				.andExpect(status().isNoContent());
-	}
+    @Test
+    @DisplayName("PUT /diario/{id} deve retornar 204 quando atualizar com sucesso")
+    void putAtualizarSucesso() throws Exception {
+        DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
 
-	@Test
-	@DisplayName("PUT /diario/{id} deve retornar 404 quando diário não existir")
-	void putAtualizarNotFound() throws Exception {
-		DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
+        DiarioDeLeituraAtualizadoRequest updateDto = new DiarioDeLeituraAtualizadoRequest(
+                requestDto.inicioDaLeitura(),
+                requestDto.terminoDaLeitura(),
+                requestDto.paginasLidas(),
+                requestDto.nota(),
+                requestDto.tituloDaResenha(),
+                requestDto.resenha());
 
-		DiarioDeLeituraAtualizadoRequest atualizadoDto = new DiarioDeLeituraAtualizadoRequest(
-				requestDto.inicioDaLeitura(),
-				requestDto.terminoDaLeitura(),
-				requestDto.paginasLidas(),
-				requestDto.nota(),
-				requestDto.tituloDaResenha(),
-				requestDto.resenha());
+        String json = objectMapper.writeValueAsString(updateDto);
 
-		String json = objectMapper.writeValueAsString(atualizadoDto);
+        doNothing().when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
 
-		doThrow(new DiarioNaoEncontradoException("Não encontrado"))
-				.when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
+        mockMvc.perform(put("/diario/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNoContent());
+    }
 
-		mockMvc.perform(put("/diario/1")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(json))
-				.andExpect(status().isNotFound());
-	}
+    @Test
+    @DisplayName("PUT /diario/{id} deve retornar 404 quando diário não existir")
+    void putAtualizarNotFound() throws Exception {
+        DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
 
-	@Test
-	@DisplayName("PUT /diario/{id} deve retornar 409 quando usuário não tiver permissão")
-	void putAtualizarSemPermissao() throws Exception {
-		DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
+        DiarioDeLeituraAtualizadoRequest atualizadoDto = new DiarioDeLeituraAtualizadoRequest(
+                requestDto.inicioDaLeitura(),
+                requestDto.terminoDaLeitura(),
+                requestDto.paginasLidas(),
+                requestDto.nota(),
+                requestDto.tituloDaResenha(),
+                requestDto.resenha());
 
-		DiarioDeLeituraAtualizadoRequest atualizadoDto = new DiarioDeLeituraAtualizadoRequest(
-				requestDto.inicioDaLeitura(),
-				requestDto.terminoDaLeitura(),
-				requestDto.paginasLidas(),
-				requestDto.nota(),
-				requestDto.tituloDaResenha(),
-				requestDto.resenha());
+        String json = objectMapper.writeValueAsString(atualizadoDto);
 
-		String json = objectMapper.writeValueAsString(atualizadoDto);
+        doThrow(new DiarioNaoEncontradoException("Não encontrado"))
+                .when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
 
-		doThrow(new UsuarioSemPermissaoParaAcaoException("Sem permissão"))
-				.when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
+        mockMvc.perform(put("/diario/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound());
+    }
 
-		mockMvc.perform(put("/diario/1")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(json))
-				.andExpect(status().isConflict());
-	}
+    @Test
+    @DisplayName("PUT /diario/{id} deve retornar 409 quando usuário não tiver permissão")
+    void putAtualizarSemPermissao() throws Exception {
+        DiarioDeLeituraRequestDto requestDto = DiarioLeituraFixtures.novoDiarioDeLeitura();
 
-	@Test
-	@DisplayName("GET /diario/acompanhamento deve retornar 200 com a lista de leituras em andamento.")
-	void deveRetornarLeiturasEmAndamentoComStatus200() throws Exception {
-		LivroAcompanhamentoResponseDto dto = new LivroAcompanhamentoResponseDto(
-				10L, 2L, "Dom Casmurro", "/livros/2/capa", List.of(), LocalDateTime.now().minusDays(3));
+        DiarioDeLeituraAtualizadoRequest atualizadoDto = new DiarioDeLeituraAtualizadoRequest(
+                requestDto.inicioDaLeitura(),
+                requestDto.terminoDaLeitura(),
+                requestDto.paginasLidas(),
+                requestDto.nota(),
+                requestDto.tituloDaResenha(),
+                requestDto.resenha());
 
-		when(service.listarEmAndamento()).thenReturn(List.of(dto));
+        String json = objectMapper.writeValueAsString(atualizadoDto);
 
-		mockMvc.perform(get("/diario/acompanhamento"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[0].diarioId").value(dto.diarioId()))
-				.andExpect(jsonPath("$[0].livroId").value(dto.livroId()))
-				.andExpect(jsonPath("$[0].titulo").value(dto.titulo()))
-				.andExpect(jsonPath("$[0].urlCapa").value(dto.urlCapa()));
+        doThrow(new UsuarioSemPermissaoParaAcaoException("Sem permissão"))
+                .when(service).atualizar(any(Long.class), any(DiarioDeLeituraAtualizadoRequest.class));
 
-		verify(service).listarEmAndamento();
-	}
+        mockMvc.perform(put("/diario/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isConflict());
+    }
 
-	@Test
-	@DisplayName("GET /diario/acompanhamento deve retornar 200 com lista vazia quando não houver leituras em andamento.")
-	void deveRetornarListaVaziaQuandoNaoHouverLeiturasEmAndamento() throws Exception {
-		when(service.listarEmAndamento()).thenReturn(List.of());
+    @Test
+    @DisplayName("GET /diario/acompanhamento deve retornar 200 com a lista de leituras em andamento.")
+    void deveRetornarLeiturasEmAndamentoComStatus200() throws Exception {
+        LivroAcompanhamentoResponseDto dto = new LivroAcompanhamentoResponseDto(
+                10L, 2L, "Dom Casmurro", "/livros/2/capa", List.of(), LocalDateTime.now().minusDays(3));
 
-		mockMvc.perform(get("/diario/acompanhamento"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray())
-				.andExpect(jsonPath("$").isEmpty());
+        when(service.listarEmAndamento()).thenReturn(List.of(dto));
 
-		verify(service).listarEmAndamento();
-	}
+        mockMvc.perform(get("/diario/acompanhamento"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].diarioId").value(dto.diarioId()))
+                .andExpect(jsonPath("$[0].livroId").value(dto.livroId()))
+                .andExpect(jsonPath("$[0].titulo").value(dto.titulo()))
+                .andExpect(jsonPath("$[0].urlCapa").value(dto.urlCapa()));
+
+        verify(service).listarEmAndamento();
+    }
+
+    @Test
+    @DisplayName("GET /diario/acompanhamento deve retornar 200 com lista vazia quando não houver leituras em andamento.")
+    void deveRetornarListaVaziaQuandoNaoHouverLeiturasEmAndamento() throws Exception {
+        when(service.listarEmAndamento()).thenReturn(List.of());
+
+        mockMvc.perform(get("/diario/acompanhamento"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+
+        verify(service).listarEmAndamento();
+    }
 }
