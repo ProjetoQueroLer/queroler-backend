@@ -14,5 +14,7 @@ public interface DiarioDeLeituraService {
 
     void atualizar(Long id, DiarioDeLeituraAtualizadoRequest dto);
 
+    void excluirDiarioDeLeitura(Long id);
+
     List<LivroAcompanhamentoResponseDto> listarEmAndamento();
 }

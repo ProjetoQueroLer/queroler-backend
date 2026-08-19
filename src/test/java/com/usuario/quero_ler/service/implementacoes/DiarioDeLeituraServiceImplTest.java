@@ -438,6 +438,71 @@ class DiarioDeLeituraServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("Deve lançar DiarioNaoEncontradoException ao excluir um diário inexistente")
+	void deveLancarQuandoDiarioNaoExistirAoExcluir() {
+		when(repository.findById(1L)).thenReturn(Optional.empty());
+
+		assertThrows(DiarioNaoEncontradoException.class, () -> service.excluirDiarioDeLeitura(1L));
+
+		verify(leituraRepository, never()).save(any());
+		verify(repository, never()).delete(any());
+	}
+
+	@Test
+	@DisplayName("Deve voltar a leitura para relendo ao excluir um diário de um livro já lido")
+	void deveVoltarParaRelendoAoExcluirDiarioDeLivroLido() {
+		DiarioDeLeitura diario = new DiarioDeLeitura();
+		Leitura leitura = new Leitura();
+		leitura.setId(1L);
+		leitura.setStatus(com.usuario.quero_ler.enums.LeituraStatus.LIVROS_LIDOS);
+		leitura.setLido(true);
+		Usuario dono = new Usuario();
+		dono.setId(1L);
+		leitura.setUsuario(dono);
+		diario.setLeitura(leitura);
+
+		User user = new User();
+		Usuario usuario = new Usuario();
+		usuario.setId(1L);
+		user.setUsuario(usuario);
+		when(loginService.getUsuarioLogado()).thenReturn(user);
+		when(repository.findById(1L)).thenReturn(Optional.of(diario));
+
+		service.excluirDiarioDeLeitura(1L);
+
+		verify(leituraService).ControleStatusLeitura(leitura, com.usuario.quero_ler.enums.LeituraStatus.RELENDO);
+		verify(leituraRepository).save(leitura);
+		verify(repository).delete(diario);
+	}
+
+	@Test
+	@DisplayName("Deve reabrir a leitura para lendo ao excluir um diário de um livro abandonado")
+	void deveReabrirParaLendoAoExcluirDiarioDeLivroAbandonado() {
+		DiarioDeLeitura diario = new DiarioDeLeitura();
+		Leitura leitura = new Leitura();
+		leitura.setId(1L);
+		leitura.setStatus(com.usuario.quero_ler.enums.LeituraStatus.LIVROS_ABANDONADOS);
+		leitura.setLido(false);
+		Usuario dono = new Usuario();
+		dono.setId(1L);
+		leitura.setUsuario(dono);
+		diario.setLeitura(leitura);
+
+		User user = new User();
+		Usuario usuario = new Usuario();
+		usuario.setId(1L);
+		user.setUsuario(usuario);
+		when(loginService.getUsuarioLogado()).thenReturn(user);
+		when(repository.findById(1L)).thenReturn(Optional.of(diario));
+
+		service.excluirDiarioDeLeitura(1L);
+
+		verify(leituraService).ControleStatusLeitura(leitura, com.usuario.quero_ler.enums.LeituraStatus.LIVROS_QUE_ESTOU_LENDO);
+		verify(leituraRepository).save(leitura);
+		verify(repository).delete(diario);
+  }
+  
+  @Test
 	@DisplayName("Deve lançar DadosDiarioInvalidoException ao atualizar quando nota tiver mais de uma casa decimal")
 	void deveLancarAoAtualizarQuandoNotaTiverMaisDeUmaCasaDecimal() {
 		DiarioDeLeituraAtualizadoRequest dto = new DiarioDeLeituraAtualizadoRequest(

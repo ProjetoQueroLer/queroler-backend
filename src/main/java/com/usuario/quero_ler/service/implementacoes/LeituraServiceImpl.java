@@ -137,8 +137,7 @@ public class LeituraServiceImpl implements LeituraService {
 				break;
 			case LIVROS_ABANDONADOS:
 				if (status.equals(LeituraStatus.LIVROS_QUE_ESTOU_LENDO) ||
-						(status.equals(LeituraStatus.LIVROS_QUE_QUERO_LER)	&& 
-						 leitura.getLido() == null)) {
+						status.equals(LeituraStatus.LIVROS_QUE_QUERO_LER)) {
 					leitura.setStatus(status);
 				} else {
 					throw new LeituraEstadoInvalidoException(
