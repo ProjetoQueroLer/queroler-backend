@@ -2,6 +2,10 @@ package com.usuario.quero_ler.config;
 
 import java.time.format.DateTimeFormatter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.CoercionAction;
+import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
+import com.fasterxml.jackson.databind.type.LogicalType;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,5 +33,17 @@ public class JacksonConfig {
             builder.deserializers(new LocalDateDeserializer(dateFormatter));
             builder.deserializers(new LocalDateTimeDeserializer(dateTimeFormatter));
         };
+    }
+
+
+    @Bean
+    public Jackson2ObjectMapperBuilderCustomizer jacksonCustomizer() {
+        return builder -> builder.postConfigurer(mapper ->
+                mapper.coercionConfigFor(LogicalType.Boolean)
+                        .setCoercion(
+                                CoercionInputShape.Integer,
+                                CoercionAction.Fail
+                        )
+        );
     }
 }

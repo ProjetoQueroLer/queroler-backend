@@ -67,6 +67,11 @@ public class AcompanhamentoDeLeituraServiceImpl implements AcompanhamentoDeLeitu
             throw new DadosDiarioInvalidoException("Payload do acompanhamento está vazio.");
         }
 
+        if (dto.paginaInicial() != null && dto.paginaFinal() != null
+                && dto.paginaInicial() >= dto.paginaFinal()) {
+            throw new DadosDiarioInvalidoException("A página inicial deve ser menor que a página final.");
+        }
+
         DiarioDeLeitura diario = diarioRepository.findById(diarioId)
                 .orElseThrow(() -> new DadosDiarioInvalidoException("Diário de leitura não encontrado."));
 

@@ -208,8 +208,8 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
             throw new DadosDiarioInvalidoException("paginasLidas não pode ser negativa.");
         }
 
-        if (dto.nota() != null && (dto.nota() < 0 || dto.nota() > 5)) {
-            throw new DadosDiarioInvalidoException("nota fora do intervalo permitido (0-5).");
+        if (dto.nota() != null) {
+            validarNota(dto.nota());
         }
     }
 
@@ -237,8 +237,19 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
             throw new DadosDiarioInvalidoException("paginasLidas não pode ser negativa.");
         }
 
-        if (dto.nota() != null && (dto.nota() < 0 || dto.nota() > 5)) {
-            throw new DadosDiarioInvalidoException("nota fora do intervalo permitido (0-5).");
+        if (dto.nota() != null) {
+            validarNota(dto.nota());
+        }
+    }
+
+    private void validarNota(Double nota) {
+        if (nota < 0.5 || nota > 5.0) {
+            throw new DadosDiarioInvalidoException("nota deve estar entre 0.5 e 5.0.");
+        }
+
+        long emDezavos = Math.round(nota * 10);
+        if (emDezavos % 5 != 0) {
+            throw new DadosDiarioInvalidoException("nota deve ser um múltiplo de 0.5.");
         }
     }
 }
