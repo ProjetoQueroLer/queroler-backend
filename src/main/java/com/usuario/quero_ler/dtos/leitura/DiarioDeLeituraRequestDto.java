@@ -25,6 +25,7 @@ public record DiarioDeLeituraRequestDto(
         @Min(value = 0) @Max(value = 5) Double nota,
 
         String tituloDaResenha,
+                Double nota,
 
         String resenha,
 
