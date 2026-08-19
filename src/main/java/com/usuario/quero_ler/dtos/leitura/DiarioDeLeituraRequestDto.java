@@ -21,7 +21,6 @@ public record DiarioDeLeituraRequestDto(
         @NotNull(message = "O número de páginas lidas é obrigatório.")
         Integer paginasLidas,
 
-        @Min(value = 0) @Max(value = 5)
         Double nota,
 
         String tituloDaResenha,
