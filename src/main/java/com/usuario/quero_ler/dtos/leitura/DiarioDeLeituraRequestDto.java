@@ -21,11 +21,10 @@ public record DiarioDeLeituraRequestDto(
         LocalDateTime terminoDaLeitura,
 
         @PositiveOrZero Integer paginasLidas,
-
-        @Min(value = 0) @Max(value = 5) Double nota,
-
+        
+        Double nota,
+        
         String tituloDaResenha,
-                Double nota,
 
         String resenha,
 
