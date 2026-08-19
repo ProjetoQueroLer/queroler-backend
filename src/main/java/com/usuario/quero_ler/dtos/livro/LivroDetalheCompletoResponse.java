@@ -1,6 +1,7 @@
 package com.usuario.quero_ler.dtos.livro;
 
 import com.usuario.quero_ler.dtos.autor.AutorResponse;
+import com.usuario.quero_ler.enums.LeituraStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.util.List;
 @Schema(description = "Detalhamento completo de um livro, incluindo estatísticas e resenhas públicas")
 public record LivroDetalheCompletoResponse(
 
+        Long id,
         String urlCapaDoLivro,
         String titulo,
         String editora,
@@ -21,6 +23,7 @@ public record LivroDetalheCompletoResponse(
         @Schema(description = "Data de cadastro no formato dd/MM/yyyy HH:mm:ss", example = "08/03/2026 11:30:00")
         LocalDateTime dataDeCadastro,
         List<AutorResponse> autores,
+        LeituraStatus status,
 
         @Schema(description = "Média das avaliações do livro")
         Double mediaAvaliacao,

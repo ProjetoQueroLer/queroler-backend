@@ -47,6 +47,7 @@ public class LivroMapper {
 
     public LivroCardResponse toCardResponse(Livro livro) {
         return new LivroCardResponse(
+                livro.getId(),
                 getUrlFoto(livro),
                 livro.getTitulo(),
                 livro.getEditora(),
@@ -58,6 +59,7 @@ public class LivroMapper {
 
     public LivroTelaLeituraResponse toLivroTelaLeituraResponse(Livro livro, LeituraStatus status) {
         return new LivroTelaLeituraResponse(
+                livro.getId(),
                 livro.getTitulo(),
                 status,
                 getUrlFoto(livro),
