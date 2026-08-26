@@ -8,7 +8,7 @@ import com.usuario.quero_ler.dtos.leitura.LivroAcompanhamentoResponseDto;
 import java.util.List;
 
 public interface DiarioDeLeituraService {
-    void criar(DiarioDeLeituraRequestDto dto);
+    DiarioDeLeituraResponseDto criar(DiarioDeLeituraRequestDto dto);
 
     DiarioDeLeituraResponseDto buscarLeituraPorLivroEUsuario(Long livroId);
 

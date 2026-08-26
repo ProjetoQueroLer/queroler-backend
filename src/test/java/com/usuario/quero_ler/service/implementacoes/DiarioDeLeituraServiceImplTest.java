@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.usuario.quero_ler.fixtures.DiarioLeituraFixtures;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,15 +65,7 @@ class DiarioDeLeituraServiceImplTest {
 	@Test
 	@DisplayName("Deve salvar diario de leitura quando usuarioLivro existir")
 	void deveSalvarDiarioQuandoUsuarioLivroExistir() {
-		DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
-				2L,
-				LocalDateTime.now().minusDays(1),
-				LocalDateTime.now(),
-				10,
-				5.0,
-				"Título",
-				"resenha",
-				true);
+		DiarioDeLeituraRequestDto dto = DiarioLeituraFixtures.novoDiarioDeLeitura();
 
 
 		Leitura leitura = new Leitura();
@@ -83,14 +76,25 @@ class DiarioDeLeituraServiceImplTest {
 		Usuario usuario = new Usuario();
 		usuario.setId(1L);
 		user.setUsuario(usuario);
+		DiarioDeLeitura diarioDeLeitura = DiarioLeituraFixtures.novoDiarioDeLeituraEntity(5L, usuario.getId(), dto.livroId());
+
+		DiarioDeLeituraResponseDto responseDto = DiarioLeituraFixtures.diarioDeLeituraResponse();
+
 		when(loginService.getUsuarioLogado()).thenReturn(user);
-
-		when(leituraRepository.findByUsuarioIdAndLivroId(1L, 2L))
+		when(leituraRepository.findByUsuarioIdAndLivroId(usuario.getId(), 2L))
 				.thenReturn(Optional.of(leitura));
+		when(repository.existsByLeitura(leitura)).thenReturn(false);
+		when(repository.save(any(DiarioDeLeitura.class))).thenReturn(diarioDeLeitura);
+		when(diarioLeituraMapper.toResponse(diarioDeLeitura)).thenReturn(responseDto);
 
-		service.criar(dto);
+		var response = service.criar(dto);
+
+		assertNotNull(response.id());
+		assertEquals(1L,response.livro().id());
 
 		verify(repository).save(any());
+		verify(leituraRepository).save(any());
+		verify(leituraService).ControleStatusLeitura(any(),any());
 	}
 
 	@Test

@@ -21,9 +21,9 @@ public class DiarioDeLeituraController {
 	private final DiarioDeLeituraService service;
 
 	@PostMapping
-	public ResponseEntity<Void> criar(@RequestBody @Valid DiarioDeLeituraRequestDto dto) {
-		service.criar(dto);
-		return ResponseEntity.status(HttpStatus.CREATED).build();
+	public ResponseEntity<DiarioDeLeituraResponseDto> criar(@RequestBody @Valid DiarioDeLeituraRequestDto dto) {
+		DiarioDeLeituraResponseDto response = service.criar(dto);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@GetMapping

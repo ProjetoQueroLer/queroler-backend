@@ -38,7 +38,7 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
 
     @Transactional
     @Override
-    public void criar(DiarioDeLeituraRequestDto dto) {
+    public DiarioDeLeituraResponseDto criar(DiarioDeLeituraRequestDto dto) {
         validateDto(dto);
 
         Long usuarioId = loginService.getUsuarioLogado().getUsuario().getId();
@@ -66,7 +66,10 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
             throw new DiarioJaExisteException("Já existe um diário de leitura para este usuário e livro.");
         }
 
-        repository.save(diario);
+        DiarioDeLeitura diarioSalvo = repository.save(diario);
+        DiarioDeLeituraResponseDto response = diarioLeituraMapper.toResponse(diarioSalvo);
+
+        return response;
     }
 
     @Override
