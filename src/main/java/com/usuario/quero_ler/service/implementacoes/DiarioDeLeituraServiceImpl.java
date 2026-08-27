@@ -4,15 +4,13 @@ import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraAtualizadoRequest;
 import com.usuario.quero_ler.dtos.leitura.LivroAcompanhamentoResponseDto;
+import com.usuario.quero_ler.exceptions.especies.*;
 import com.usuario.quero_ler.mappers.DiarioLeituraMapper;
-import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
+
 import java.time.LocalDateTime;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.Leitura;
 import com.usuario.quero_ler.enums.LeituraStatus;
-import com.usuario.quero_ler.exceptions.especies.DiarioJaExisteException;
-import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
-import com.usuario.quero_ler.exceptions.especies.LeituraNaoEncontradaException;
 import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
 import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.service.DiarioDeLeituraService;
@@ -22,7 +20,6 @@ import com.usuario.quero_ler.service.LoginService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 
 import java.util.List;
 
@@ -46,6 +43,12 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
         Leitura leitura = leituraRepository
                 .findByUsuarioIdAndLivroId(usuarioId, dto.livroId())
                 .orElseThrow(() -> new LeituraNaoEncontradaException("Usuário/Livro não encontrado na estante."));
+
+        Integer totalDepaginas = leitura.getLivro().getNumeroDePaginas();
+        if(dto.paginasLidas() > totalDepaginas){
+            throw new NumeroDePaginasInvalidaException("O número de páginas lidas" +
+                    " não pode ser maior que o total de páginas do livro. Total: ("+totalDepaginas+")");
+        }
 
         leituraService.ControleStatusLeitura(leitura,
                 dto.terminoDaLeitura() != null ? LeituraStatus.LIVROS_LIDOS : LeituraStatus.LIVROS_QUE_ESTOU_LENDO);

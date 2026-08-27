@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -117,6 +118,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CpfJaCadastradoException.class)
     public ResponseEntity<Object> handlerCpfJaCadastradoException(CpfJaCadastradoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NumeroDePaginasInvalidaException.class)
+    public ResponseEntity<Object> handlerNumeroDePaginasInvalidaException(NumeroDePaginasInvalidaException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
@@ -284,5 +290,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest()
                 .body("Erro na formatação dos dados enviados: "
                         + ex.getOriginalMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex) {
+
+        Map<String, String> erros = new HashMap<>();
+
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(error ->
+                        erros.put(error.getField(), error.getDefaultMessage())
+                );
+
+        return ResponseEntity.badRequest().body(erros);
     }
 }
