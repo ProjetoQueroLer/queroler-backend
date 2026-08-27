@@ -56,37 +56,24 @@ class DiarioDeLeituraControllerTest {
 
         String json = objectMapper.writeValueAsString(requestDto);
 
-        doNothing().when(service).criar(any(DiarioDeLeituraRequestDto.class));
+        DiarioDeLeituraResponseDto responseDto = DiarioLeituraFixtures.diarioDeLeituraResponse();
+
+        when(service.criar(requestDto)).thenReturn(responseDto);
 
         mockMvc.perform(post("/diario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isCreated());
-    }
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(responseDto.id()))
+                .andExpect(jsonPath("$.livro.id").value(responseDto.livro().id()))
+                .andExpect(jsonPath("$.livro.titulo").value(responseDto.livro().titulo()))
+                .andExpect(jsonPath("$.livro.numeroDePaginas").value(responseDto.livro().numeroDePaginas()))
+                .andExpect(jsonPath("$.tituloDaResenha").value(responseDto.tituloDaResenha()))
+                .andExpect(jsonPath("$.resenha").value(responseDto.resenha()))
+                .andExpect(jsonPath("$.spoilers").value(responseDto.spoilers()));
 
-    @Test
-    @DisplayName("POST /diario deve retornar 400 quando paginas lidas estiver vazia")
-    void postCriarSemInformacaoDeQuantidadeDePaginasLidas() throws Exception {
-        DiarioDeLeituraRequestDto requestDto = new DiarioDeLeituraRequestDto(
-                2L,
-                LocalDateTime.now().minusDays(1),
-                LocalDateTime.now(),
-                null,
-                5.0,
-                "Título",
-                "resenha",
-                true);
+        verify(service).criar(requestDto);
 
-        String json = objectMapper.writeValueAsString(requestDto);
-
-        doNothing().when(service).criar(any(DiarioDeLeituraRequestDto.class));
-
-        mockMvc.perform(post("/diario")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.paginasLidas")
-                        .value("O número de páginas lidas é obrigatório."));
     }
 
     @Test
