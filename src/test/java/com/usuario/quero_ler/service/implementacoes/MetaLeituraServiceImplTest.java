@@ -49,13 +49,15 @@ public class MetaLeituraServiceImplTest {
     @Test
     @DisplayName("Deve Criar nova meta com os dados informados no DTO.")
     void deveCriarNovaMetaComUsuarioLogado() {
-        MetaRequestDto dto = MetaLeituraFixture.requestDto(2027);
+        Integer anoCorrente = LocalDate.now().getYear();
+        MetaRequestDto dto = MetaLeituraFixture.requestDto(anoCorrente);
 
         Usuario usuario = UserFixture.entidadeCompleta();
 
         MetaLeitura meta = MetaLeituraFixture.metaLeitura(dto);
 
         when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
+        when(repository.existsByUsuarioAndAno(usuario, anoCorrente)).thenReturn(false);
         when(mapper.toMetaLeitura(dto)).thenReturn(meta);
         when(repository.save(meta)).thenReturn(meta);
 
@@ -154,14 +156,44 @@ public class MetaLeituraServiceImplTest {
 
         Usuario usuario = UserFixture.entidadeCompleta();
 
-        MetaLeitura meta = MetaLeituraFixture.metaLeitura(dto);
+        when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
+
+        DataInvalidaException exception = assertThrows(DataInvalidaException.class,
+                () -> service.novaMeta(dto));
+
+        assertEquals("O ano informado deve ser o ano corrente (" + anoCorrente + ").", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção de data inválida, por tentativa de criar meta para ano superior ao corrente.")
+    void deveLancarExcecaoAoTentarCriarNovaMetaParaAnoFuturo() {
+        MetaRequestDto dto = MetaLeituraFixture.requestDto(2027);
+        Integer anoCorrente = LocalDate.now().getYear();
+
+        Usuario usuario = UserFixture.entidadeCompleta();
 
         when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
 
         DataInvalidaException exception = assertThrows(DataInvalidaException.class,
                 () -> service.novaMeta(dto));
 
-        assertEquals("O ano informado não pode ser anterior ao corrente.", exception.getMessage());
+        assertEquals("O ano informado deve ser o ano corrente (" + anoCorrente + ").", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção de data inválida, por tentativa de criar meta para ano absurdo.")
+    void deveLancarExcecaoAoTentarCriarNovaMetaParaAnoAbsurdo() {
+        MetaRequestDto dto = MetaLeituraFixture.requestDto(20266);
+        Integer anoCorrente = LocalDate.now().getYear();
+
+        Usuario usuario = UserFixture.entidadeCompleta();
+
+        when(loginService.getUsuarioLogado()).thenReturn(usuario.getUser());
+
+        DataInvalidaException exception = assertThrows(DataInvalidaException.class,
+                () -> service.novaMeta(dto));
+
+        assertEquals("O ano informado deve ser o ano corrente (" + anoCorrente + ").", exception.getMessage());
     }
 
     @Test

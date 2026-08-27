@@ -92,8 +92,8 @@ public class MetaLeituraServiceImpl implements MetaLeituraService {
         Integer anoAtual = LocalDate.now().getYear();
         Integer anoDto = dto.ano() != null ? dto.ano() : anoAtual;
 
-        if (anoDto < anoAtual) {
-            throw new DataInvalidaException("O ano informado não pode ser anterior ao corrente.");
+        if (!anoDto.equals(anoAtual)) {
+            throw new DataInvalidaException("O ano informado deve ser o ano corrente (" + anoAtual + ").");
         }
 
         if (repository.existsByUsuarioAndAno(usuario, anoDto)) {
