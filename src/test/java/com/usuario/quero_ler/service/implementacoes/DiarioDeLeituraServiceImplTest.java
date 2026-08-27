@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.usuario.quero_ler.exceptions.especies.*;
+import com.usuario.quero_ler.fixtures.LivroFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,10 +27,6 @@ import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.dtos.leitura.LivroAcompanhamentoResponseDto;
 import com.usuario.quero_ler.dtos.livro.LivroResumoResponseDto;
-import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
-import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
-import com.usuario.quero_ler.exceptions.especies.LeituraNaoEncontradaException;
-import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import com.usuario.quero_ler.mappers.DiarioLeituraMapper;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.Livro;
@@ -62,6 +60,45 @@ class DiarioDeLeituraServiceImplTest {
 	private LeituraService leituraService;
 
 	@Test
+	@DisplayName("Deve lançar exceção ao tentar criar diario de leitura sem numero de paginas")
+	void deveLancarExcecaoAoTentarCriarDiarioSemNumeroDePaginas() {
+		DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
+				2L,
+				LocalDateTime.now().minusDays(1),
+				LocalDateTime.now(),
+				600,
+				5.0,
+				"Título",
+				"resenha",
+				true);
+
+
+		Leitura leitura = new Leitura();
+		leitura.setId(1L);
+		leitura.setUsuario(new Usuario());
+
+		User user = new User();
+		Usuario usuario = new Usuario();
+		usuario.setId(1L);
+		user.setUsuario(usuario);
+
+		Livro livro = LivroFixture.entity();
+		leitura.setLivro(livro);
+
+		when(loginService.getUsuarioLogado()).thenReturn(user);
+
+		when(leituraRepository.findByUsuarioIdAndLivroId(1L, 2L))
+				.thenReturn(Optional.of(leitura));
+
+		NumeroDePaginasInvalidaException exception = assertThrows(NumeroDePaginasInvalidaException.class,
+				()-> service.criar(dto));
+
+		assertEquals("O número de páginas lidas não pode ser maior que o total de páginas do livro." +
+						" Total: ("+livro.getNumeroDePaginas()+")",
+				exception.getMessage());
+	}
+
+	@Test
 	@DisplayName("Deve salvar diario de leitura quando usuarioLivro existir")
 	void deveSalvarDiarioQuandoUsuarioLivroExistir() {
 		DiarioDeLeituraRequestDto dto = new DiarioDeLeituraRequestDto(
@@ -79,10 +116,14 @@ class DiarioDeLeituraServiceImplTest {
 		leitura.setId(1L);
 		leitura.setUsuario(new Usuario());
 
+		Livro livro = LivroFixture.entity();
+		leitura.setLivro(livro);
+
 		User user = new User();
 		Usuario usuario = new Usuario();
 		usuario.setId(1L);
 		user.setUsuario(usuario);
+
 		when(loginService.getUsuarioLogado()).thenReturn(user);
 
 		when(leituraRepository.findByUsuarioIdAndLivroId(1L, 2L))
