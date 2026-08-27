@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 import com.usuario.quero_ler.fixtures.DiarioLeituraFixtures;
+import com.usuario.quero_ler.fixtures.LivroFixture;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +28,11 @@ import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.dtos.leitura.LivroAcompanhamentoResponseDto;
 import com.usuario.quero_ler.dtos.livro.LivroResumoResponseDto;
+import com.usuario.quero_ler.exceptions.especies.DadosDiarioInvalidoException;
+import com.usuario.quero_ler.exceptions.especies.DiarioNaoEncontradoException;
+import com.usuario.quero_ler.exceptions.especies.LeituraNaoEncontradaException;
+import com.usuario.quero_ler.exceptions.especies.NumeroDePaginasInvalidaException;
+import com.usuario.quero_ler.exceptions.especies.UsuarioSemPermissaoParaAcaoException;
 import com.usuario.quero_ler.mappers.DiarioLeituraMapper;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.Livro;
