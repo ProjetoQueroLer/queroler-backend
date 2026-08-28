@@ -44,8 +44,8 @@ public class MetaLeituraControllerTest {
     @Test
     @DisplayName("Deve adicionar uma meta de leitura com sucesso")
     void deveCriarMeta() throws Exception {
-        Integer proximoAno = LocalDate.now().plusYears(1).getYear();
-        MetaRequestDto dto = MetaLeituraFixture.requestDto(proximoAno);
+        Integer anoCorrente = LocalDate.now().getYear();
+        MetaRequestDto dto = MetaLeituraFixture.requestDto(anoCorrente);
 
         mockMvc.perform(post("/metas")
                         .contentType(MediaType.APPLICATION_JSON)
