@@ -99,4 +99,43 @@ public class MetaLeituraControllerTest {
 
         verify(service).getMetas();
     }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando metaLivrosAno for negativo")
+    void deveRejeitarMetaLivrosAnoNegativo() throws Exception {
+        MetaRequestDto dto = new MetaRequestDto(LocalDate.now().getYear(), -1, 1, 30);
+
+        mockMvc.perform(post("/metas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+
+        verify(service, never()).novaMeta(any());
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando metaLivrosMes for negativo")
+    void deveRejeitarMetaLivrosMesNegativo() throws Exception {
+        MetaRequestDto dto = new MetaRequestDto(LocalDate.now().getYear(), 12, -1, 30);
+
+        mockMvc.perform(post("/metas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+
+        verify(service, never()).novaMeta(any());
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando metaPaginasDia for negativo")
+    void deveRejeitarMetaPaginasDiaNegativo() throws Exception {
+        MetaRequestDto dto = new MetaRequestDto(LocalDate.now().getYear(), 12, 1, -1);
+
+        mockMvc.perform(post("/metas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+
+        verify(service, never()).novaMeta(any());
+    }
 }
