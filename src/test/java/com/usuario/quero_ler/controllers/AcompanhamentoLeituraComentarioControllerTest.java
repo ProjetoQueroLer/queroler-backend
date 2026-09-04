@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -75,7 +77,7 @@ class AcompanhamentoLeituraComentarioControllerTest {
     @Test
     @DisplayName("POST /leituras/{id}/comentarios deve retornar 400 quando pagina inicial for maior que pagina final")
     void postCriarComentarioPaginaInicialMaiorQueFinal() throws Exception {
-        AcompanhamentoRequestDto dto = new AcompanhamentoRequestDto(50, 25, null);
+        AcompanhamentoRequestDto dto = new AcompanhamentoRequestDto(50, 25, "coment");
 
         String json = objectMapper.writeValueAsString(dto);
 
@@ -87,5 +89,69 @@ class AcompanhamentoLeituraComentarioControllerTest {
                 .content(json))
 
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST /leituras/{id}/comentarios deve retornar 400 quando pagina inicial for zero")
+    void postCriarComentarioPaginaInicialZero() throws Exception {
+        AcompanhamentoRequestDto dto = new AcompanhamentoRequestDto(0, 5, "coment");
+
+        String json = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post("/leituras/1/comentarios")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+
+                .andExpect(status().isBadRequest());
+
+        verify(service, never()).adicionarComentario(any(Long.class), any(AcompanhamentoRequestDto.class));
+    }
+
+    @Test
+    @DisplayName("POST /leituras/{id}/comentarios deve retornar 400 quando pagina final for zero")
+    void postCriarComentarioPaginaFinalZero() throws Exception {
+        AcompanhamentoRequestDto dto = new AcompanhamentoRequestDto(5, 0, "coment");
+
+        String json = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post("/leituras/1/comentarios")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+
+                .andExpect(status().isBadRequest());
+
+        verify(service, never()).adicionarComentario(any(Long.class), any(AcompanhamentoRequestDto.class));
+    }
+
+    @Test
+    @DisplayName("POST /leituras/{id}/comentarios deve retornar 400 quando pagina inicial e final forem zero")
+    void postCriarComentarioPaginasZero() throws Exception {
+        AcompanhamentoRequestDto dto = new AcompanhamentoRequestDto(0, 0, "coment");
+
+        String json = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post("/leituras/1/comentarios")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+
+                .andExpect(status().isBadRequest());
+
+        verify(service, never()).adicionarComentario(any(Long.class), any(AcompanhamentoRequestDto.class));
+    }
+
+    @Test
+    @DisplayName("POST /leituras/{id}/comentarios deve retornar 400 quando comentario for nulo")
+    void postCriarComentarioComentarioNulo() throws Exception {
+        AcompanhamentoRequestDto dto = new AcompanhamentoRequestDto(1, 2, null);
+
+        String json = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post("/leituras/1/comentarios")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+
+                .andExpect(status().isBadRequest());
+
+        verify(service, never()).adicionarComentario(any(Long.class), any(AcompanhamentoRequestDto.class));
     }
 }
