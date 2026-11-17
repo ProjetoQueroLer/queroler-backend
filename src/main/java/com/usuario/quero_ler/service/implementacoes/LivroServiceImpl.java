@@ -201,9 +201,9 @@ public class LivroServiceImpl implements LivroService {
         Long totalAvaliacoes = diarioRepository.countAvaliacoesByLivroId(livroId);
 
         Long quantidadeQueremLer = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_QUE_QUERO_LER);
-        Long quantidadeEstaoLendo = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_QUE_ESTOU_LENDO)
-                + leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.RELENDO);
-        Long quantidadeJaLeRAM = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_LIDOS);
+        Long quantidadeEstaoLendo = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_QUE_ESTOU_LENDO);
+        Long quantidadeRelendo = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.RELENDO);
+        Long quantidadeJaLeram = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_LIDOS);
         Long quantidadeAbandonaram = leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_ABANDONADOS);
 
         List<DiarioDeLeitura> resenhasPublicas = diarioRepository.findResenhasPublicasByLivroId(livroId);
@@ -241,7 +241,8 @@ public class LivroServiceImpl implements LivroService {
                 totalAvaliacoes,
                 quantidadeQueremLer,
                 quantidadeEstaoLendo,
-                quantidadeJaLeRAM,
+                quantidadeRelendo,
+                quantidadeJaLeram,
                 quantidadeAbandonaram,
                 resenhas
         );

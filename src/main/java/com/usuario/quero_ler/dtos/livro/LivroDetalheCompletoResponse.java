@@ -37,8 +37,11 @@ public record LivroDetalheCompletoResponse(
         @Schema(description = "Quantidade de usuários que estão lendo")
         Long quantidadeEstaoLendo,
 
+        @Schema(description = "Quantidade de usuários que estão relendo")
+        Long quantidadeRelendo,
+
         @Schema(description = "Quantidade de usuários que já leram")
-        Long quantidadeJaLeRAM,
+        Long quantidadeJaLeram,
 
         @Schema(description = "Quantidade de usuários que abandonaram")
         Long quantidadeAbandonaram,
