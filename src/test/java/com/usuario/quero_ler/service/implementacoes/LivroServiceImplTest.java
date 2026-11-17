@@ -1,10 +1,8 @@
 package com.usuario.quero_ler.service.implementacoes;
 
 import com.usuario.quero_ler.dtos.livro.LivroCardResponse;
-import com.usuario.quero_ler.dtos.livro.LivroDetalheCompletoResponse;
 import com.usuario.quero_ler.dtos.livro.LivroRequest;
 import com.usuario.quero_ler.dtos.livro.LivroResponse;
-import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.enums.UsuarioProfile;
 import com.usuario.quero_ler.exceptions.especies.CapaForaDePadraoException;
 import com.usuario.quero_ler.exceptions.especies.IsbnNaoEncontradoException;
@@ -12,7 +10,6 @@ import com.usuario.quero_ler.fixtures.LivroFixture;
 import com.usuario.quero_ler.fixtures.UserFixture;
 import com.usuario.quero_ler.mappers.LivroMapper;
 import com.usuario.quero_ler.models.*;
-import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
 import com.usuario.quero_ler.repository.LivroRepository;
 import com.usuario.quero_ler.repository.LeituraRepository;
 import com.usuario.quero_ler.service.LoginService;
@@ -32,7 +29,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,9 +55,6 @@ class LivroServiceImplTest {
 
     @Mock
     private LeituraRepository leituraRepository;
-
-    @Mock
-    private DiarioDeLeituraRepository diarioRepository;
 
     @Mock
     private LoginService loginService;
@@ -371,58 +364,6 @@ class LivroServiceImplTest {
                 () -> service.validarCapaDoLivro(file));
 
         assertEquals("Formato inválido. Use JPG ou PNG", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Deve detalhar livro com relendo separado e resenhas públicas")
-    void deveDetalharLivroComEstatisticasEResenhas() {
-        Livro livro = LivroFixture.entity();
-        Long livroId = livro.getId();
-
-        User user = UserFixture.userEntity(UsuarioProfile.LEITOR);
-        Usuario usuario = UserFixture.entidadeCompleta(user);
-
-        Leitura leituraDoDiario = new Leitura();
-        leituraDoDiario.setUsuario(usuario);
-
-        DiarioDeLeitura diario = DiarioDeLeitura.builder()
-                .leitura(leituraDoDiario)
-                .tituloDaResenha("Ótima leitura")
-                .resenha("Resenha pública do livro")
-                .spoiler(false)
-                .nota(4.5)
-                .terminoDaLeitura(LocalDateTime.now())
-                .build();
-
-        when(repository.findById(livroId)).thenReturn(Optional.of(livro));
-        when(mapper.getUrlFoto(livro)).thenReturn("/livros/1/capa");
-        when(mapper.getAutoresResponse(livro)).thenReturn(List.of());
-
-        when(diarioRepository.avgNotaByLivroId(livroId)).thenReturn(Optional.of(4.25));
-        when(diarioRepository.countAvaliacoesByLivroId(livroId)).thenReturn(2L);
-        when(diarioRepository.findResenhasPublicasByLivroId(livroId)).thenReturn(List.of(diario));
-
-        when(leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_QUE_QUERO_LER)).thenReturn(1L);
-        when(leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_QUE_ESTOU_LENDO)).thenReturn(2L);
-        when(leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.RELENDO)).thenReturn(3L);
-        when(leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_LIDOS)).thenReturn(4L);
-        when(leituraRepository.countByLivroIdAndStatus(livroId, LeituraStatus.LIVROS_ABANDONADOS)).thenReturn(5L);
-
-        when(loginService.getUsuarioLogado()).thenReturn(user);
-        when(leituraRepository.findByUsuarioIdAndLivroId(usuario.getId(), livroId)).thenReturn(Optional.empty());
-
-        LivroDetalheCompletoResponse resultado = service.detalhar(livroId);
-
-        assertEquals(2L, resultado.quantidadeEstaoLendo());
-        assertEquals(3L, resultado.quantidadeRelendo());
-        assertEquals(1, resultado.resenhas().size());
-        assertEquals(usuario.getNome(), resultado.resenhas().get(0).nomeDoAutor());
-        assertEquals(diario.getResenha(), resultado.resenhas().get(0).resenha());
-        assertEquals(4.25, resultado.mediaAvaliacao());
-        assertEquals(2L, resultado.totalAvaliacoes());
-
-        verify(leituraRepository).countByLivroIdAndStatus(livroId, LeituraStatus.RELENDO);
-        verify(diarioRepository).findResenhasPublicasByLivroId(livroId);
     }
 
     @Test

@@ -30,11 +30,6 @@ public class LivroController {
     private final ObjectMapper mapper;
     private final Validator validator;
 
-    @GetMapping("/teste")
-    public ResponseEntity<String> teste() {
-        return ResponseEntity.ok("LivroController funcionando!");
-    }
-
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<LivroResponse> cadastrar(
             @RequestPart(value = "imagem", required = false) MultipartFile capaDoLivro,

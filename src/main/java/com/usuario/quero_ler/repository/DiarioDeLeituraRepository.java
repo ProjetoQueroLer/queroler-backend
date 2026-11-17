@@ -36,9 +36,6 @@ public interface DiarioDeLeituraRepository extends JpaRepository<DiarioDeLeitura
     @Query("SELECT COUNT(d) FROM DiarioDeLeitura d WHERE d.leitura.livro.id = :livroId AND d.nota > 0")
     Long countAvaliacoesByLivroId(@Param("livroId") Long livroId);
 
-    @Query("SELECT d FROM DiarioDeLeitura d " +
-            "WHERE d.leitura.livro.id = :livroId " +
-            "AND (d.compartilhar = com.usuario.quero_ler.enums.CompartilharResenha.PUBLICO OR d.compartilhar IS NULL) " +
-            "AND d.resenha IS NOT NULL")
+    @Query("SELECT d FROM DiarioDeLeitura d WHERE d.leitura.livro.id = :livroId AND d.compartilhar = 'PUBLICO' AND d.resenha IS NOT NULL")
     List<DiarioDeLeitura> findResenhasPublicasByLivroId(@Param("livroId") Long livroId);
 }

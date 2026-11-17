@@ -138,8 +138,7 @@ A API utiliza **Spring Security** com estratégia **Stateless** via tokens JWT a
   "totalAvaliacoes": 12,
   "quantidadeQueremLer": 8,
   "quantidadeEstaoLendo": 3,
-  "quantidadeRelendo": 0,
-  "quantidadeJaLeram": 10,
+  "quantidadeJaLeRAM": 10,
   "quantidadeAbandonaram": 1,
   "resenhas": [
     {
