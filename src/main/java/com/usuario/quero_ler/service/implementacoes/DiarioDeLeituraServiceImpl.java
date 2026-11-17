@@ -10,6 +10,7 @@ import com.usuario.quero_ler.mappers.DiarioLeituraMapper;
 import java.time.LocalDateTime;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.Leitura;
+import com.usuario.quero_ler.enums.CompartilharResenha;
 import com.usuario.quero_ler.enums.LeituraStatus;
 import com.usuario.quero_ler.repository.DiarioDeLeituraRepository;
 import com.usuario.quero_ler.repository.LeituraRepository;
@@ -63,6 +64,7 @@ public class DiarioDeLeituraServiceImpl implements DiarioDeLeituraService {
                 .tituloDaResenha(dto.tituloDaResenha())
                 .resenha(dto.resenha())
                 .spoiler(dto.spoiler() != null ? dto.spoiler() : false)
+                .compartilhar(CompartilharResenha.PUBLICO)
                 .build();
 
         if (repository.existsByLeitura(leitura)) {

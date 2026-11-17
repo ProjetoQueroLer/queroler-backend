@@ -9,6 +9,7 @@ import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraRequestDto;
 import com.usuario.quero_ler.dtos.leitura.DiarioDeLeituraResponseDto;
 import com.usuario.quero_ler.dtos.leitura.LivroAcompanhamentoResponseDto;
 import com.usuario.quero_ler.dtos.livro.LivroResumoResponseDto;
+import com.usuario.quero_ler.enums.CompartilharResenha;
 import com.usuario.quero_ler.models.AcompanhamentoDeLeitura;
 import com.usuario.quero_ler.models.DiarioDeLeitura;
 import com.usuario.quero_ler.models.Livro;
@@ -31,6 +32,7 @@ public class DiarioLeituraMapper {
         diario.setTituloDaResenha(dto.tituloDaResenha());
         diario.setResenha(dto.resenha());
 				diario.setSpoiler(dto.spoiler() != null ? dto.spoiler(): false);
+        diario.setCompartilhar(CompartilharResenha.PUBLICO);
         return diario;
     }
 		public DiarioDeLeituraResponseDto toResponse(DiarioDeLeitura diario){
